@@ -1,88 +1,64 @@
 const marketPrices = [
   {
     town: "Kitale",
-    price: "KES 4,200",
+    price: "KSh 4,200",
     demand: "High",
     trend: "↑ Rising",
-    updated: "10 mins ago",
   },
   {
-    town: "Eldoret",
-    price: "KES 4,050",
+    town: "Eldoret (Reference Market)",
+    price: "KSh 4,050",
     demand: "Medium",
     trend: "→ Stable",
-    updated: "25 mins ago",
   },
   {
-    town: "Nakuru",
-    price: "KES 3,980",
-    demand: "Low",
-    trend: "↓ Falling",
-    updated: "40 mins ago",
+    town: "Kiminini",
+    price: "KSh 3,980",
+    demand: "Growing",
+    trend: "↑ Rising",
   },
 ];
 
 export default function MarketPage() {
   return (
-    <main className="min-h-screen bg-gray-100 p-8">
-      <h1 className="text-4xl font-bold text-green-800 mb-3">
-        Live Market Prices
-      </h1>
+    <main className="min-h-screen bg-gray-50 p-6">
+      <div className="max-w-5xl mx-auto">
+        <h1 className="text-4xl font-bold text-green-800">
+          Indicative Buyer Offers
+        </h1>
 
-      <p className="text-gray-600 mb-8 max-w-2xl">
-        SmartShamba tracks verified maize buyer prices across regions
-        to help farmers avoid broker manipulation and sell at fair value.
-      </p>
+        <p className="text-gray-600 mt-3">
+          Pilot coordination activity focused on Trans Nzoia County, Kenya.
+        </p>
 
-      <div className="grid gap-6">
-        {marketPrices.map((market, index) => (
-          <div
-            key={index}
-            className="bg-white rounded-2xl shadow-lg p-6 border border-gray-200"
-          >
-            <div className="flex justify-between items-center">
-              <h2 className="text-2xl font-semibold">
+        <p className="text-sm text-gray-500 mt-2">
+          Illustrative buyer offers for pilot demonstration purposes.
+        </p>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-10">
+          {marketPrices.map((market, index) => (
+            <div
+              key={index}
+              className="bg-white rounded-2xl shadow-sm border border-green-100 p-6"
+            >
+              <h2 className="text-2xl font-bold text-green-700">
                 {market.town}
               </h2>
 
-              <span className="text-sm text-gray-500">
-                Updated {market.updated}
-              </span>
+              <p className="mt-4 text-3xl font-bold">
+                {market.price}
+              </p>
+
+              <p className="mt-3 text-gray-600">
+                Demand: {market.demand}
+              </p>
+
+              <p className="mt-1 text-green-700 font-medium">
+                {market.trend}
+              </p>
             </div>
-
-            <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div>
-                <p className="text-gray-500 text-sm">
-                  Market Price
-                </p>
-
-                <p className="text-2xl font-bold text-green-700">
-                  {market.price}
-                </p>
-              </div>
-
-              <div>
-                <p className="text-gray-500 text-sm">
-                  Buyer Demand
-                </p>
-
-                <p className="text-lg font-semibold">
-                  {market.demand}
-                </p>
-              </div>
-
-              <div>
-                <p className="text-gray-500 text-sm">
-                  Trend
-                </p>
-
-                <p className="text-lg font-semibold">
-                  {market.trend}
-                </p>
-              </div>
-            </div>
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
     </main>
   );
