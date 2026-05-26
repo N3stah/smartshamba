@@ -1,3 +1,5 @@
+import Image from "next/image";
+
 export default function Home() {
   return (
     <main className="min-h-screen bg-green-50">
@@ -28,6 +30,23 @@ export default function Home() {
           </a>
         </div>
       </section>
+      {/* FARMER IMAGE SECTION */}
+<section className="px-6 pb-10">
+  <div className="max-w-5xl mx-auto">
+    <Image
+      src="/farmer-maize.jpg"
+      alt="Maize transport in Trans Nzoia"
+      width={1200}
+      height={800}
+      className="w-full rounded-3xl shadow-xl object-cover h-105"
+    />
+
+    <p className="text-center text-sm text-gray-500 mt-4">
+      Maize transport and buyer coordination in Trans Nzoia County.
+    </p>
+
+  </div>
+</section>
 
       {/* PROBLEM SECTION */}
       <section className="bg-white px-6 py-20">
@@ -148,6 +167,71 @@ export default function Home() {
 
   </div>
 </section>
+{/* WHY TRANS NZOIA */}
+<section className="bg-white px-6 py-20 border-t border-gray-100">
+  <div className="max-w-5xl mx-auto">
+
+    <div className="text-center">
+      <h2 className="text-3xl md:text-5xl font-bold text-green-900">
+        Why Trans Nzoia?
+      </h2>
+
+      <p className="mt-6 text-xl text-gray-700 leading-relaxed max-w-3xl mx-auto">
+        SmartShamba is intentionally focused on Trans Nzoia County during the pilot stage
+        to improve operational coordination, farmer onboarding, and buyer verification.
+      </p>
+    </div>
+
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-14">
+
+      <div className="rounded-3xl border border-green-100 bg-green-50 p-8">
+        <h3 className="text-2xl font-bold text-green-800">
+          Major Maize-Producing Region
+        </h3>
+
+        <p className="mt-4 text-gray-700 leading-relaxed">
+          Trans Nzoia is one of Kenya’s largest maize-producing regions,
+          making it operationally suitable for an early coordination pilot.
+        </p>
+      </div>
+
+      <div className="rounded-3xl border border-green-100 bg-green-50 p-8">
+        <h3 className="text-2xl font-bold text-green-800">
+          Dense Farmer Activity
+        </h3>
+
+        <p className="mt-4 text-gray-700 leading-relaxed">
+          High farmer concentration improves onboarding efficiency
+          and simplifies field coordination during early deployment.
+        </p>
+      </div>
+
+      <div className="rounded-3xl border border-green-100 bg-green-50 p-8">
+        <h3 className="text-2xl font-bold text-green-800">
+          Existing Grain Logistics
+        </h3>
+
+        <p className="mt-4 text-gray-700 leading-relaxed">
+          Existing grain transport and aggregation workflows
+          make buyer coordination easier during pilot operations.
+        </p>
+      </div>
+
+      <div className="rounded-3xl border border-green-100 bg-green-50 p-8">
+        <h3 className="text-2xl font-bold text-green-800">
+          Controlled Expansion Strategy
+        </h3>
+
+        <p className="mt-4 text-gray-700 leading-relaxed">
+          SmartShamba is intentionally starting with one crop
+          and one geographic region before broader expansion.
+        </p>
+      </div>
+
+    </div>
+
+  </div>
+</section>
 
       {/* TRUST SECTION */}
       <section className="bg-green-800 text-white px-6 py-20">
@@ -194,6 +278,77 @@ export default function Home() {
 </div>
         </div>
       </section>
+      {/* OPERATIONAL RISKS */}
+<section className="bg-white px-6 py-20 border-t border-gray-200">
+  <div className="max-w-5xl mx-auto">
+
+    <h2 className="text-3xl md:text-4xl font-bold text-gray-900">
+      Operational Risks
+    </h2>
+
+    <p className="mt-6 text-lg text-gray-700 leading-relaxed">
+      Agricultural trade coordination involves real-world operational complexity.
+      SmartShamba is designed to reduce transaction uncertainty,
+      not eliminate agricultural market risk.
+    </p>
+
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-10">
+
+      <div className="rounded-2xl border border-gray-200 p-6 bg-gray-50">
+        <h3 className="font-bold text-xl text-gray-800">
+          Buyer Defaults
+        </h3>
+
+        <p className="mt-3 text-gray-600">
+          Buyers may delay confirmation, reduce quantities,
+          or fail to complete transactions after coordination.
+        </p>
+      </div>
+
+      <div className="rounded-2xl border border-gray-200 p-6 bg-gray-50">
+        <h3 className="font-bold text-xl text-gray-800">
+          Maize Quality Disputes
+        </h3>
+
+        <p className="mt-3 text-gray-600">
+          Moisture content, grading differences,
+          and storage conditions may affect final acceptance.
+        </p>
+      </div>
+
+      <div className="rounded-2xl border border-gray-200 p-6 bg-gray-50">
+        <h3 className="font-bold text-xl text-gray-800">
+          Transport Delays
+        </h3>
+
+        <p className="mt-3 text-gray-600">
+          Logistics disruptions and road delays may affect
+          delivery schedules and settlement timing.
+        </p>
+      </div>
+
+      <div className="rounded-2xl border border-gray-200 p-6 bg-gray-50">
+        <h3 className="font-bold text-xl text-gray-800">
+          Digital Literacy
+        </h3>
+
+        <p className="mt-3 text-gray-600">
+          Some farmers may require onboarding support
+          to comfortably use USSD transaction workflows.
+        </p>
+      </div>
+
+    </div>
+
+    <div className="mt-12 rounded-3xl bg-green-800 text-white p-8 text-center">
+      <p className="text-xl leading-relaxed font-medium">
+        SmartShamba reduces transaction uncertainty.
+        It does not eliminate agricultural market risk.
+      </p>
+    </div>
+
+  </div>
+</section>
     </main>
   );
 }

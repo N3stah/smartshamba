@@ -4,176 +4,201 @@ import { useState } from "react";
 
 export default function USSDPage() {
   const [step, setStep] = useState(1);
-  const [bags, setBags] = useState("");
-  const [selectedBuyer, setSelectedBuyer] = useState("");
+  const [input, setInput] = useState("");
 
-  const buyers = [
-    {
-      name: "Kitale Millers Ltd",
-      price: "KSh 4,200",
-    },
-    {
-      name: "Eldoret Grain Buyers",
-      price: "KSh 4,050",
-    },
-    {
-      name: "Kitale Co-op",
-      price: "KSh 3,980",
-    },
-  ];
+  const nextStep = () => {
+    if (step < 5) {
+      setStep(step + 1);
+      setInput("");
+    }
+  };
 
   return (
-    <main className="min-h-screen bg-green-50 flex items-center justify-center p-6">
-      <div className="w-full max-w-sm rounded-3xl bg-black text-green-400 p-6 shadow-2xl font-mono">
+    <main className="min-h-screen bg-green-50 flex items-center justify-center px-4 py-10">
 
-        <div className="mb-4 text-center border-b border-green-700 pb-2">
-          <h1 className="text-lg font-bold">
-            SmartShamba *123#
-          </h1>
+      {/* PHONE FRAME */}
+      <div className="w-87.5 rounded-[40px] border-10 border-black bg-black shadow-2xl overflow-hidden">
 
-          <p className="text-xs text-green-500 mt-1">
-            Pilot Demo · Trans Nzoia County · 2026
-          </p>
+        {/* TOP STATUS BAR */}
+        <div className="bg-black text-white px-4 py-2 flex justify-between text-xs font-semibold">
+          <span>Safaricom</span>
+          <span>4G</span>
+          <span>🔋 82%</span>
         </div>
 
-        {/* SCREEN 1 */}
-        {step === 1 && (
-          <div>
-            <p>Welcome to SmartShamba</p>
+        {/* SCREEN */}
+        <div className="bg-[#d7f0d1] min-h-155 p-5 flex flex-col justify-between">
 
-            <div className="mt-4 space-y-2">
-              <p>1. Sell Maize</p>
-              <p>2. Market Prices</p>
-              <p>3. My Transactions</p>
+          {/* CONTENT */}
+          <div>
+
+            {/* HEADER */}
+            <div className="text-center mb-8">
+              <h1 className="font-bold text-3xl text-green-900">
+                SmartShamba
+              </h1>
+
+              <p className="text-sm text-gray-800 mt-2 font-medium">
+                USSD Pilot Demo · *123#
+              </p>
             </div>
 
-            <button
-              onClick={() => setStep(2)}
-              className="mt-6 w-full rounded bg-green-600 py-2 text-white"
-            >
-              Send
-            </button>
-          </div>
-        )}
+            {/* STEP 1 */}
+            {step === 1 && (
+              <div className="space-y-5">
 
-        {/* SCREEN 2 */}
-        {step === 2 && (
-          <div>
-            <p>Enter number of bags:</p>
+                <p className="font-bold text-black text-xl">
+                  Welcome to SmartShamba
+                </p>
 
-            <input
-              type="number"
-              value={bags}
-              onChange={(e) => setBags(e.target.value)}
-              placeholder="e.g 40"
-              className="mt-4 w-full rounded bg-black border border-green-500 p-2 text-green-400"
-            />
+                <div className="bg-white rounded-2xl p-5 border border-gray-300 shadow-sm">
 
-            <button
-              onClick={() => setStep(3)}
-              className="mt-6 w-full rounded bg-green-600 py-2 text-white"
-            >
-              Send
-            </button>
-          </div>
-        )}
+                  <div className="space-y-4 text-black text-lg font-medium">
 
-        {/* SCREEN 3 */}
-        {step === 3 && (
-          <div>
-            <p className="mb-4">Buyer Offers</p>
+                    <p>1. Sell Maize</p>
 
-            <div className="space-y-4">
-              {buyers.map((buyer, index) => (
-                <button
-                  key={index}
-                  onClick={() => {
-                    setSelectedBuyer(buyer.name);
-                    setStep(4);
-                  }}
-                  className="w-full rounded border border-green-600 p-3 text-left hover:bg-green-900"
-                >
-                  <p>{index + 1}. {buyer.name}</p>
-                  <p className="text-sm text-green-500">
-                    {buyer.price} per bag
+                    <p>2. Check Buyer Offers</p>
+
+                    <p>3. Exit</p>
+
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* STEP 2 */}
+            {step === 2 && (
+              <div className="space-y-5">
+
+                <p className="font-bold text-black text-xl">
+                  Enter Number of Bags
+                </p>
+
+                <div className="bg-white rounded-2xl p-5 border border-gray-300 shadow-sm text-black text-lg">
+                  Example: 40
+                </div>
+              </div>
+            )}
+
+            {/* STEP 3 */}
+            {step === 3 && (
+              <div className="space-y-5">
+
+                <p className="font-bold text-black text-xl">
+                  Available Buyer Offers
+                </p>
+
+                <div className="bg-white rounded-2xl p-5 border border-gray-300 shadow-sm space-y-4 text-black">
+
+                  <p className="font-medium text-lg">
+                    1. Kitale Millers Ltd — KSh 4,200
                   </p>
+
+                  <p className="font-medium text-lg">
+                    2. Eldoret Grain Buyers — KSh 4,050
+                  </p>
+
+                </div>
+              </div>
+            )}
+
+            {/* STEP 4 */}
+            {step === 4 && (
+              <div className="space-y-5">
+
+                <p className="font-bold text-black text-xl">
+                  Confirm Buyer Offer
+                </p>
+
+                <div className="bg-white rounded-2xl p-5 border border-gray-300 shadow-sm space-y-3 text-black text-lg">
+
+                  <p>
+                    Buyer: Kitale Millers Ltd
+                  </p>
+
+                  <p>
+                    Quantity: 40 bags
+                  </p>
+
+                  <p>
+                    Offer: KSh 168,000
+                  </p>
+
+                </div>
+
+                <p className="text-gray-800 font-medium">
+                  Reply 1 to confirm
+                </p>
+              </div>
+            )}
+
+            {/* STEP 5 */}
+            {step === 5 && (
+              <div className="space-y-5">
+
+                <div className="bg-white rounded-2xl p-5 border border-gray-300 shadow-sm space-y-4 text-black">
+
+                  <p className="font-bold text-green-700 text-lg">
+                    Offer Recorded Successfully
+                  </p>
+
+                  <p className="font-medium">
+                    Ref: SS-2026-004821
+                  </p>
+
+                  <p>
+                    Delivery Date: 22 May 2026
+                  </p>
+
+                  <p>
+                    Payment via M-PESA after delivery confirmation.
+                  </p>
+
+                </div>
+
+                <p className="text-sm text-gray-700">
+                  Session expires in 30 seconds
+                </p>
+              </div>
+            )}
+          </div>
+
+          {/* INPUT AREA */}
+          <div className="mt-8">
+
+            {step < 5 && (
+              <>
+                <label className="text-sm font-semibold text-black">
+                  Enter option number:
+                </label>
+
+                <input
+                  type="text"
+                  value={input}
+                  onChange={(e) => setInput(e.target.value)}
+                  className="w-full mt-3 p-4 rounded-2xl border border-gray-400 bg-white text-black placeholder-gray-500 text-lg"
+                  placeholder="Type here..."
+                />
+
+                <button
+                  onClick={nextStep}
+                  className="w-full mt-5 bg-green-700 hover:bg-green-800 text-white py-4 rounded-2xl font-bold text-xl transition"
+                >
+                  Send
                 </button>
-              ))}
-            </div>
+              </>
+            )}
+
+            {step === 5 && (
+              <button
+                onClick={() => setStep(1)}
+                className="w-full bg-black text-white py-4 rounded-2xl font-bold text-lg"
+              >
+                Restart Demo
+              </button>
+            )}
           </div>
-        )}
-
-        {/* SCREEN 4 */}
-        {step === 4 && (
-          <div>
-            <p className="mb-4">Confirm Offer</p>
-
-            <div className="space-y-3 text-sm">
-              <p>
-                Buyer:
-                <br />
-                {selectedBuyer}
-              </p>
-
-              <p>
-                Quantity:
-                <br />
-                {bags} bags
-              </p>
-
-              <p>
-                Estimated Value:
-                <br />
-                KSh {Number(bags || 0) * 4200}
-              </p>
-
-              <p>
-                Delivery Date:
-                <br />
-                22 May 2026
-              </p>
-            </div>
-
-            <button
-              onClick={() => setStep(5)}
-              className="mt-6 w-full rounded bg-green-600 py-2 text-white"
-            >
-              Confirm
-            </button>
-          </div>
-        )}
-
-        {/* SCREEN 5 */}
-        {step === 5 && (
-          <div>
-            <p className="text-lg font-bold">
-              Offer Recorded
-            </p>
-
-            <div className="mt-4 text-sm space-y-3">
-              <p>
-                Ref:
-                <br />
-                SS-2026-004821
-              </p>
-
-              <p>
-                Payment via M-PESA upon delivery confirmation.
-              </p>
-            </div>
-
-            <button
-              onClick={() => {
-                setStep(1);
-                setBags("");
-                setSelectedBuyer("");
-              }}
-              className="mt-6 w-full rounded bg-green-600 py-2 text-white"
-            >
-              Done
-            </button>
-          </div>
-        )}
+        </div>
       </div>
     </main>
   );
