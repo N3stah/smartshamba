@@ -2,6 +2,9 @@
   "name": "smartshamba",
   "version": "0.1.0",
   "private": true,
+  "prisma": {
+    "seed": "node prisma/seed-compiled.js"
+  },
   "scripts": {
     "dev": "next dev",
     "build": "next build",
@@ -9,7 +12,10 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@prisma/client": "^5.22.0",
+    "dotenv": "^17.4.2",
     "next": "16.2.6",
+    "prisma": "^5.22.0",
     "react": "19.2.4",
     "react-dom": "19.2.4"
   },

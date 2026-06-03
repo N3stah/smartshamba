@@ -1,21 +1,25 @@
-const buyers = [
-  {
-    name: "Kitale Millers Ltd",
-    price: "KSh 4,200",
-    quantity: "500 bags",
-    location: "Kitale",
-    verified: true,
-  },
-  {
-    name: "Eldoret Grain Buyers",
-    price: "KSh 4,050",
-    quantity: "300 bags",
-    location: "Eldoret (Reference Market)",
-    verified: true,
-  },
-];
+// app/buyer/page.tsx
 
-export default function BuyerPage() {
+import { Buyer } from "@prisma/client";
+
+async function getBuyers(): Promise<Buyer[]> {
+  // We must use an absolute URL on the server
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+  
+  const res = await fetch(`${baseUrl}/api/buyers`, {
+    cache: 'no-store',
+  });
+
+  if (!res.ok) {
+    throw new Error('Failed to fetch verified buyers');
+  }
+
+  return res.json();
+}
+
+export default async function BuyerPage() {
+  const buyers = await getBuyers();
+
   return (
     <main className="min-h-screen p-8 bg-gray-100">
       <div className="max-w-5xl mx-auto">
@@ -29,9 +33,9 @@ export default function BuyerPage() {
         </p>
 
         <div className="grid gap-6">
-          {buyers.map((buyer, index) => (
+          {buyers.map((buyer) => (
             <div
-              key={index}
+              key={buyer.id}
               className="bg-white rounded-2xl shadow-lg p-6 border border-gray-200"
             >
               <div className="flex flex-col md:flex-row justify-between md:items-center gap-3">
@@ -62,9 +66,9 @@ export default function BuyerPage() {
               <div className="mt-6 space-y-2 text-gray-700">
                 <p>📍 Location: {buyer.location}</p>
 
-                <p>💰 Offer Price: {buyer.price} per bag</p>
+                <p>💰 Offer Price: KSh {buyer.pricePerBag.toLocaleString()}</p>
 
-                <p>🌽 Demand: {buyer.quantity}</p>
+                <p>🌽 Demand: {buyer.capacityBags.toLocaleString()} bags</p>
               </div>
             </div>
           ))}

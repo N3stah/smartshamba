@@ -1,0 +1,61 @@
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Farmer {
+  id           String        @id @default(cuid())
+  phone        String        @unique
+  name         String?
+  location     String?
+  createdAt    DateTime      @default(now())
+  transactions Transaction[]
+}
+
+model Buyer {
+  id           String        @id @default(cuid())
+  name         String
+  location     String
+  verified     Boolean       @default(false)
+  capacityBags Int
+  pricePerBag  Float
+  active       Boolean       @default(true)
+  transactions Transaction[]
+}
+
+model Transaction {
+  id           String    @id @default(cuid())
+  reference    String    @unique
+  farmerId     String
+  buyerId      String
+  quantityBags Int
+  pricePerBag  Float
+  totalValue   Float
+  status       TxStatus  @default(PENDING)
+  mpesaRef     String?
+  createdAt    DateTime  @default(now())
+  farmer       Farmer    @relation(fields: [farmerId], references: [id])
+  buyer        Buyer     @relation(fields: [buyerId], references: [id])
+}
+
+model UssdSession {
+  id        String   @id @default(cuid())
+  sessionId String   @unique
+  phone     String
+  state     Int      @default(0)
+  data      Json?
+  updatedAt DateTime @updatedAt
+}
+
+enum TxStatus {
+  PENDING
+  CONFIRMED
+  DELIVERED
+  SETTLED
+  DISPUTED
+}
