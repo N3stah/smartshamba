@@ -6,11 +6,13 @@ import { Transaction } from './transaction';
 export interface Buyer {
   id: string;
   name: string;
-  location: string; // E.g., "Mois Bridge", "Kitale Town"
-  pricePerBag: number; // Current market offer price in KSh
-  capacityBags: number; // Total demand or storage capacity
-  createdAt: Date;
-  transactions?: Transaction[]; // Historical and pending offers from farmers
+  location: string;
+  verified: boolean;
+  capacityBags: number;
+  pricePerBag: number;
+  active: boolean;
+  createdAt?: Date;
+  transactions?: Transaction[];
 }
 
 /**
