@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { requireAdminAuth } from '@/lib/auth';
+import { sendOfferConfirmationSms } from '@/lib/sms';
 
 const MAX_BAGS = 10000;
 
@@ -117,6 +118,22 @@ export async function POST(req: NextRequest) {
       },
       include: { farmer: true, buyer: true },
     });
+
+    // Send SMS notification to farmer
+    if (farmer.phone) {
+      try {
+        await sendOfferConfirmationSms(
+          farmer.phone,
+          reference,
+          buyer.name,
+          quantityBags,
+          pricePerBag,
+          totalValue
+        );
+      } catch (err) {
+        console.error('[POST /api/transactions] SMS failed:', err);
+      }
+    }
 
     return NextResponse.json(transaction, { status: 201 });
   } catch (error) {
