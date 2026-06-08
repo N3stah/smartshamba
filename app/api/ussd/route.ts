@@ -20,7 +20,7 @@ export async function POST(req: NextRequest) {
 
   try {
     const formData    = await req.formData();
-    const _sessionId   = formData.get('sessionId') as string;
+    // sessionId available if needed for logging
     const phoneNumber = formData.get('phoneNumber') as string;
     const text        = formData.get('text') as string ?? '';
 
