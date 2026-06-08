@@ -181,14 +181,19 @@ export async function POST(req: NextRequest) {
                 },
               });
               // Send confirmation SMS (non-blocking — don't fail USSD if SMS fails)
-sendOfferConfirmationSms(
-  phoneNumber,
-  reference,
-  selectedBuyer.name,
-  quantity,
-  selectedBuyer.pricePerBag,
-  totalValue
-).catch(err => console.error('[SMS]', err));
+              console.log('[USSD] About to send SMS to', phoneNumber);
+              sendOfferConfirmationSms(
+                phoneNumber,
+                reference,
+                selectedBuyer.name,
+                quantity,
+                selectedBuyer.pricePerBag,
+                totalValue
+              ).then(result => {
+                console.log('[USSD] SMS result:', JSON.stringify(result));
+              }).catch(err => {
+                console.error('[USSD] SMS failed:', err);
+              });
               response = end(`Offer confirmed!\nRef: ${reference}\nBuyer: ${selectedBuyer.name}\n${quantity} bags @ KSh ${selectedBuyer.pricePerBag}\nTotal: KSh ${totalValue.toLocaleString()}\nThe buyer will contact you.`);
             }
           }
