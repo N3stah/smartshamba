@@ -1,3 +1,4 @@
+import { sendOfferConfirmationSms } from '@/lib/sms';
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { con, end, parseText } from '@/lib/africastalking';
@@ -19,7 +20,7 @@ export async function POST(req: NextRequest) {
 
   try {
     const formData    = await req.formData();
-    const sessionId   = formData.get('sessionId') as string;
+    const _sessionId   = formData.get('sessionId') as string;
     const phoneNumber = formData.get('phoneNumber') as string;
     const text        = formData.get('text') as string ?? '';
 
@@ -179,6 +180,15 @@ export async function POST(req: NextRequest) {
                   status:       'PENDING',
                 },
               });
+              // Send confirmation SMS (non-blocking — don't fail USSD if SMS fails)
+sendOfferConfirmationSms(
+  phoneNumber,
+  reference,
+  selectedBuyer.name,
+  quantity,
+  selectedBuyer.pricePerBag,
+  totalValue
+).catch(err => console.error('[SMS]', err));
               response = end(`Offer confirmed!\nRef: ${reference}\nBuyer: ${selectedBuyer.name}\n${quantity} bags @ KSh ${selectedBuyer.pricePerBag}\nTotal: KSh ${totalValue.toLocaleString()}\nThe buyer will contact you.`);
             }
           }
