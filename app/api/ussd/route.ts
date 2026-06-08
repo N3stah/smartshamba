@@ -58,6 +58,19 @@ export async function POST(req: NextRequest) {
           });
           const buyerList = buyers.map((b, i) => `${i + 1}. ${b.name} - KSh ${b.pricePerBag}/bag`).join('\n');
           response = con(`Current buyer offers:\n${buyerList}\n\nSelect buyer number:`);
+        } else if (steps[0] === '2') {
+          const transactions = await prisma.transaction.findMany({
+            where: { farmer: { phone: phoneNumber } },
+            orderBy: { createdAt: 'desc' },
+            take: 3,
+            include: { buyer: true },
+          });
+          if (transactions.length === 0) {
+            response = end('You have no transactions yet.\nDial *384*53374# to create your first offer.');
+          } else {
+            const txList = transactions.map((t, i) => `${i + 1}. ${t.buyer.name} - ${t.status} - KSh ${t.totalValue.toLocaleString()}`).join('\n');
+            response = con(`My transactions:\n${txList}\n\nSelect transaction number for details:`);
+          }
         } else {
           response = end('Invalid option. Please try again.');
         }
@@ -72,17 +85,35 @@ export async function POST(req: NextRequest) {
         await prisma.farmer.create({ data: { phone: phoneNumber, name, location } });
         response = con(`Registered! Welcome ${name}.\n1. View buyer offers\n2. My transactions`);
       } else {
-        const buyers = await prisma.buyer.findMany({
-          where: { active: true },
-          orderBy: { pricePerBag: 'desc' },
-          take: 3,
-        });
-        const buyerIndex    = parseInt(steps[1]) - 1;
-        const selectedBuyer = buyers[buyerIndex];
-        if (!selectedBuyer) {
-          response = end('Invalid selection. Please try again.');
+        if (steps[0] === '1') {
+          const buyers = await prisma.buyer.findMany({
+            where: { active: true },
+            orderBy: { pricePerBag: 'desc' },
+            take: 3,
+          });
+          const buyerIndex    = parseInt(steps[1]) - 1;
+          const selectedBuyer = buyers[buyerIndex];
+          if (!selectedBuyer) {
+            response = end('Invalid selection. Please try again.');
+          } else {
+            response = con(`${selectedBuyer.name}\nPrice: KSh ${selectedBuyer.pricePerBag}/bag\nLocation: ${selectedBuyer.location}\n\nEnter number of bags:`);
+          }
+        } else if (steps[0] === '2') {
+          const transactions = await prisma.transaction.findMany({
+            where: { farmer: { phone: phoneNumber } },
+            orderBy: { createdAt: 'desc' },
+            take: 3,
+            include: { buyer: true },
+          });
+          const txIndex = parseInt(steps[1]) - 1;
+          const selectedTx = transactions[txIndex];
+          if (!selectedTx) {
+            response = end('Invalid selection. Please try again.');
+          } else {
+            response = end(`Ref: ${selectedTx.reference}\nBuyer: ${selectedTx.buyer.name}\nBags: ${selectedTx.quantityBags}\nPrice: KSh ${selectedTx.pricePerBag}/bag\nTotal: KSh ${selectedTx.totalValue.toLocaleString()}\nStatus: ${selectedTx.status}\nDate: ${selectedTx.createdAt.toLocaleDateString()}`);
+          }
         } else {
-          response = con(`${selectedBuyer.name}\nPrice: KSh ${selectedBuyer.pricePerBag}/bag\nLocation: ${selectedBuyer.location}\n\nEnter number of bags:`);
+          response = end('Invalid option. Please try again.');
         }
       }
     }
@@ -92,31 +123,7 @@ export async function POST(req: NextRequest) {
       if (!farmer) {
         response = end('Session expired. Please dial again.');
       } else {
-        const buyers = await prisma.buyer.findMany({
-          where: { active: true },
-          orderBy: { pricePerBag: 'desc' },
-          take: 3,
-        });
-        const buyerIndex    = parseInt(steps[1]) - 1;
-        const selectedBuyer = buyers[buyerIndex];
-        const quantity      = parseInt(steps[2]);
-        if (!selectedBuyer || isNaN(quantity) || quantity <= 0) {
-          response = end('Invalid input. Please try again.');
-        } else {
-          const total = selectedBuyer.pricePerBag * quantity;
-          response = con(`Confirm offer:\nBuyer: ${selectedBuyer.name}\nBags: ${quantity}\nTotal: KSh ${total.toLocaleString()}\n\n1. Confirm\n2. Cancel`);
-        }
-      }
-    }
-
-    else if (step === 4) {
-      const farmer = await prisma.farmer.findUnique({ where: { phone: phoneNumber } });
-      if (!farmer) {
-        response = end('Session expired. Please dial again.');
-      } else {
-        if (steps[3] !== '1') {
-          response = end('Offer cancelled. Dial *123# to start again.');
-        } else {
+        if (steps[0] === '1') {
           const buyers = await prisma.buyer.findMany({
             where: { active: true },
             orderBy: { pricePerBag: 'desc' },
@@ -126,29 +133,61 @@ export async function POST(req: NextRequest) {
           const selectedBuyer = buyers[buyerIndex];
           const quantity      = parseInt(steps[2]);
           if (!selectedBuyer || isNaN(quantity) || quantity <= 0) {
-            response = end('Invalid session data. Please try again.');
+            response = end('Invalid input. Please try again.');
           } else {
-            const reference  = `SS-${Date.now().toString(36).toUpperCase()}-${Math.random().toString(36).substring(2, 6).toUpperCase()}`;
-            const totalValue = selectedBuyer.pricePerBag * quantity;
-            await prisma.transaction.create({
-              data: {
-                reference,
-                farmerId:     farmer.id,
-                buyerId:      selectedBuyer.id,
-                quantityBags: quantity,
-                pricePerBag:  selectedBuyer.pricePerBag,
-                totalValue,
-                status:       'PENDING',
-              },
+            const total = selectedBuyer.pricePerBag * quantity;
+            response = con(`Confirm offer:\nBuyer: ${selectedBuyer.name}\nBags: ${quantity}\nTotal: KSh ${total.toLocaleString()}\n\n1. Confirm\n2. Cancel`);
+          }
+        } else {
+          response = end('Invalid session. Please dial *384*53374# to start again.');
+        }
+      }
+    }
+
+    else if (step === 4) {
+      const farmer = await prisma.farmer.findUnique({ where: { phone: phoneNumber } });
+      if (!farmer) {
+        response = end('Session expired. Please dial again.');
+      } else {
+        if (steps[0] !== '1') {
+          response = end('Invalid session. Please dial *384*53374# to start again.');
+        } else {
+          if (steps[3] !== '1') {
+            response = end('Offer cancelled. Dial *384*53374# to start again.');
+          } else {
+            const buyers = await prisma.buyer.findMany({
+              where: { active: true },
+              orderBy: { pricePerBag: 'desc' },
+              take: 3,
             });
-            response = end(`Offer confirmed!\nRef: ${reference}\nBuyer: ${selectedBuyer.name}\n${quantity} bags @ KSh ${selectedBuyer.pricePerBag}\nTotal: KSh ${totalValue.toLocaleString()}\nThe buyer will contact you.`);
+            const buyerIndex    = parseInt(steps[1]) - 1;
+            const selectedBuyer = buyers[buyerIndex];
+            const quantity      = parseInt(steps[2]);
+            if (!selectedBuyer || isNaN(quantity) || quantity <= 0) {
+              response = end('Invalid session data. Please try again.');
+            } else {
+              const reference  = `SS-${Date.now().toString(36).toUpperCase()}-${Math.random().toString(36).substring(2, 6).toUpperCase()}`;
+              const totalValue = selectedBuyer.pricePerBag * quantity;
+              await prisma.transaction.create({
+                data: {
+                  reference,
+                  farmerId:     farmer.id,
+                  buyerId:      selectedBuyer.id,
+                  quantityBags: quantity,
+                  pricePerBag:  selectedBuyer.pricePerBag,
+                  totalValue,
+                  status:       'PENDING',
+                },
+              });
+              response = end(`Offer confirmed!\nRef: ${reference}\nBuyer: ${selectedBuyer.name}\n${quantity} bags @ KSh ${selectedBuyer.pricePerBag}\nTotal: KSh ${totalValue.toLocaleString()}\nThe buyer will contact you.`);
+            }
           }
         }
       }
     }
 
     else {
-      response = end('Invalid session. Please dial *123# to start again.');
+      response = end('Invalid session. Please dial *384*53374# to start again.');
     }
 
     return new NextResponse(response, {
