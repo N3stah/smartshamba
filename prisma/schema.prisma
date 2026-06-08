@@ -25,6 +25,7 @@ model Buyer {
   capacityBags Int
   pricePerBag  Float
   active       Boolean       @default(true)
+  createdAt    DateTime      @default(now())
   transactions Transaction[]
 }
 
