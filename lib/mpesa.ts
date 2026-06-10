@@ -84,7 +84,7 @@ export async function registerC2BUrl(): Promise<{ success: boolean; message: str
 
 /**
  * Daraja C2B Callback Payload
- * Shape of what Safaricom POSTs to /api/mpesa/callback
+ * Shape of what Safaricom POSTs to /api/payment/callback
  */
 export interface MpesaC2BPayload {
   TransactionType: string;
