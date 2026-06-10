@@ -125,3 +125,12 @@ export function verifyPaymentAmount(
 
   return { valid: true };
 }
+
+/**
+ * Check if IP is from Safaricom's known ranges
+ * Allows localhost for testing
+ */
+export function isSafaricomIP(ip: string): boolean {
+  if (ip === '127.0.0.1' || ip === '::1') return true;
+  return ip.startsWith('196.201.214.') || ip.startsWith('196.201.215.');
+}
