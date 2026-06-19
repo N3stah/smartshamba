@@ -138,3 +138,37 @@ export function isSafaricomIP(ip: string): boolean {
   if (ip === '127.0.0.1' || ip === '::1') return true;
   return ip.startsWith('196.201.214.') || ip.startsWith('196.201.215.');
 }
+/**
+ * Register C2B URL with retry logic and exponential backoff
+ * Handles intermittent Safaricom sandbox failures (e.g. 500.003.1001)
+ */
+export async function registerC2BUrlWithRetry(
+  maxRetries: number = 3
+): Promise<{ success: boolean; message: string; attempts: number }> {
+  let lastResult: { success: boolean; message: string } = {
+    success: false,
+    message: 'No attempts made',
+  };
+
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    console.log(`[MPESA] C2B registration attempt ${attempt}/${maxRetries}`);
+
+    lastResult = await registerC2BUrl();
+
+    if (lastResult.success) {
+      console.log(`[MPESA] C2B registration succeeded on attempt ${attempt}`);
+      return { ...lastResult, attempts: attempt };
+    }
+
+    console.warn(`[MPESA] Attempt ${attempt} failed: ${lastResult.message}`);
+
+    if (attempt < maxRetries) {
+      const delayMs = Math.pow(2, attempt) * 1000; // 2s, 4s, 8s
+      console.log(`[MPESA] Waiting ${delayMs / 1000}s before retry...`);
+      await new Promise((resolve) => setTimeout(resolve, delayMs));
+    }
+  }
+
+  console.error(`[MPESA] C2B registration failed after ${maxRetries} attempts`);
+  return { ...lastResult, attempts: maxRetries };
+}
