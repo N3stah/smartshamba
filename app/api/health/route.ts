@@ -1,3 +1,4 @@
+throw new Error('Sentry SmartShamba test');
 import { NextResponse } from 'next/server';
 
 export async function GET() {

@@ -23,7 +23,7 @@ export async function sendSms(to: string, message: string): Promise<{ success: b
       message,
     });
 
-    console.log('[SMS] Response:', JSON.stringify(response.SMSMessageData));
+    console.log('[SMS] Message submitted to provider');
     const result = response.SMSMessageData.Recipients[0];
     return { success: result.status === 'Success', error: result.status !== 'Success' ? result.status : undefined };
   } catch (error) {
