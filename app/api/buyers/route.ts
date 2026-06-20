@@ -16,7 +16,7 @@ export async function GET() {
 
     return NextResponse.json(buyers);
   } catch (error) {
-    console.error("Database Error:", error);
+    console.error("[BUYERS] Database error:", error);
     return NextResponse.json(
       { error: "Failed to fetch market data" },
       { status: 500 }

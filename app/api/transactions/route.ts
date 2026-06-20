@@ -131,13 +131,13 @@ export async function POST(req: NextRequest) {
           totalValue
         );
       } catch (err) {
-        console.error('[POST /api/transactions] SMS failed:', err);
+        console.error('[TRANSACTIONS] SMS failed:', err);
       }
     }
 
     return NextResponse.json(transaction, { status: 201 });
   } catch (error) {
-    console.error('[POST /api/transactions]', error);
+    console.error('[TRANSACTIONS] POST error:', (error as Error).message);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

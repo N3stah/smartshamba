@@ -1,10 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { requireAdminAuth } from '@/lib/auth';
 
 export async function PUT(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const authError = requireAdminAuth(req);
+  if (authError) return authError;
+
   try {
     const { id } = await params;
 
@@ -13,6 +17,7 @@ export async function PUT(
     });
 
     if (!transaction) {
+      console.error(`[TRANSACTIONS] Confirm failed - not found: ${id}`);
       return NextResponse.json(
         { error: 'Transaction not found' },
         { status: 404 }
@@ -20,6 +25,7 @@ export async function PUT(
     }
 
     if (transaction.status !== 'PENDING') {
+      console.warn(`[TRANSACTIONS] Confirm rejected - status ${transaction.status}: ${id}`);
       return NextResponse.json(
         { error: `Cannot confirm. Current status: ${transaction.status}` },
         { status: 400 }
@@ -32,9 +38,11 @@ export async function PUT(
       include: { farmer: true, buyer: true },
     });
 
+    console.log(`[TRANSACTIONS] Confirmed: ${updated.reference}`);
+
     return NextResponse.json(updated, { status: 200 });
   } catch (error) {
-    console.error('[PUT /api/transactions/[id]]', error);
+    console.error('[TRANSACTIONS] PUT error:', (error as Error).message);
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }

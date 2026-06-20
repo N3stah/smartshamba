@@ -45,7 +45,7 @@ export async function GET(
       createdAt: transaction.createdAt,
     });
   } catch (error) {
-    console.error('[GET /api/payment/status]', error);
+    console.error('[PAYMENT] Status check error:', (error as Error).message);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

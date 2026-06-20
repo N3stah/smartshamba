@@ -210,7 +210,7 @@ export async function POST(req: NextRequest) {
       headers: { 'Content-Type': 'text/plain' },
     });
   } catch (error) {
-    console.error('[POST /api/ussd]', error);
+    console.error('[USSD] Handler error:', (error as Error).message);
     return new NextResponse('END Service error. Please try again later.', {
       status: 200,
       headers: { 'Content-Type': 'text/plain' },

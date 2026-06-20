@@ -1,0 +1,1 @@
+- [ ] Protect PUT /api/transactions/[id] with requireAdminAuth

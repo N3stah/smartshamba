@@ -39,7 +39,7 @@ export async function GET(req: NextRequest) {
       },
     });
   } catch (error) {
-    console.error('[GET /api/admin/stats]', error);
+    console.error('[ADMIN] Stats error:', (error as Error).message);
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }
