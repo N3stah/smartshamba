@@ -1,3 +1,4 @@
+import * as Sentry from '@sentry/nextjs';
 import { sendOfferConfirmationSms } from '@/lib/sms';
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
@@ -211,6 +212,8 @@ export async function POST(req: NextRequest) {
     });
   } catch (error) {
     console.error('[USSD] Handler error:', (error as Error).message);
+    Sentry.captureException(error);
+    await Sentry.flush(2000);
     return new NextResponse('END Service error. Please try again later.', {
       status: 200,
       headers: { 'Content-Type': 'text/plain' },

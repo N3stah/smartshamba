@@ -1,3 +1,4 @@
+import * as Sentry from '@sentry/nextjs';
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { requireAdminAuth } from '@/lib/auth';
@@ -40,6 +41,8 @@ export async function GET(req: NextRequest) {
     });
   } catch (error) {
     console.error('[ADMIN] Stats error:', (error as Error).message);
+    Sentry.captureException(error);
+    await Sentry.flush(2000);
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }

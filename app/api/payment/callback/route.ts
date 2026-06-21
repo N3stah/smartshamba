@@ -1,3 +1,4 @@
+import * as Sentry from '@sentry/nextjs';
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { MpesaC2BPayload, verifyPaymentAmount, isSafaricomIP } from '@/lib/mpesa';
@@ -88,6 +89,8 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ ResultCode: 0, ResultDesc: 'Accepted' });
   } catch (error) {
     console.error('[MPESA] Callback error:', (error as Error).message);
+    Sentry.captureException(error);
+    await Sentry.flush(2000);
     return NextResponse.json({ ResultCode: 0, ResultDesc: 'Accepted' });
   }
 }

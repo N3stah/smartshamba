@@ -1,3 +1,4 @@
+import * as Sentry from '@sentry/nextjs';
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { requireAdminAuth } from '@/lib/auth';
@@ -33,7 +34,9 @@ export async function GET(req: NextRequest) {
 
     return NextResponse.json(transactions);
   } catch (error) {
-    console.error('[GET /api/transactions]', error);
+    console.error('[TRANSACTIONS] GET error:', (error as Error).message);
+    Sentry.captureException(error);
+    await Sentry.flush(2000);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
@@ -138,6 +141,8 @@ export async function POST(req: NextRequest) {
     return NextResponse.json(transaction, { status: 201 });
   } catch (error) {
     console.error('[TRANSACTIONS] POST error:', (error as Error).message);
+    Sentry.captureException(error);
+    await Sentry.flush(2000);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

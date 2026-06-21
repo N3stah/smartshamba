@@ -1,3 +1,4 @@
+import * as Sentry from '@sentry/nextjs';
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { requireAdminAuth } from '@/lib/auth';
@@ -64,6 +65,8 @@ export async function PUT(
     });
   } catch (error) {
     console.error('[ADMIN] Manual settlement error:', (error as Error).message);
+    Sentry.captureException(error);
+    await Sentry.flush(2000);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
