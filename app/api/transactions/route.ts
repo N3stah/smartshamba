@@ -4,7 +4,7 @@ import { prisma } from '@/lib/prisma';
 import { requireAdminAuth } from '@/lib/auth';
 import { sendOfferConfirmationSms } from '@/lib/sms';
 
-const MAX_BAGS = 10000;
+const MAX_BAGS = 500;
 
 function generateReference(): string {
   const timestamp = Date.now().toString(36).toUpperCase();
