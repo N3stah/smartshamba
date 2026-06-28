@@ -1,5 +1,6 @@
 import "./globals.css";
 import Link from "next/link";
+import { Toaster } from "sonner";
 
 export const metadata = {
   title: "SmartShamba",
@@ -67,6 +68,13 @@ export default function RootLayout({
 
         {/* Main Content */}
         <main>{children}</main>
+
+        {/* Toast Notifications */}
+        <Toaster
+          position="top-right"
+          richColors
+          closeButton
+        />
 
         {/* Footer */}
         <footer className="bg-green-900 text-white mt-16">
