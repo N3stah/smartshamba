@@ -1,11 +1,11 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
 datasource db {
   provider  = "postgresql"
   url       = env("DATABASE_URL")
   directUrl = env("DIRECT_URL")
-}
-
-generator client {
-  provider = "prisma-client-js"
 }
 
 model Farmer {
@@ -25,23 +25,23 @@ model Buyer {
   capacityBags Int
   pricePerBag  Float
   active       Boolean       @default(true)
-  createdAt    DateTime      @default(now())
+  createdAt    DateTime?     @default(now()) @db.Timestamptz(6)
   transactions Transaction[]
 }
 
 model Transaction {
-  id           String    @id @default(cuid())
-  reference    String    @unique
+  id           String   @id @default(cuid())
   farmerId     String
   buyerId      String
-  quantityBags Int
-  pricePerBag  Float
-  totalValue   Float
-  status       TxStatus  @default(PENDING)
+  createdAt    DateTime @default(now())
   mpesaRef     String?
-  createdAt    DateTime  @default(now())
-  farmer       Farmer    @relation(fields: [farmerId], references: [id])
-  buyer        Buyer     @relation(fields: [buyerId], references: [id])
+  pricePerBag  Float
+  quantityBags Int
+  reference    String   @unique
+  totalValue   Float
+  status       TxStatus @default(PENDING)
+  buyer        Buyer    @relation(fields: [buyerId], references: [id])
+  farmer       Farmer   @relation(fields: [farmerId], references: [id])
 }
 
 model UssdSession {
