@@ -8,40 +8,13 @@ datasource db {
   directUrl = env("DIRECT_URL")
 }
 
-model County {
-  id        String   @id @default(cuid())
-  code      String   @unique
-  name      String   @unique
-  wards     Ward[]
-  farmers   Farmer[]
-  buyers    Buyer[]
-  createdAt DateTime @default(now())
-}
-
-model Ward {
-  id        String   @id @default(cuid())
-  name      String
-  countyId  String
-  county    County   @relation(fields: [countyId], references: [id], onDelete: Cascade)
-  farmers   Farmer[]
-  buyers    Buyer[]
-  createdAt DateTime @default(now())
-
-  @@unique([countyId, name])
-}
-
 model Farmer {
   id           String        @id @default(cuid())
   phone        String        @unique
   name         String?
   location     String?
-  countyId     String?
-  wardId       String?
-  village      String?
   createdAt    DateTime      @default(now())
   transactions Transaction[]
-  county       County?       @relation(fields: [countyId], references: [id])
-  ward         Ward?         @relation(fields: [wardId], references: [id])
 }
 
 model Buyer {
@@ -52,13 +25,8 @@ model Buyer {
   capacityBags Int
   pricePerBag  Float
   active       Boolean       @default(true)
-  countyId     String?
-  wardId       String?
-  village      String?
   createdAt    DateTime?     @default(now()) @db.Timestamptz(6)
   transactions Transaction[]
-  county       County?       @relation(fields: [countyId], references: [id])
-  ward         Ward?         @relation(fields: [wardId], references: [id])
 }
 
 model Transaction {
