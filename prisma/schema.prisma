@@ -40,6 +40,8 @@ model Farmer {
   village      String?
   createdAt    DateTime      @default(now())
   transactions Transaction[]
+  ratings      Rating[]
+  disputes     Dispute[]
   county       County?       @relation(fields: [countyId], references: [id])
   ward         Ward?         @relation(fields: [wardId], references: [id])
 }
@@ -57,23 +59,27 @@ model Buyer {
   village      String?
   createdAt    DateTime?     @default(now()) @db.Timestamptz(6)
   transactions Transaction[]
+  ratings      Rating[]
+  disputes     Dispute[]
   county       County?       @relation(fields: [countyId], references: [id])
   ward         Ward?         @relation(fields: [wardId], references: [id])
 }
 
 model Transaction {
-  id           String   @id @default(cuid())
+  id           String    @id @default(cuid())
   farmerId     String
   buyerId      String
-  createdAt    DateTime @default(now())
+  createdAt    DateTime  @default(now())
   mpesaRef     String?
   pricePerBag  Float
   quantityBags Int
-  reference    String   @unique
+  reference    String    @unique
   totalValue   Float
-  status       TxStatus @default(PENDING)
-  buyer        Buyer    @relation(fields: [buyerId], references: [id])
-  farmer       Farmer   @relation(fields: [farmerId], references: [id])
+  status       TxStatus  @default(PENDING)
+  buyer        Buyer     @relation(fields: [buyerId], references: [id])
+  farmer       Farmer    @relation(fields: [farmerId], references: [id])
+  ratings      Rating[]
+  dispute      Dispute?
 }
 
 model UssdSession {
@@ -85,6 +91,17 @@ model UssdSession {
   updatedAt DateTime @updatedAt
 }
 
+model OtpCode {
+  id        String   @id @default(cuid())
+  phone     String
+  code      String
+  expiresAt DateTime
+  used      Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@index([phone])
+}
+
 enum TxStatus {
   PENDING
   CONFIRMED
@@ -93,13 +110,62 @@ enum TxStatus {
   DISPUTED
 }
 
-model OtpCode {
-  id          String   @id @default(cuid())
-  phone       String
-  code        String
-  expiresAt   DateTime
-  used        Boolean  @default(false)
-  createdAt   DateTime @default(now())
+enum RaterType {
+  FARMER
+  BUYER
+}
 
-  @@index([phone])
+enum DisputeReason {
+  QUANTITY_MISMATCH
+  QUALITY_REJECTED
+  PAYMENT_DELAY
+  BUYER_UNRESPONSIVE
+  PRICE_CHANGED
+  OTHER
+}
+
+enum DisputeStatus {
+  OPEN
+  UNDER_REVIEW
+  RESOLVED
+  CLOSED
+}
+
+model Rating {
+  id            String      @id @default(cuid())
+  transactionId String
+  farmerId      String
+  buyerId       String
+  raterType     RaterType
+  score         Int
+  comment       String?
+  createdAt     DateTime    @default(now())
+  transaction   Transaction @relation(fields: [transactionId], references: [id])
+  farmer        Farmer      @relation(fields: [farmerId], references: [id])
+  buyer         Buyer       @relation(fields: [buyerId], references: [id])
+
+  @@unique([transactionId, raterType])
+  @@index([buyerId])
+  @@index([farmerId])
+}
+
+model Dispute {
+  id            String        @id @default(cuid())
+  transactionId String        @unique
+  farmerId      String
+  buyerId       String
+  reason        DisputeReason
+  description   String?
+  status        DisputeStatus @default(OPEN)
+  adminNote     String?
+  resolvedAt    DateTime?
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+  transaction   Transaction   @relation(fields: [transactionId], references: [id])
+  farmer        Farmer        @relation(fields: [farmerId], references: [id])
+  buyer         Buyer         @relation(fields: [buyerId], references: [id])
+
+  @@index([status])
+  @@index([farmerId])
+  @@index([buyerId])
 }

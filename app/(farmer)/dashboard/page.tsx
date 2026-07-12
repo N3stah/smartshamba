@@ -2,6 +2,7 @@ import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { prisma } from '@/lib/prisma';
 import Link from 'next/link';
+import RateBuyerButton from './RateBuyerButton';
 
 async function getFarmerData(phone: string) {
   const farmer = await prisma.farmer.findUnique({
@@ -14,7 +15,10 @@ async function getFarmerData(phone: string) {
     where: { farmerId: farmer.id },
     orderBy: { createdAt: 'desc' },
     take: 5,
-    include: { buyer: true },
+    include: {
+      buyer: true,
+      ratings: { where: { raterType: 'FARMER' } },
+    },
   });
 
   const stats = await prisma.transaction.aggregate({
@@ -40,7 +44,7 @@ const STATUS_STYLES: Record<string, string> = {
 
 export default async function FarmerDashboard() {
   const cookieStore = await cookies();
-  const phone       = cookieStore.get('smartshamba_farmer')?.value;
+  const phone = cookieStore.get('smartshamba_farmer')?.value;
   if (!phone) redirect('/dashboard/login');
 
   const data = await getFarmerData(phone);
@@ -104,6 +108,13 @@ export default async function FarmerDashboard() {
                   <p className="font-mono text-xs text-gray-600">{tx.reference}</p>
                   <p className="text-sm font-medium text-gray-900 mt-0.5">{tx.buyer.name}</p>
                   <p className="text-xs text-gray-400">{tx.quantityBags} bags · KSh {tx.totalValue.toLocaleString()}</p>
+                  {tx.status === 'SETTLED' && (
+                    <RateBuyerButton
+                      transactionId={tx.id}
+                      buyerName={tx.buyer.name}
+                      existingScore={tx.ratings[0]?.score ?? null}
+                    />
+                  )}
                 </div>
                 <div className="text-right shrink-0">
                   <span className={`inline-flex px-2.5 py-1 rounded-full text-xs font-medium ${STATUS_STYLES[tx.status] ?? 'bg-gray-100 text-gray-600'}`}>
@@ -121,3 +132,4 @@ export default async function FarmerDashboard() {
     </div>
   );
 }
+

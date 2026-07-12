@@ -23,6 +23,9 @@ export default function FarmerLayout({ children }: { children: React.ReactNode }
           <Link href="/dashboard/transactions" className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-green-100 hover:text-white hover:bg-green-700 transition-colors">
             <span>🔄</span><span>My Transactions</span>
           </Link>
+          <Link href="/dashboard/disputes" className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-green-100 hover:text-white hover:bg-green-700 transition-colors">
+            <span>⚠️</span><span>My Disputes</span>
+          </Link>
           <Link href="/buyer" className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-green-100 hover:text-white hover:bg-green-700 transition-colors">
             <span>🏢</span><span>Buyer Directory</span>
           </Link>
@@ -31,19 +34,15 @@ export default function FarmerLayout({ children }: { children: React.ReactNode }
         <div className="p-4 border-t border-green-700">
           <p className="text-xs text-green-300 mb-3">Dial *384*53374# to sell maize</p>
           <form action="/api/auth/logout" method="POST">
-            <button
-              type="submit"
-              className="w-full text-left text-sm text-green-200 hover:text-white hover:bg-green-700 transition-colors px-3 py-2 rounded-lg flex items-center gap-2"
-            >
+            <button type="submit"
+              className="w-full text-left text-sm text-green-200 hover:text-white hover:bg-green-700 transition-colors px-3 py-2 rounded-lg flex items-center gap-2">
               <span>←</span><span>Sign out</span>
             </button>
           </form>
         </div>
       </aside>
 
-      <main className="flex-1 ml-64 p-8 min-h-screen">
-        {children}
-      </main>
+      <main className="flex-1 ml-64 p-8 min-h-screen">{children}</main>
     </div>
   );
 }
