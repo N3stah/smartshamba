@@ -1,7 +1,12 @@
-import { notFound, redirect } from "next/navigation";
 import { cookies } from "next/headers";
 import Link from "next/link";
+import { notFound, redirect } from "next/navigation";
+
 import { prisma } from "@/lib/prisma";
+
+import JoinGroupButton from "@/components/groups/JoinGroupButton";
+import UpdatePledgeButton from "@/components/groups/UpdatePledgeButton";
+import ConfirmGroupSaleButton from "@/components/groups/ConfirmGroupSaleButton";
 
 type PageProps = {
   params: Promise<{
@@ -9,7 +14,9 @@ type PageProps = {
   }>;
 };
 
-export default async function GroupDetailsPage({ params }: PageProps) {
+export default async function GroupDetailsPage({
+  params,
+}: PageProps) {
   const { id } = await params;
 
   const cookieStore = await cookies();
@@ -17,6 +24,16 @@ export default async function GroupDetailsPage({ params }: PageProps) {
 
   if (!phone) {
     redirect(`/dashboard/login?from=/dashboard/groups/${id}`);
+  }
+
+  const farmer = await prisma.farmer.findUnique({
+    where: {
+      phone,
+    },
+  });
+
+  if (!farmer) {
+    redirect("/dashboard/login");
   }
 
   const group = await prisma.farmerGroup.findUnique({
@@ -70,8 +87,17 @@ export default async function GroupDetailsPage({ params }: PageProps) {
     0
   );
 
+  const currentMember = group.members.find(
+    (member) => member.farmer.id === farmer.id
+  );
+
+  const currentPledge = currentMember?.bagsPledged ?? 0;
+
+  const isMember = Boolean(currentMember);
+
   return (
     <div className="space-y-8">
+      {/* Header */}
       <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
         <div className="flex items-start justify-between">
           <div>
@@ -79,8 +105,15 @@ export default async function GroupDetailsPage({ params }: PageProps) {
               {group.name}
             </h1>
 
-            <p className="text-gray-500 mt-2">
+            <p className="mt-2 text-gray-500">
               {group.description ?? "No description"}
+            </p>
+
+            <p className="mt-4 text-sm text-gray-500">
+              Created by{" "}
+              <span className="font-medium text-gray-700">
+                {group.createdBy?.name ?? "Unknown"}
+              </span>
             </p>
           </div>
 
@@ -92,7 +125,7 @@ export default async function GroupDetailsPage({ params }: PageProps) {
           </Link>
         </div>
 
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mt-8">
+        <div className="mt-8 grid grid-cols-2 gap-6 md:grid-cols-4">
           <div>
             <p className="text-xs uppercase text-gray-500">
               Members
@@ -135,8 +168,9 @@ export default async function GroupDetailsPage({ params }: PageProps) {
         </div>
       </div>
 
+      {/* Members */}
       <div className="bg-white rounded-xl border border-gray-200 shadow-sm">
-        <div className="px-6 py-4 border-b">
+        <div className="border-b px-6 py-4">
           <h2 className="font-semibold text-gray-900">
             Group Members
           </h2>
@@ -172,8 +206,9 @@ export default async function GroupDetailsPage({ params }: PageProps) {
         )}
       </div>
 
+      {/* Transactions */}
       <div className="bg-white rounded-xl border border-gray-200 shadow-sm">
-        <div className="px-6 py-4 border-b">
+        <div className="border-b px-6 py-4">
           <h2 className="font-semibold text-gray-900">
             Recent Group Transactions
           </h2>
@@ -215,27 +250,24 @@ export default async function GroupDetailsPage({ params }: PageProps) {
         )}
       </div>
 
+      {/* Actions */}
       <div className="flex flex-wrap gap-4">
-        <button
-          className="rounded-lg bg-green-700 px-5 py-3 text-white hover:bg-green-600"
-          disabled
-        >
-          Join Group (Coming Soon)
-        </button>
+        {!isMember && (
+          <JoinGroupButton groupId={group.id} />
+        )}
 
-        <button
-          className="rounded-lg bg-blue-700 px-5 py-3 text-white hover:bg-blue-600"
-          disabled
-        >
-          Update Pledge (Coming Soon)
-        </button>
+        {isMember && (
+          <>
+            <UpdatePledgeButton
+              groupId={group.id}
+              currentPledge={currentPledge}
+            />
 
-        <button
-          className="rounded-lg bg-amber-600 px-5 py-3 text-white hover:bg-amber-500"
-          disabled
-        >
-          Confirm Group Sale (Coming Soon)
-        </button>
+            <ConfirmGroupSaleButton
+              groupId={group.id}
+            />
+          </>
+        )}
       </div>
     </div>
   );
