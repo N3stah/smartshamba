@@ -2,13 +2,14 @@ import * as Sentry from '@sentry/nextjs';
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { requireAdminAuth } from '@/lib/auth';
-import { sendOfferConfirmationSms } from '@/lib/sms';
+import { sendNotification } from '@/lib/notifications';
+import { transactionConfirmationTemplate } from '@/lib/notifications/templates';
 
 const MAX_BAGS = 500;
 
 function generateReference(): string {
   const timestamp = Date.now().toString(36).toUpperCase();
-  const random = Math.random().toString(36).substring(2, 6).toUpperCase();
+  const random    = Math.random().toString(36).substring(2, 6).toUpperCase();
   return `SS-${timestamp}-${random}`;
 }
 
@@ -52,28 +53,15 @@ export async function POST(req: NextRequest) {
         { status: 400 }
       );
     }
-
     if (typeof farmerId !== 'string' || farmerId.trim() === '') {
-      return NextResponse.json(
-        { error: 'farmerId must be a non-empty string' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'farmerId must be a non-empty string' }, { status: 400 });
     }
-
     if (typeof buyerId !== 'string' || buyerId.trim() === '') {
-      return NextResponse.json(
-        { error: 'buyerId must be a non-empty string' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'buyerId must be a non-empty string' }, { status: 400 });
     }
-
     if (typeof quantityBags !== 'number' || !Number.isInteger(quantityBags) || quantityBags <= 0) {
-      return NextResponse.json(
-        { error: 'quantityBags must be a positive integer' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'quantityBags must be a positive integer' }, { status: 400 });
     }
-
     if (quantityBags > MAX_BAGS) {
       return NextResponse.json(
         { error: `quantityBags cannot exceed ${MAX_BAGS} bags per transaction` },
@@ -82,22 +70,11 @@ export async function POST(req: NextRequest) {
     }
 
     const farmer = await prisma.farmer.findUnique({ where: { id: farmerId } });
-    if (!farmer) {
-      return NextResponse.json({ error: 'Farmer not found' }, { status: 404 });
-    }
+    if (!farmer) return NextResponse.json({ error: 'Farmer not found' }, { status: 404 });
 
     const buyer = await prisma.buyer.findUnique({ where: { id: buyerId } });
-    if (!buyer) {
-      return NextResponse.json({ error: 'Buyer not found' }, { status: 404 });
-    }
-
-    if (!buyer.active) {
-      return NextResponse.json(
-        { error: 'Buyer is not currently active' },
-        { status: 400 }
-      );
-    }
-
+    if (!buyer)        return NextResponse.json({ error: 'Buyer not found' }, { status: 404 });
+    if (!buyer.active) return NextResponse.json({ error: 'Buyer is not currently active' }, { status: 400 });
     if (quantityBags > buyer.capacityBags) {
       return NextResponse.json(
         { error: `Buyer capacity is ${buyer.capacityBags} bags. Requested: ${quantityBags}` },
@@ -110,32 +87,24 @@ export async function POST(req: NextRequest) {
     const reference   = generateReference();
 
     const transaction = await prisma.transaction.create({
-      data: {
-        reference,
-        farmerId,
-        buyerId,
-        quantityBags,
-        pricePerBag,
-        totalValue,
-        status: 'PENDING',
-      },
+      data: { reference, farmerId, buyerId, quantityBags, pricePerBag, totalValue, status: 'PENDING' },
       include: { farmer: true, buyer: true },
     });
 
-    // Send SMS notification to farmer
     if (farmer.phone) {
-      try {
-        await sendOfferConfirmationSms(
-          farmer.phone,
-          reference,
-          buyer.name,
-          quantityBags,
-          pricePerBag,
-          totalValue
-        );
-      } catch (err) {
-        console.error('[TRANSACTIONS] SMS failed:', err);
-      }
+      const smsBody = transactionConfirmationTemplate({
+        reference,
+        buyerName:    buyer.name,
+        quantityBags,
+        pricePerBag,
+        totalValue,
+      });
+      sendNotification({
+        type:           'TRANSACTION_CONFIRMATION',
+        recipientPhone: farmer.phone,
+        body:           smsBody,
+        farmerId:       farmer.id,
+      }).catch((err) => console.error('[TRANSACTIONS] SMS failed:', err));
     }
 
     return NextResponse.json(transaction, { status: 201 });

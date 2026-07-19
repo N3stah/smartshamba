@@ -1,5 +1,6 @@
 import * as Sentry from '@sentry/nextjs';
-import { sendOfferConfirmationSms } from '@/lib/sms';
+import { sendNotification } from '@/lib/notifications';
+import { transactionConfirmationTemplate } from '@/lib/notifications/templates';
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { con, end, parseText } from '@/lib/africastalking';
@@ -270,15 +271,20 @@ export async function POST(req: NextRequest) {
             });
             console.log('[USSD] Transaction created:', reference);
             try {
-              const smsResult = await sendOfferConfirmationSms(
-                phoneNumber,
-                reference,
-                selectedBuyer.name,
-                quantity,
-                selectedBuyer.pricePerBag,
-                totalValue
-              );
-              console.log('[USSD] SMS result:', JSON.stringify(smsResult));
+              const smsBody = transactionConfirmationTemplate({
+                  reference,
+                  buyerName:    selectedBuyer.name,
+                  quantityBags: quantity,
+                  pricePerBag:  selectedBuyer.pricePerBag,
+                  totalValue,
+                });
+                await sendNotification({
+                  type:           'TRANSACTION_CONFIRMATION',
+                  recipientPhone: phoneNumber,
+                  body:           smsBody,
+                  farmerId:       farmer.id,
+                });
+              console.log('[USSD] SMS sent via notification system');
             } catch (err) {
               console.error('[USSD] SMS failed:', err);
             }

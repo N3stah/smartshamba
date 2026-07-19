@@ -26,6 +26,9 @@ export default function FarmerLayout({ children }: { children: React.ReactNode }
           <Link href="/dashboard/disputes" className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-green-100 hover:text-white hover:bg-green-700 transition-colors">
             <span>⚠️</span><span>My Disputes</span>
           </Link>
+          <Link href="/dashboard/notifications" className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-green-100 hover:text-white hover:bg-green-700 transition-colors">
+            <span>🔔</span><span>Notifications</span>
+          </Link>
           <Link href="/buyer" className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-green-100 hover:text-white hover:bg-green-700 transition-colors">
             <span>🏢</span><span>Buyer Directory</span>
           </Link>

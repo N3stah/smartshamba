@@ -24,6 +24,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   <NavLink href="/admin/transactions" label="Transactions" icon="🔄" />
   <NavLink href="/admin/buyers" label="Buyers" icon="🏢" />
   <NavLink href="/admin/farmers" label="Farmers" icon="👨‍🌾" />
+  <NavLink href="/admin/notifications" label="Notifications" icon="🔔" />
+  <NavLink href="/admin/advisories"    label="Advisories"    icon="📢" />
 
   <form action="/api/admin/auth/logout" method="POST" className="pt-4">
     <button

@@ -18,7 +18,7 @@ async function getBuyers(): Promise<BuyerWithRating[]> {
 }
 
 function StarRating({ score, total }: { score: number | null; total: number }) {
-  if (total === 0 || score === null) {
+  if (!score || total === 0) {
     return <span className="text-xs text-gray-400">No ratings yet</span>;
   }
   return (

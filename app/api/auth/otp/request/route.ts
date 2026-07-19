@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { createOtp } from '@/lib/otp';
-import { sendSms } from '@/lib/sms';
+import { sendNotification } from '@/lib/notifications';
+import { otpTemplate } from '@/lib/notifications/templates';
 import { checkRateLimit } from '@/lib/rateLimit';
 
 export async function POST(req: NextRequest) {
@@ -20,7 +21,6 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Rate limit per phone
     const rateCheck = checkRateLimit(`otp:${normalized}`);
     if (!rateCheck.allowed) {
       return NextResponse.json(
@@ -29,7 +29,6 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Check farmer exists
     const farmer = await prisma.farmer.findUnique({ where: { phone: normalized } });
     if (!farmer) {
       return NextResponse.json(
@@ -43,12 +42,19 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error }, { status: 429 });
     }
 
-    const message = `SmartShamba: Your login code is ${code}. Valid for 5 minutes. Do not share this code.`;
-    await sendSms(normalized, message).catch((err) => {
+    const body = otpTemplate({ code: code!, expiresMinutes: 5 });
+
+    await sendNotification({
+      type:           'OTP',
+      recipientPhone: normalized,
+      body,
+      farmerId:       farmer.id,
+    }).catch((err) => {
       console.error('[OTP] SMS failed:', err);
     });
 
     console.log('[OTP] Code sent to:', normalized);
+    if (process.env.LOG_OTP_IN_DEV === 'true') console.log('[OTP] DEV CODE:', code);
     return NextResponse.json({ success: true, message: 'OTP sent to your phone.' });
   } catch (error) {
     console.error('[OTP] Request error:', (error as Error).message);

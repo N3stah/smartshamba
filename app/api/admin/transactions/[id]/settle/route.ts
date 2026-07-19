@@ -2,7 +2,8 @@ import * as Sentry from '@sentry/nextjs';
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { requireAdminAuth } from '@/lib/auth';
-import { sendSms } from '@/lib/sms';
+import { sendNotification } from '@/lib/notifications';
+import { settlementTemplate } from '@/lib/notifications/templates';
 
 export async function PUT(
   req: NextRequest,
@@ -33,18 +34,12 @@ export async function PUT(
     }
 
     if (transaction.status === 'SETTLED') {
-      return NextResponse.json(
-        { error: 'Transaction already settled' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'Transaction already settled' }, { status: 400 });
     }
 
     const updated = await prisma.transaction.update({
       where: { id },
-      data: {
-        status: 'SETTLED',
-        mpesaRef: mpesaRef.trim(),
-      },
+      data: { status: 'SETTLED', mpesaRef: mpesaRef.trim() },
       include: { farmer: true, buyer: true },
     });
 
@@ -52,17 +47,21 @@ export async function PUT(
 
     let smsResult = null;
     if (notifyFarmer && updated.farmer?.phone) {
-      const message = `SmartShamba: Payment confirmed!\nRef: ${updated.reference}\nAmount: KSh ${updated.totalValue.toLocaleString()}\nBuyer: ${updated.buyer.name}\nTransaction settled (manual confirmation).`;
-      smsResult = await sendSms(updated.farmer.phone, message).catch((err) => {
-        console.error('[ADMIN] SMS failed:', err);
-        return { success: false, error: (err as Error).message };
+      const smsBody = settlementTemplate({
+        reference:  updated.reference,
+        buyerName:  updated.buyer.name,
+        totalValue: updated.totalValue,
+        mpesaRef:   mpesaRef.trim(),
+      });
+      smsResult = await sendNotification({
+        type:           'SETTLEMENT',
+        recipientPhone: updated.farmer.phone,
+        body:           smsBody,
+        farmerId:       updated.farmer.id,
       });
     }
 
-    return NextResponse.json({
-      transaction: updated,
-      smsResult,
-    });
+    return NextResponse.json({ transaction: updated, smsResult });
   } catch (error) {
     console.error('[ADMIN] Manual settlement error:', (error as Error).message);
     Sentry.captureException(error);
