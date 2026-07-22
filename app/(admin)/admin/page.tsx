@@ -1,10 +1,28 @@
 import Link from 'next/link';
 
 interface Stats {
-  farmers: number;
-  buyers: number;
-  transactions: { total: number; pending: number; confirmed: number };
-  volume: { totalBags: number; totalValue: number };
+  totalFarmers: number;
+  totalBuyers: number;
+  totalTransactions: number;
+  settledTransactions: number;
+  pendingTransactions: number;
+  disputedTransactions: number;
+  activeFarmersLast30Days: number;
+  groupActivity: {
+    totalGroupTransactions: number;
+    activeGroupsLast30Days: number;
+  };
+  averageBagsPerTransaction: number;
+  completionRate: number;
+  disputeRate: number;
+  recentTransactions: Array<{
+    reference: string;
+    status: string;
+    quantityBags: number;
+    totalValue: number;
+    farmer: { name: string | null; phone: string };
+    buyer: { name: string };
+  }>;
 }
 
 async function getStats(): Promise<Stats> {
@@ -41,10 +59,6 @@ function StatCard({
 
 export default async function AdminDashboard() {
   const stats = await getStats();
-  const settled = stats.transactions.total - stats.transactions.pending - stats.transactions.confirmed;
-  const successRate = stats.transactions.total > 0
-    ? Math.round((settled / stats.transactions.total) * 100)
-    : 0;
 
   return (
     <div>
@@ -56,26 +70,44 @@ export default async function AdminDashboard() {
 
       {/* KPI Row 1 */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
-        <StatCard label="Registered Farmers" value={stats.farmers} />
-        <StatCard label="Verified Buyers" value={stats.buyers} />
-        <StatCard label="Total Transactions" value={stats.transactions.total} />
+        <StatCard label="Registered Farmers" value={stats.totalFarmers} />
+        <StatCard label="Verified Buyers" value={stats.totalBuyers} />
+        <StatCard label="Total Transactions" value={stats.totalTransactions} />
         <StatCard
-          label="Total Volume"
-          value={`KSh ${stats.volume.totalValue.toLocaleString()}`}
-          sub={`${stats.volume.totalBags} bags`}
+          label="Avg Bags / Transaction"
+          value={stats.averageBagsPerTransaction.toFixed(1)}
           highlight
         />
       </div>
 
       {/* KPI Row 2 */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-        <StatCard label="Pending" value={stats.transactions.pending} sub="Awaiting confirmation" />
-        <StatCard label="Confirmed" value={stats.transactions.confirmed} sub="Buyer accepted" />
-        <StatCard label="Settled" value={settled} sub="Payment received" />
+        <StatCard label="Pending" value={stats.pendingTransactions} sub="Awaiting confirmation" />
+        <StatCard label="Disputed" value={stats.disputedTransactions} sub="Requires resolution" />
+        <StatCard label="Settled" value={stats.settledTransactions} sub="Payment received" />
         <StatCard
-          label="Settlement Rate"
-          value={`${successRate}%`}
-          highlight={successRate > 50}
+          label="Completion Rate"
+          value={`${stats.completionRate}%`}
+          highlight={stats.completionRate > 50}
+        />
+      </div>
+
+      {/* Phase 11: Internal Analytics Row */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-8">
+        <StatCard 
+          label="Active Farmers (30d)" 
+          value={stats.activeFarmersLast30Days} 
+          sub="Users who transacted recently" 
+        />
+        <StatCard 
+          label="Group Activity" 
+          value={stats.groupActivity.totalGroupTransactions} 
+          sub={`${stats.groupActivity.activeGroupsLast30Days} active groups`} 
+        />
+        <StatCard 
+          label="Dispute Rate" 
+          value={`${stats.disputeRate}%`} 
+          sub="Health indicator" 
         />
       </div>
 
@@ -119,10 +151,10 @@ export default async function AdminDashboard() {
             icon: '🏢',
           },
           {
-            href: '/admin/farmers',
-            label: 'View Farmers',
-            desc: 'Browse registered pilot farmers',
-            icon: '👨‍🌾',
+            href: '/admin/audit-logs',
+            label: 'Audit Logs',
+            desc: 'Track all admin actions and system changes',
+            icon: '🛡️',
           },
         ].map((link) => (
           <Link

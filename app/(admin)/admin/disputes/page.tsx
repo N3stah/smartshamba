@@ -9,7 +9,7 @@ interface Dispute {
   status: DisputeStatus;
   reason: string;
   description?: string | null;
-  adminNote?: string | null;
+  adminNotes?: string | null; // Mapped from adminNote in DB
   createdAt: string;
   transaction: {
     reference: string;
@@ -48,68 +48,97 @@ export default function AdminDisputesPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState<string | null>(null);
+  const [noteInput, setNoteInput] = useState<Record<string, string>>({});
 
   const [refreshKey, setRefreshKey] = useState(0);
 
-useEffect(() => {
-  let cancelled = false;
+  useEffect(() => {
+    let cancelled = false;
 
-  async function load() {
-    setLoading(true);
-    setError(null);
-    try {
-      const url =
-        filter === 'ALL'
-          ? '/api/admin/disputes'
-          : `/api/admin/disputes?status=${filter}`;
-      const res = await fetch(url);
-      if (!res.ok) throw new Error('Failed to fetch disputes');
-      const data: Dispute[] = await res.json();
-      if (!cancelled) setDisputes(data);
-    } catch (err) {
-      console.error('[DISPUTES]', err);
-      if (!cancelled) setError('Failed to load disputes. Try refreshing.');
-    } finally {
-      if (!cancelled) setLoading(false);
-    }
-  }
-
-  load();
-  return () => {
-    cancelled = true;
-  };
-}, [filter, refreshKey]);
-
-const handleAction = useCallback(
-  async (id: string, newStatus: DisputeStatus) => {
-    const adminNote =
-      prompt('Optional admin note (leave empty for none):') ?? '';
-    setSaving(id);
-    try {
-      const res = await fetch(`/api/admin/disputes/${id}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          status: newStatus,
-          adminNote: adminNote || undefined,
-        }),
-      });
-      if (!res.ok) {
-        const err: { error?: string } = await res.json();
-        alert(err.error ?? 'Failed to update dispute');
-        return;
+    async function load() {
+      setLoading(true);
+      setError(null);
+      try {
+        const url =
+          filter === 'ALL'
+            ? '/api/admin/disputes'
+            : `/api/admin/disputes?status=${filter}`;
+        const res = await fetch(url);
+        if (!res.ok) throw new Error('Failed to fetch disputes');
+        const data: Dispute[] = await res.json();
+        if (!cancelled) setDisputes(data);
+      } catch (err) {
+        console.error('[DISPUTES]', err);
+        if (!cancelled) setError('Failed to load disputes. Try refreshing.');
+      } finally {
+        if (!cancelled) setLoading(false);
       }
-      setRefreshKey((k) => k + 1); // triggers useEffect re-run
-      setExpandedId(null);
-    } catch (err) {
-      console.error('[DISPUTES]', err);
-      alert('Network error. Please try again.');
-    } finally {
-      setSaving(null);
     }
-  },
-  [] // no deps needed — only touches setters and refreshKey setter
-);
+
+    load();
+    return () => {
+      cancelled = true;
+    };
+  }, [filter, refreshKey]);
+
+  const handleAction = useCallback(
+    async (id: string, newStatus: DisputeStatus) => {
+      setSaving(id);
+      try {
+        const res = await fetch(`/api/admin/disputes/${id}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            status: newStatus,
+            adminNote: noteInput[id] || undefined, // Use inline note if present
+          }),
+        });
+        if (!res.ok) {
+          const err: { error?: string } = await res.json();
+          alert(err.error ?? 'Failed to update dispute');
+          return;
+        }
+        setRefreshKey((k) => k + 1);
+        setExpandedId(null);
+        setNoteInput(prev => { const next = {...prev}; delete next[id]; return next; });
+      } catch (err) {
+        console.error('[DISPUTES]', err);
+        alert('Network error. Please try again.');
+      } finally {
+        setSaving(null);
+      }
+    },
+    [noteInput]
+  );
+
+  const handleAddNote = useCallback(
+    async (id: string) => {
+      const notes = noteInput[id];
+      if (!notes || notes.trim().length === 0) return;
+      
+      setSaving(`note-${id}`);
+      try {
+        const res = await fetch(`/api/admin/disputes/${id}/notes`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ notes }),
+        });
+        if (!res.ok) {
+          const err: { error?: string } = await res.json();
+          alert(err.error ?? 'Failed to add note');
+          return;
+        }
+        setRefreshKey((k) => k + 1);
+        setNoteInput(prev => { const next = {...prev}; delete next[id]; return next; });
+      } catch (err) {
+        console.error('[DISPUTES]', err);
+        alert('Network error. Please try again.');
+      } finally {
+        setSaving(null);
+      }
+    },
+    [noteInput]
+  );
 
   return (
     <main className="min-h-screen bg-gray-50 p-6">
@@ -283,9 +312,28 @@ const handleAction = useCallback(
                             {d.description ?? '—'}
                           </div>
 
-                          <div className="col-span-2">
-                            <strong>Admin Note:</strong>{' '}
-                            {d.adminNote ?? '—'}
+                          <div className="col-span-2 mt-2 border-t pt-4">
+                            <strong>Admin Notes:</strong>
+                            <p className="mt-1 mb-2 p-2 bg-white rounded text-gray-700 min-h-[40px] border">
+                              {d.adminNotes ?? 'No notes recorded yet.'}
+                            </p>
+                            
+                            <div className="flex gap-2">
+                              <textarea
+                                className="flex-1 p-2 border rounded text-xs focus:ring-1 focus:ring-green-500 outline-none"
+                                placeholder="Add investigation notes here..."
+                                value={noteInput[d.id] || ''}
+                                onChange={(e) => setNoteInput(prev => ({ ...prev, [d.id]: e.target.value }))}
+                              />
+                              <button
+                                disabled={saving === `note-${d.id}` || !noteInput[d.id]?.trim()}
+                                onClick={() => handleAddNote(d.id)}
+                                className="bg-gray-800 text-white px-3 py-1 rounded text-xs hover:bg-gray-700 disabled:opacity-50"
+                              >
+                                {saving === `note-${d.id}` ? 'Saving...' : 'Save Note'}
+                              </button>
+                            </div>
+                            <p className="text-[10px] text-gray-500 mt-1">Note: Adding a note does not change the dispute status.</p>
                           </div>
                         </div>
                       </td>

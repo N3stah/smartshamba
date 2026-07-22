@@ -34,7 +34,8 @@ model Ward {
 }
 
 model Farmer {
-  id        String   @id @default(cuid())
+  id          String   @id @default(cuid())
+  nationalId  String?  // KYC-lite: 8-digit Kenya National ID
   phone     String   @unique
   name      String?
   location  String?
@@ -238,6 +239,7 @@ model Rating {
 }
 
 model Dispute {
+  adminNotes      String?  // Internal notes for escalated disputes
   id            String        @id @default(cuid())
   transactionId String        @unique
   farmerId      String
@@ -342,4 +344,20 @@ model QualityAssessment {
   createdAt      DateTime    @default(now())
 
   transaction    Transaction @relation(fields: [transactionId], references: [id])
+}
+
+model AuditLog {
+  id         String   @id @default(cuid())
+  action     String   // e.g. "SETTLE_TRANSACTION", "UPDATE_BUYER", "RESOLVE_DISPUTE"
+  actorType  String   // "ADMIN" | "SYSTEM"
+  actorId    String?  // admin identifier (phone or email)
+  entityType String   // "Transaction" | "Buyer" | "Dispute" etc.
+  entityId   String
+  before     Json?
+  after      Json?
+  createdAt  DateTime @default(now())
+  
+  @@index([entityType, entityId])
+  @@index([actorType, actorId])
+  @@index([createdAt])
 }

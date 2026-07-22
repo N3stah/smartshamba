@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation';
 import { prisma } from '@/lib/prisma';
 import Link from 'next/link';
 import RateBuyerButton from './RateBuyerButton';
+import SyncPoller from './SyncPoller';
 
 async function getFarmerData(phone: string) {
   const farmer = await prisma.farmer.findUnique({
@@ -54,6 +55,8 @@ export default async function FarmerDashboard() {
 
   return (
     <div>
+      <SyncPoller />
+      
       <div className="mb-8">
         <h1 className="text-2xl font-bold text-gray-900">
           Welcome, {farmer.name ?? 'Farmer'} 👋
@@ -86,25 +89,23 @@ export default async function FarmerDashboard() {
 
       <div className="bg-green-800 text-white rounded-xl p-6 mb-8">
         <div className="bg-white rounded-xl border border-green-200 shadow-sm p-6 mb-8">
-  <div className="flex items-center justify-between">
-    <div>
-      <h2 className="text-lg font-semibold text-gray-900">
-        Farmer Groups
-      </h2>
-
-      <p className="text-sm text-gray-500 mt-1">
-        Join a farmer group, combine harvests with nearby farmers and negotiate better prices with buyers.
-      </p>
-    </div>
-
-    <Link
-      href="/dashboard/groups"
-      className="bg-green-700 hover:bg-green-600 text-white px-5 py-3 rounded-lg font-medium transition-colors"
-    >
-      View Groups →
-    </Link>
-  </div>
-</div>
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="text-lg font-semibold text-gray-900">
+                Farmer Groups
+              </h2>
+              <p className="text-sm text-gray-500 mt-1">
+                Join a farmer group, combine harvests with nearby farmers and negotiate better prices with buyers.
+              </p>
+            </div>
+            <Link
+              href="/dashboard/groups"
+              className="bg-green-700 hover:bg-green-600 text-white px-5 py-3 rounded-lg font-medium transition-colors"
+            >
+              View Groups →
+            </Link>
+          </div>
+        </div>
         <p className="font-semibold">Ready to sell maize?</p>
         <p className="text-green-200 text-sm mt-1">
           Dial <span className="font-mono font-bold">*384*53374#</span> from your phone to view buyer offers and confirm a sale.
@@ -123,7 +124,7 @@ export default async function FarmerDashboard() {
             </div>
           ) : (
             transactions.map((tx) => (
-              <div key={tx.id} className="px-6 py-4 flex items-center justify-between gap-4">
+              <div key={tx.id} className="px-6 py-4 flex items-center justify-betweengap-4">
                 <div>
                   <p className="font-mono text-xs text-gray-600">{tx.reference}</p>
                   <p className="text-sm font-medium text-gray-900 mt-0.5">{tx.buyer.name}</p>
@@ -152,4 +153,3 @@ export default async function FarmerDashboard() {
     </div>
   );
 }
-
