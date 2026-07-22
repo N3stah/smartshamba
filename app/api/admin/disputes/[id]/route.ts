@@ -3,6 +3,7 @@ import { prisma } from '@/lib/prisma';
 import { requireAdminAuth } from '@/lib/auth';
 import * as Sentry from '@sentry/nextjs';
 import { DisputeStatus, Prisma } from '@prisma/client';
+import { recordAuditLog } from '@/lib/auditLog';
 
 export async function PATCH(
   req: NextRequest,
@@ -29,7 +30,7 @@ export async function PATCH(
 
     const dispute = await prisma.dispute.findUnique({
       where: { id },
-      select: { transactionId: true, status: true },
+      select: { transactionId: true, status: true, adminNote: true },
     });
 
     if (!dispute) {
@@ -60,6 +61,16 @@ export async function PATCH(
     }
 
     await prisma.$transaction(ops);
+
+    await recordAuditLog({
+      action: 'UPDATE_DISPUTE_STATUS',
+      actorType: 'ADMIN',
+      actorId: req.headers.get('x-admin-key') || 'session-admin',
+      entityType: 'Dispute',
+      entityId: id,
+      before: { status: dispute.status, adminNote: dispute.adminNote },
+      after: { status, adminNote: adminNote ?? null },
+    });
 
     console.log('[DISPUTES] Updated dispute', id, 'to', status);
     return NextResponse.json({ success: true });

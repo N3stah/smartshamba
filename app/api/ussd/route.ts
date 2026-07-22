@@ -5,6 +5,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { con, end, parseText } from '@/lib/africastalking';
 import { checkRateLimit } from '@/lib/rateLimit';
+import { isValidKenyanNationalId } from '@/lib/kyc';
 
 const PILOT_COUNTIES = [
   'Trans Nzoia',
@@ -163,7 +164,7 @@ export async function POST(req: NextRequest) {
             response = end('Invalid selection. Please dial *384*53374# to try again.');
           } else {
             response = end(
-              `Ref: ${selectedTx.reference}\nBuyer: ${selectedTx.buyer.name}\nBags: ${selectedTx.quantityBags}\nPrice: KSh ${selectedTx.pricePerBag}/bag\nTotal: KSh ${selectedTx.totalValue.toLocaleString()}\nStatus: ${selectedTx.status}`
+              `Ref: ${selectedTx.reference}\nBuyer: ${selectedTx.buyer.name}\nBags: ${selectedTx.quantityBags}\nPrice: KSh ${selectedTx.pricePerBag}/bag\nTotal: KSh ${selectedTx.totalValue.toLocaleString()}\nStatus:${selectedTx.status}`
             );
           }
 
@@ -232,7 +233,7 @@ export async function POST(req: NextRequest) {
         const reasonNum   = parseInt(steps[2]);
         const reasonLabel = DISPUTE_REASON_LABELS[reasonNum];
         if (!selectedTx || !reasonLabel) {
-          response = end('Invalid selection. Please dial *384*53374# to try again.');
+          response = end('Invalid selection. Please dial *384*53374# totry again.');
         } else {
           response = con(
             `Confirm report:\n${selectedTx.buyer.name}\nIssue: ${reasonLabel}\n\n1. Confirm\n2. Cancel`
@@ -318,7 +319,7 @@ export async function POST(req: NextRequest) {
             | undefined;
 
           if (!selectedTx || !reasonEnum) {
-            response = end('Invalid session. Please dial *384*53374# to try again.');
+            response = end('Invalid session. Please dial *384*53374# totry again.');
           } else {
             await prisma.$transaction([
               prisma.dispute.create({
@@ -350,21 +351,34 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    // ── UNREGISTERED FARMER PATH ────────────────────────────────────────────
+    // ── UNREGISTERED FARMER PATH (KYC-LITE ADDED) ───────────────────────────
 
     else {
 
+      // STEP 0 — Name
       if (step === 0) {
         response = con('Welcome to SmartShamba\nTrans Nzoia, Rift Valley\n& Western Kenya\n\nEnter your full name:');
       }
 
+      // STEP 1 — National ID (KYC-lite)
       else if (step === 1) {
-        const countyList = PILOT_COUNTIES.map((c, i) => `${i + 1}. ${c}`).join('\n');
-        response = con(`Select your county:\n${countyList}\n8. Other county`);
+        response = con('Enter your National ID\n(8 digits):');
       }
 
+      // STEP 2 — County Selection
       else if (step === 2) {
-        const countyChoice = parseInt(steps[1]);
+        const nationalId = steps[1];
+        if (!isValidKenyanNationalId(nationalId)) {
+          response = end('Invalid ID. Must be 8 digits.\nPlease dial *384*53374# to try again.');
+        } else {
+          const countyList = PILOT_COUNTIES.map((c, i) => `${i + 1}. ${c}`).join('\n');
+          response = con(`Select your county:\n${countyList}\n8. Other county`);
+        }
+      }
+
+      // STEP 3 — Ward Selection / Other County input
+      else if (step === 3) {
+        const countyChoice = parseInt(steps[2]);
         if (countyChoice === 8) {
           response = con('Enter your location\n(county, town or village):');
         } else if (countyChoice >= 1 && countyChoice <= PILOT_COUNTIES.length) {
@@ -382,29 +396,31 @@ export async function POST(req: NextRequest) {
             response = con(`Select your ward:\n${wardList}\n9. Other ward`);
           }
         } else {
-          response = end('Invalid selection. Please dial *384*53374# to try again.');
+          response = end('Invalid selection. Please dial *384*53374# totry again.');
         }
       }
 
-      else if (step === 3) {
-        const countyChoice = parseInt(steps[1]);
+      // STEP 4 — Village Input / Save Other County
+      else if (step === 4) {
+        const countyChoice = parseInt(steps[2]);
         if (countyChoice === 8) {
-          const name     = steps[0];
-          const location = steps[2];
-          await prisma.farmer.create({ data: { phone: phoneNumber, name, location } });
+          const name       = steps[0];
+          const nationalId = steps[1];
+          const location   = steps[3];
+          await prisma.farmer.create({ data: { phone: phoneNumber, name, location, nationalId } });
           console.log('[USSD] Registered new farmer (other county):', phoneNumber);
           response = end(
             `Welcome ${name}!\nYou are now registered.\nDial *384*53374# to start selling maize.`
           );
         } else {
-          const wardChoice = parseInt(steps[2]);
+          const wardChoice = parseInt(steps[3]);
           if (wardChoice === 9) {
             response = con('Enter your village or\nnearest town name:');
           } else {
             const countyName = PILOT_COUNTIES[countyChoice - 1];
             const county     = await prisma.county.findUnique({ where: { name: countyName } });
             if (!county) {
-              response = end('Service error. Please dial *384*53374# to try again.');
+              response = end('Service error. Please dial *384*53374# totry again.');
             } else {
               const wards = await prisma.ward.findMany({
                 where: { countyId: county.id },
@@ -422,15 +438,17 @@ export async function POST(req: NextRequest) {
         }
       }
 
-      else if (step === 4) {
-        const countyChoice = parseInt(steps[1]);
+      // STEP 5 — Final Save (Specific Ward & Village)
+      else if (step === 5) {
+        const countyChoice = parseInt(steps[2]);
         const name         = steps[0];
-        const village      = steps[3];
+        const nationalId   = steps[1];
+        const village      = steps[4];
 
         if (countyChoice === 8) {
           response = end('Invalid session. Please dial *384*53374# to try again.');
         } else {
-          const wardChoice = parseInt(steps[2]);
+          const wardChoice = parseInt(steps[3]);
           const countyName = PILOT_COUNTIES[countyChoice - 1];
           const county     = await prisma.county.findUnique({ where: { name: countyName } });
 
@@ -438,7 +456,7 @@ export async function POST(req: NextRequest) {
             response = end('Service error. Please dial *384*53374# to try again.');
           } else if (wardChoice === 9) {
             await prisma.farmer.create({
-              data: { phone: phoneNumber, name, location: village, countyId: county.id, village },
+              data: { phone: phoneNumber, name, location: village, countyId: county.id, village, nationalId },
             });
             console.log('[USSD] Registered new farmer (other ward):', phoneNumber);
             response = end(`Welcome ${name}!\nYou are now registered.\nDial *384*53374# to start selling maize.`);
@@ -456,14 +474,15 @@ export async function POST(req: NextRequest) {
                 data: {
                   phone:    phoneNumber,
                   name,
+                  nationalId,
                   location: `${selectedWard.name}, ${countyName}`,
                   countyId: county.id,
                   wardId:   selectedWard.id,
                   village,
                 },
               });
-              console.log('[USSD] Registered new farmer:', phoneNumber, countyName, selectedWard.name);
-              response = end(`Welcome ${name}!\nCounty: ${countyName}\nWard: ${selectedWard.name}\nYou are now registered.\nDial *384*53374# to start selling maize.`);
+              console.log('[USSD] Registered new farmer:', phoneNumber,countyName, selectedWard.name);
+              response = end(`Welcome ${name}!\nCounty: ${countyName}\nWard: ${selectedWard.name}\nYou are now registered.\nDial *384*53374# tostart selling maize.`);
             }
           }
         }

@@ -4,6 +4,7 @@ import { prisma } from '@/lib/prisma';
 import { requireAdminAuth } from '@/lib/auth';
 import { sendNotification } from '@/lib/notifications';
 import { settlementTemplate } from '@/lib/notifications/templates';
+import { recordAuditLog } from '@/lib/auditLog';
 
 export async function PUT(
   req: NextRequest,
@@ -41,6 +42,16 @@ export async function PUT(
       where: { id },
       data: { status: 'SETTLED', mpesaRef: mpesaRef.trim() },
       include: { farmer: true, buyer: true },
+    });
+
+    await recordAuditLog({
+      action: 'SETTLE_TRANSACTION',
+      actorType: 'ADMIN',
+      actorId: req.headers.get('x-admin-key') || 'session-admin',
+      entityType: 'Transaction',
+      entityId: id,
+      before: { status: transaction.status, mpesaRef: transaction.mpesaRef },
+      after: { status: updated.status, mpesaRef: updated.mpesaRef },
     });
 
     console.log(`[ADMIN] Manually settled transaction ${updated.reference} with ref ${mpesaRef}`);
