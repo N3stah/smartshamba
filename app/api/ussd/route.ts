@@ -5,7 +5,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { con, end, parseText } from '@/lib/africastalking';
 import { checkRateLimit } from '@/lib/rateLimit';
-import { isValidKenyanNationalId } from '@/lib/kyc';
+import { isValidKenyanNationalId, sanitizeNationalId } from '@/lib/kyc';
 import { createOtp } from '@/lib/otp';
 
 const PILOT_COUNTIES = [
@@ -112,7 +112,7 @@ export async function POST(req: NextRequest) {
           if (countyChoice === 8) {
             // Save with "Other County"
             const name = steps[1];
-            const nationalId = steps[2];
+            const nationalId = sanitizeNationalId(steps[2])!;
             const location = steps[4];
             await prisma.farmer.create({ data: { phone: phoneNumber, name, location, nationalId } });
             response = con(`Registration successful!\nWe will send an OTP to login on the website.\n\n1. Send OTP\n2. Skip`);
@@ -145,7 +145,7 @@ export async function POST(req: NextRequest) {
           // steps[5] = Village
           const countyChoice = parseInt(steps[3]);
           const name = steps[1];
-          const nationalId = steps[2];
+          const nationalId = sanitizeNationalId(steps[2])!;
           
           if (countyChoice === 8) {
             response = end('Invalid session. Please dial *384*53374# to try again.');
