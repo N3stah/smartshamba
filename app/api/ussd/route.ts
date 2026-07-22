@@ -53,6 +53,8 @@ export async function POST(req: NextRequest) {
     const step  = steps.length;
 
     const farmer = await prisma.farmer.findUnique({ where: { phone: phoneNumber } });
+    const buyer = await prisma.buyer.findUnique({ where: { phone: phoneNumber } });
+    
     let response: string = '';
 
     // ── STEP 0: MAIN MENU ───────────────────────────────────────────────────
@@ -69,10 +71,12 @@ export async function POST(req: NextRequest) {
           response = con('New Farmer Registration\nEnter your full name:');
         } 
         else if (step === 2) {
+          // steps[0] = '1', steps[1] = Name
           response = con('Enter your National ID\n(8 digits):');
         } 
         else if (step === 3) {
-          if (!isValidKenyanNationalId(steps[1])) {
+          // steps[2] = ID
+          if (!isValidKenyanNationalId(steps[2])) {
             response = end('Invalid ID. Must be 8 digits.\nPlease dial *384*53374# to try again.');
           } else {
             const countyList = PILOT_COUNTIES.map((c, i) => `${i + 1}. ${c}`).join('\n');
@@ -80,7 +84,8 @@ export async function POST(req: NextRequest) {
           }
         } 
         else if (step === 4) {
-          const countyChoice = parseInt(steps[2]);
+          // steps[3] = County Choice
+          const countyChoice = parseInt(steps[3]);
           if (countyChoice === 8) {
             response = con('Enter your location\n(county, town or village):');
           } else if (countyChoice >= 1 && countyChoice <= PILOT_COUNTIES.length) {
@@ -102,15 +107,17 @@ export async function POST(req: NextRequest) {
           }
         } 
         else if (step === 5) {
-          const countyChoice = parseInt(steps[2]);
+          // steps[4] = Ward Choice
+          const countyChoice = parseInt(steps[3]);
           if (countyChoice === 8) {
-            const name = steps[0];
-            const nationalId = steps[1];
-            const location = steps[3];
+            // Save with "Other County"
+            const name = steps[1];
+            const nationalId = steps[2];
+            const location = steps[4];
             await prisma.farmer.create({ data: { phone: phoneNumber, name, location, nationalId } });
             response = con(`Registration successful!\nWe will send an OTP to login on the website.\n\n1. Send OTP\n2. Skip`);
           } else {
-            const wardChoice = parseInt(steps[3]);
+            const wardChoice = parseInt(steps[4]);
             if (wardChoice === 9) {
               response = con('Enter your village or\nnearest town name:');
             } else {
@@ -135,22 +142,22 @@ export async function POST(req: NextRequest) {
           }
         } 
         else if (step === 6) {
-          const countyChoice = parseInt(steps[2]);
-          const name = steps[0];
-          const nationalId = steps[1];
+          // steps[5] = Village
+          const countyChoice = parseInt(steps[3]);
+          const name = steps[1];
+          const nationalId = steps[2];
           
           if (countyChoice === 8) {
-            // Should not reach here for step 6 if they chose 8
             response = end('Invalid session. Please dial *384*53374# to try again.');
           } else {
-            const wardChoice = parseInt(steps[3]);
+            const wardChoice = parseInt(steps[4]);
             const countyName = PILOT_COUNTIES[countyChoice - 1];
             const county = await prisma.county.findUnique({ where: { name: countyName } });
 
             if (!county) {
               response = end('Service error. Please dial *384*53374# to try again.');
             } else if (wardChoice === 9) {
-              const village = steps[4];
+              const village = steps[5];
               await prisma.farmer.create({
                 data: { phone: phoneNumber, name, location: village, countyId: county.id, village, nationalId },
               });
@@ -165,7 +172,7 @@ export async function POST(req: NextRequest) {
               if (!selectedWard) {
                 response = end('Invalid session. Please dial *384*53374# to try again.');
               } else {
-                const village = steps[4];
+                const village = steps[5];
                 await prisma.farmer.create({
                   data: {
                     phone: phoneNumber,
@@ -183,7 +190,8 @@ export async function POST(req: NextRequest) {
           }
         } 
         else if (step === 7) {
-          if (steps[5] === '1') {
+          // steps[6] = OTP Choice
+          if (steps[6] === '1') {
             const { code, error } = await createOtp(phoneNumber);
             if (error) {
               response = end(error);
@@ -208,7 +216,7 @@ export async function POST(req: NextRequest) {
           response = con(`Farmer Menu\n\n1. Sell Maize / Beans\n2. My Groups\n3. Market Prices & Alerts\n4. My Transactions\n5. Quality Check\n6. Website Login\n0. Back`);
         } 
         else if (steps[1] === '1') {
-          // SELL PRODUCE (Maize only for now to match DB)
+          // SELL PRODUCE
           if (step === 2) {
             response = con('Select Bag Type:\n1. 90kg (Standard)\n2. 50kg (Small)\n0. Back');
           } 
@@ -289,19 +297,11 @@ export async function POST(req: NextRequest) {
           }
         } 
         else if (steps[1] === '2') {
-          // MY GROUPS
-          if (step === 2) {
-            response = con('My Groups\n1. Join Village Group\n2. Create New Group\n3. My Active Groups\n0. Back');
-          } else {
-            // Defer complex group logic to web for now to prevent DB bloat
-            response = end('Please visit smartshamba.vercel.app/dashboard/groups to manage your groups easily.');
-          }
+          if (step === 2) response = con('My Groups\n1. Join Village Group\n2. Create New Group\n3. My Active Groups\n0. Back');
+          else response = end('Please visit smartshamba.vercel.app/dashboard/groups to manage your groups easily.');
         } 
         else if (steps[1] === '3') {
-          // MARKET PRICES & ALERTS
-          if (step === 2) {
-            response = con('Market Prices & Alerts\n1. Current Prices\n2. Subscribe to Alerts\n0. Back');
-          } 
+          if (step === 2) response = con('Market Prices & Alerts\n1. Current Prices\n2. Subscribe to Alerts\n0. Back');
           else if (step === 3) {
             if (steps[2] === '1') {
               const topBuyer = await prisma.buyer.findFirst({ orderBy: { pricePerBag: 'desc' } });
@@ -312,7 +312,6 @@ export async function POST(req: NextRequest) {
           }
         } 
         else if (steps[1] === '4') {
-          // MY TRANSACTIONS
           if (step === 2) {
             const transactions = await prisma.transaction.findMany({
               where: { farmer: { phone: phoneNumber } },
@@ -344,10 +343,7 @@ export async function POST(req: NextRequest) {
           }
         } 
         else if (steps[1] === '5') {
-          // QUALITY CHECK
-          if (step === 2) {
-            response = con('Quality Check\nEnter moisture level (e.g. 13):');
-          } 
+          if (step === 2) response = con('Quality Check\nEnter moisture level (e.g. 13):');
           else if (step === 3) {
             const moisture = parseInt(steps[2]);
             if (isNaN(moisture)) {
@@ -360,10 +356,7 @@ export async function POST(req: NextRequest) {
           }
         } 
         else if (steps[1] === '6') {
-          // WEBSITE LOGIN
-          if (step === 2) {
-            response = con('We will send an OTP to your phone.\n1. Send OTP\n0. Back');
-          } 
+          if (step === 2) response = con('We will send an OTP to your phone.\n1. Send OTP\n0. Back');
           else if (step === 3) {
             if (steps[2] === '1') {
               const { code, error } = await createOtp(phoneNumber);
@@ -386,12 +379,132 @@ export async function POST(req: NextRequest) {
 
     // ── BUYER SECTION ───────────────────────────────────────────────────────
     else if (steps[0] === '2') {
-      if (step === 1) {
-        response = con(`Buyer Menu\n\n1. Register / My Account\n2. Browse Available Produce\n3. Post Buying Offer\n4. My Transactions\n5. Website Login\n0. Back`);
+      // UNREGISTERED BUYER
+      if (!buyer) {
+        if (step === 1) {
+          response = con('New Buyer Registration\n1. Company / Organisation\n2. Individual / Small Scale\n0. Back');
+        } 
+        else if (step === 2) {
+          // steps[1] = Type
+          if (steps[1] === '1') response = con('Enter Company Name:');
+          else if (steps[1] === '2') response = con('Enter your Full Name:');
+          else response = end('Invalid option. Please try again.');
+        } 
+        else if (step === 3) {
+          // steps[2] = Name
+          response = con('Enter ID / Company Reg No.\n(for verification):');
+        } 
+        else if (step === 4) {
+          // steps[3] = ID/Reg
+          response = con('Enter your Location\n(e.g. Trans Nzoia, Kitale):');
+        } 
+        else if (step === 5) {
+          // steps[4] = Location
+          const type = steps[1] === '1' ? 'COMPANY' : 'INDIVIDUAL';
+          const name = steps[2];
+          const regNo = steps[3];
+          const location = steps[4];
+          
+          await prisma.buyer.create({
+            data: {
+              phone: phoneNumber,
+              name,
+              location,
+              // Note: Prisma Buyer model doesn't have type/regNo fields mapped exactly this way,
+              // but we can save it in the name/location for now, or update schema later.
+              // For now, we save core fields to allow login.
+              pricePerBag: 0, // Default, to be updated via web
+              capacityBags: 0,
+              active: true,
+            }
+          });
+          
+          response = con(`Registration successful!\nWe will send an OTP to login on the website.\n\n1. Send OTP\n2. Skip`);
+        } 
+        else if (step === 6) {
+          // steps[5] = OTP Choice
+          if (steps[5] === '1') {
+            const { code, error } = await createOtp(phoneNumber);
+            if (error) {
+              response = end(error);
+            } else {
+              const body = otpTemplate({ code: code!, expiresMinutes: 5 });
+              await sendNotification({
+                type: 'OTP',
+                recipientPhone: phoneNumber,
+                body,
+              }).catch((err) => console.error('[USSD] SMS failed:', err));
+              response = end('OTP sent! Use it to login on smartshamba.vercel.app');
+            }
+          } else {
+            response = end('Thank you for registering. Dial *384*53374# to manage your account.');
+          }
+        }
       } 
+      
+      // REGISTERED BUYER MENU
       else {
-        // Defer buyer mutations to web dashboard to prevent schema conflicts
-        response = end('Please visit smartshamba.vercel.app/buyer to manage your buyer account and offers.');
+        if (step === 1) {
+          response = con(`Buyer Menu\n\n1. Browse Available Produce\n2. Post Buying Offer\n3. My Transactions\n4. Website Login\n0. Back`);
+        } 
+        else if (steps[1] === '1') {
+          // BROWSE PRODUCE
+          if (step === 2) {
+            const farmers = await prisma.farmer.findMany({ take: 5, select: { name: true, location: true, village: true } });
+            const list = farmers.map((f, i) => `${i + 1}. ${f.name ?? 'Farmer'}\n   ${f.village ?? f.location ?? ''}`).join('\n');
+            response = end(`Available Produce (Farmers):\n${list}\n\nVisit website for details.`);
+          }
+        } 
+        else if (steps[1] === '2') {
+          // POST BUYING OFFER
+          if (step === 2) response = con('Set Price per 90kg bag (KSh):');
+          else if (step === 3) {
+            const price = parseInt(steps[2]);
+            if (isNaN(price) || price <= 0) {
+              response = end('Invalid price. Please try again.');
+            } else {
+              await prisma.buyer.update({ where: { phone: phoneNumber }, data: { pricePerBag: price } });
+              response = end('Buying offer updated! Farmers can now see your price.');
+            }
+          }
+        } 
+        else if (steps[1] === '3') {
+          // MY TRANSACTIONS
+          if (step === 2) {
+            const transactions = await prisma.transaction.findMany({
+              where: { buyer: { phone: phoneNumber } },
+              orderBy: { createdAt: 'desc' },
+              take: 3,
+              include: { farmer: true },
+            });
+            if (transactions.length === 0) {
+              response = end('You have no transactions yet.');
+            } else {
+              const list = transactions.map((t, i) => `${i + 1}. ${t.farmer.name ?? 'Farmer'}\n   ${t.status} - ${t.quantityBags} bags`).join('\n');
+              response = end(`My transactions:\n${list}`);
+            }
+          }
+        } 
+        else if (steps[1] === '4') {
+          // WEBSITE LOGIN
+          if (step === 2) response = con('We will send an OTP to your phone.\n1. Send OTP\n0. Back');
+          else if (step === 3) {
+            if (steps[2] === '1') {
+              const { code, error } = await createOtp(phoneNumber);
+              if (error) {
+                response = end(error);
+              } else {
+                const body = otpTemplate({ code: code!, expiresMinutes: 5 });
+                await sendNotification({
+                  type: 'OTP',
+                  recipientPhone: phoneNumber,
+                  body,
+                }).catch((err) => console.error('[USSD] SMS failed:', err));
+                response = end('OTP sent! Use it to login on smartshamba.vercel.app');
+              }
+            }
+          }
+        }
       }
     } 
 
