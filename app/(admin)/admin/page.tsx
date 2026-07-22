@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { getDictionary } from '@/lib/i18n/server';
+import StatCard from '@/components/ui/StatCard';
 
 interface Stats {
   totalFarmers: number;
@@ -34,28 +35,6 @@ async function getStats(): Promise<Stats> {
   });
   if (!res.ok) throw new Error('Failed to fetch stats');
   return res.json();
-}
-
-function StatCard({
-  label,
-  value,
-  sub,
-  highlight = false,
-}: {
-  label: string;
-  value: string | number;
-  sub?: string;
-  highlight?: boolean;
-}) {
-  return (
-    <div className={`rounded-xl border p-6 bg-white shadow-sm ${highlight ? 'border-green-300' : 'border-gray-200'}`}>
-      <p className="text-xs text-gray-500 uppercase tracking-wider mb-2">{label}</p>
-      <p className={`text-3xl font-bold ${highlight ? 'text-green-700' : 'text-gray-900'}`}>
-        {value}
-      </p>
-      {sub && <p className="text-xs text-gray-400 mt-1">{sub}</p>}
-    </div>
-  );
 }
 
 export default async function AdminDashboard() {
@@ -114,7 +93,7 @@ export default async function AdminDashboard() {
       </div>
 
       {/* System Status */}
-      <div className="bg-white border border-gray-200 rounded-xl p-6 mb-6 shadow-sm">
+      <div className="bg-white border border-slate-200/80 rounded-xl p-6 mb-6 shadow-sm hover:shadow-md transition-shadow">
         <div className="flex items-center gap-3 mb-4">
           <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
           <h2 className="text-sm font-semibold text-gray-900">{t.dashboard.systemStatus}</h2>
@@ -131,7 +110,7 @@ export default async function AdminDashboard() {
                 <div className="w-1.5 h-1.5 bg-green-500 rounded-full" />
                 <span className="text-xs text-gray-500">{item.label}</span>
               </div>
-              <span className="text-xs text-green-600 font-medium">{item.status}</span>
+              <span className="text-xs text-green-600 font-medium px-2 py-0.5 bg-green-100 rounded-full">{item.status}</span>
             </div>
           ))}
         </div>
@@ -162,7 +141,7 @@ export default async function AdminDashboard() {
           <Link
             key={link.href}
             href={link.href}
-            className="bg-white border border-gray-200 hover:border-green-400 hover:shadow-md rounded-xl p-5 transition-all group"
+            className="bg-white border border-slate-200/80 hover:border-green-400 hover:shadow-md rounded-xl p-5 transition-all group"
           >
             <div className="text-2xl mb-3">{link.icon}</div>
             <p className="text-sm font-semibold text-gray-900 group-hover:text-green-700 transition-colors">

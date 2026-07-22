@@ -26,9 +26,11 @@ export async function sendRawSms(
 ): Promise<SmsResult> {
   const normalized = to.startsWith('+') ? to : `+${to}`;
   try {
-    // Add 15-second timeout to prevent hanging
+    // In sandbox, from must be 'AFRICASTALKING'. In prod, use your shortcode.
+    const from = username === 'sandbox' ? 'AFRICASTALKING' : process.env.AT_SHORTCODE;
+    
     const res = await withTimeout(
-      sms.send({ to: [normalized], message }),
+      sms.send({ to: [normalized], message, from }),
       15000
     );
     const status = res.SMSMessageData.Recipients[0]?.status ?? 'Unknown';
@@ -38,7 +40,6 @@ export async function sendRawSms(
   } catch (error) {
     const msg = (error as Error).message;
     console.error('[SMS] sendRawSms error:', msg);
-    // Sentry capture is handled by the orchestrator (index.ts) to avoid duplicate alerts on retries
     return { success: false, providerResponse: msg };
   }
 }
