@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { verifyOtp } from '@/lib/otp';
 import { setFarmerSessionCookie } from '@/lib/auth';
+import { checkRateLimit } from '@/lib/rateLimit';
+import * as Sentry from '@sentry/nextjs';
 
 export async function POST(req: NextRequest) {
   try {
@@ -12,6 +14,15 @@ export async function POST(req: NextRequest) {
     }
 
     const normalized = phone.trim().replace(/\s/g, '');
+
+    // Rate limit OTP verification to prevent brute-force attacks
+    const rateCheck = checkRateLimit(`otp-verify:${normalized}`);
+    if (!rateCheck.allowed) {
+      return NextResponse.json(
+        { error: `Too many verification attempts. Please wait ${rateCheck.retryAfter}s.` },
+        { status: 429 }
+      );
+    }
 
     const { valid, error } = await verifyOtp(normalized, code.trim());
     if (!valid) {
@@ -34,6 +45,8 @@ export async function POST(req: NextRequest) {
     return response;
   } catch (error) {
     console.error('[OTP] Verify error:', (error as Error).message);
+    Sentry.captureException(error);
+    await Sentry.flush(2000);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

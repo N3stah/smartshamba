@@ -4,13 +4,14 @@ import { createOtp } from '@/lib/otp';
 import { sendNotification } from '@/lib/notifications';
 import { otpTemplate } from '@/lib/notifications/templates';
 import { checkRateLimit } from '@/lib/rateLimit';
+import * as Sentry from '@sentry/nextjs';
 
 export async function POST(req: NextRequest) {
   try {
     const { phone } = await req.json();
 
     if (!phone || typeof phone !== 'string') {
-      return NextResponse.json({ error: 'Phone number is required' }, { status: 400 });
+      return NextResponse.json({ error: 'Phone number is required' }, {status: 400 });
     }
 
     const normalized = phone.trim().replace(/\s/g, '');
@@ -32,7 +33,7 @@ export async function POST(req: NextRequest) {
     const farmer = await prisma.farmer.findUnique({ where: { phone: normalized } });
     if (!farmer) {
       return NextResponse.json(
-        { error: 'No account found for this number. Please register via USSD first by dialling *384*53374#.' },
+        { error: 'No account found for this number. Please register viaUSSD first by dialling *384*53374#.' },
         { status: 404 }
       );
     }
@@ -58,6 +59,8 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ success: true, message: 'OTP sent to your phone.' });
   } catch (error) {
     console.error('[OTP] Request error:', (error as Error).message);
+    Sentry.captureException(error);
+    await Sentry.flush(2000);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
