@@ -60,6 +60,7 @@ model Farmer {
 }
 
 model Buyer {
+  phone           String? @unique // Added for USSD/OTP login
   language        String   @default("en") // i18n: "en" | "sw"
   id           String    @id @default(cuid())
   name         String
