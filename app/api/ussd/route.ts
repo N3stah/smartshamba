@@ -53,7 +53,7 @@ export async function POST(req: NextRequest) {
     const step  = steps.length;
 
     const farmer = await prisma.farmer.findUnique({ where: { phone: phoneNumber } });
-    const buyer = await prisma.buyer.findUnique({ where: { phone: phoneNumber } });
+    const buyer = await prisma.buyer.findFirst({ where: { phone: phoneNumber } });
     
     let response: string = '';
 
@@ -71,12 +71,12 @@ export async function POST(req: NextRequest) {
           response = con('New Farmer Registration\nEnter your full name:');
         } 
         else if (step === 2) {
-          // steps[0] = '1', steps[1] = Name
           response = con('Enter your National ID\n(8 digits):');
         } 
         else if (step === 3) {
-          // steps[2] = ID
-          if (!isValidKenyanNationalId(steps[2])) {
+          const rawId = steps[2];
+          console.log('[USSD] Raw ID input:', rawId);
+          if (!isValidKenyanNationalId(rawId)) {
             response = end('Invalid ID. Must be 8 digits.\nPlease dial *384*53374# to try again.');
           } else {
             const countyList = PILOT_COUNTIES.map((c, i) => `${i + 1}. ${c}`).join('\n');
@@ -84,7 +84,6 @@ export async function POST(req: NextRequest) {
           }
         } 
         else if (step === 4) {
-          // steps[3] = County Choice
           const countyChoice = parseInt(steps[3]);
           if (countyChoice === 8) {
             response = con('Enter your location\n(county, town or village):');
@@ -107,10 +106,8 @@ export async function POST(req: NextRequest) {
           }
         } 
         else if (step === 5) {
-          // steps[4] = Ward Choice
           const countyChoice = parseInt(steps[3]);
           if (countyChoice === 8) {
-            // Save with "Other County"
             const name = steps[1];
             const nationalId = sanitizeNationalId(steps[2])!;
             const location = steps[4];
@@ -142,7 +139,6 @@ export async function POST(req: NextRequest) {
           }
         } 
         else if (step === 6) {
-          // steps[5] = Village
           const countyChoice = parseInt(steps[3]);
           const name = steps[1];
           const nationalId = sanitizeNationalId(steps[2])!;
@@ -190,7 +186,6 @@ export async function POST(req: NextRequest) {
           }
         } 
         else if (step === 7) {
-          // steps[6] = OTP Choice
           if (steps[6] === '1') {
             const { code, error } = await createOtp(phoneNumber);
             if (error) {
@@ -216,7 +211,6 @@ export async function POST(req: NextRequest) {
           response = con(`Farmer Menu\n\n1. Sell Maize / Beans\n2. My Groups\n3. Market Prices & Alerts\n4. My Transactions\n5. Quality Check\n6. Website Login\n0. Back`);
         } 
         else if (steps[1] === '1') {
-          // SELL PRODUCE
           if (step === 2) {
             response = con('Select Bag Type:\n1. 90kg (Standard)\n2. 50kg (Small)\n0. Back');
           } 
@@ -379,30 +373,23 @@ export async function POST(req: NextRequest) {
 
     // ── BUYER SECTION ───────────────────────────────────────────────────────
     else if (steps[0] === '2') {
-      // UNREGISTERED BUYER
       if (!buyer) {
         if (step === 1) {
           response = con('New Buyer Registration\n1. Company / Organisation\n2. Individual / Small Scale\n0. Back');
         } 
         else if (step === 2) {
-          // steps[1] = Type
           if (steps[1] === '1') response = con('Enter Company Name:');
           else if (steps[1] === '2') response = con('Enter your Full Name:');
           else response = end('Invalid option. Please try again.');
         } 
         else if (step === 3) {
-          // steps[2] = Name
           response = con('Enter ID / Company Reg No.\n(for verification):');
         } 
         else if (step === 4) {
-          // steps[3] = ID/Reg
           response = con('Enter your Location\n(e.g. Trans Nzoia, Kitale):');
         } 
         else if (step === 5) {
-          // steps[4] = Location
-          const type = steps[1] === '1' ? 'COMPANY' : 'INDIVIDUAL';
           const name = steps[2];
-          const regNo = steps[3];
           const location = steps[4];
           
           await prisma.buyer.create({
@@ -410,10 +397,7 @@ export async function POST(req: NextRequest) {
               phone: phoneNumber,
               name,
               location,
-              // Note: Prisma Buyer model doesn't have type/regNo fields mapped exactly this way,
-              // but we can save it in the name/location for now, or update schema later.
-              // For now, we save core fields to allow login.
-              pricePerBag: 0, // Default, to be updated via web
+              pricePerBag: 0,
               capacityBags: 0,
               active: true,
             }
@@ -422,7 +406,6 @@ export async function POST(req: NextRequest) {
           response = con(`Registration successful!\nWe will send an OTP to login on the website.\n\n1. Send OTP\n2. Skip`);
         } 
         else if (step === 6) {
-          // steps[5] = OTP Choice
           if (steps[5] === '1') {
             const { code, error } = await createOtp(phoneNumber);
             if (error) {
@@ -448,7 +431,6 @@ export async function POST(req: NextRequest) {
           response = con(`Buyer Menu\n\n1. Browse Available Produce\n2. Post Buying Offer\n3. My Transactions\n4. Website Login\n0. Back`);
         } 
         else if (steps[1] === '1') {
-          // BROWSE PRODUCE
           if (step === 2) {
             const farmers = await prisma.farmer.findMany({ take: 5, select: { name: true, location: true, village: true } });
             const list = farmers.map((f, i) => `${i + 1}. ${f.name ?? 'Farmer'}\n   ${f.village ?? f.location ?? ''}`).join('\n');
@@ -456,23 +438,23 @@ export async function POST(req: NextRequest) {
           }
         } 
         else if (steps[1] === '2') {
-          // POST BUYING OFFER
           if (step === 2) response = con('Set Price per 90kg bag (KSh):');
           else if (step === 3) {
             const price = parseInt(steps[2]);
             if (isNaN(price) || price <= 0) {
               response = end('Invalid price. Please try again.');
+            } else if (!buyer) {
+              response = end('Buyer account not found. Please register first.');
             } else {
-              await prisma.buyer.update({ where: { phone: phoneNumber }, data: { pricePerBag: price } });
+              await prisma.buyer.update({ where: { id: buyer.id }, data: { pricePerBag: price } });
               response = end('Buying offer updated! Farmers can now see your price.');
             }
           }
         } 
         else if (steps[1] === '3') {
-          // MY TRANSACTIONS
           if (step === 2) {
             const transactions = await prisma.transaction.findMany({
-              where: { buyer: { phone: phoneNumber } },
+              where: { buyerId: buyer?.id },
               orderBy: { createdAt: 'desc' },
               take: 3,
               include: { farmer: true },
@@ -486,7 +468,6 @@ export async function POST(req: NextRequest) {
           }
         } 
         else if (steps[1] === '4') {
-          // WEBSITE LOGIN
           if (step === 2) response = con('We will send an OTP to your phone.\n1. Send OTP\n0. Back');
           else if (step === 3) {
             if (steps[2] === '1') {
