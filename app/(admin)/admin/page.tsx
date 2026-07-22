@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { getDictionary } from '@/lib/i18n/server';
 
 interface Stats {
   totalFarmers: number;
@@ -59,20 +60,21 @@ function StatCard({
 
 export default async function AdminDashboard() {
   const stats = await getStats();
+  const t = await getDictionary();
 
   return (
     <div>
       {/* Header */}
       <div className="mb-8">
-        <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
-        <p className="text-gray-500 text-sm mt-1">Trans Nzoia County Pilot · Real-time overview</p>
+        <h1 className="text-2xl font-bold text-gray-900">{t.dashboard.title}</h1>
+        <p className="text-gray-500 text-sm mt-1">Trans Nzoia County Pilot · {t.dashboard.overview}</p>
       </div>
 
       {/* KPI Row 1 */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
-        <StatCard label="Registered Farmers" value={stats.totalFarmers} />
-        <StatCard label="Verified Buyers" value={stats.totalBuyers} />
-        <StatCard label="Total Transactions" value={stats.totalTransactions} />
+        <StatCard label={t.dashboard.registeredFarmers} value={stats.totalFarmers} />
+        <StatCard label={t.dashboard.verifiedBuyers} value={stats.totalBuyers} />
+        <StatCard label={t.dashboard.totalTransactions} value={stats.totalTransactions} />
         <StatCard
           label="Avg Bags / Transaction"
           value={stats.averageBagsPerTransaction.toFixed(1)}
@@ -115,13 +117,13 @@ export default async function AdminDashboard() {
       <div className="bg-white border border-gray-200 rounded-xl p-6 mb-6 shadow-sm">
         <div className="flex items-center gap-3 mb-4">
           <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
-          <h2 className="text-sm font-semibold text-gray-900">System Status</h2>
+          <h2 className="text-sm font-semibold text-gray-900">{t.dashboard.systemStatus}</h2>
         </div>
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           {[
-            { label: 'API', status: 'Operational' },
-            { label: 'Database', status: 'Operational' },
-            { label: 'SMS', status: 'Operational' },
+            { label: 'API', status: t.dashboard.operational },
+            { label: 'Database', status: t.dashboard.operational },
+            { label: 'SMS', status: t.dashboard.operational },
             { label: 'USSD', status: 'Active' },
           ].map((item) => (
             <div key={item.label} className="flex items-center justify-between">

@@ -1,5 +1,6 @@
 import "./globals.css";
 import { Toaster } from "sonner";
+import { LanguageProvider } from "@/lib/i18n";
 
 export const metadata = {
   title: "SmartShamba",
@@ -10,8 +11,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en">
       <body className="bg-gray-50 text-gray-900">
-        {children}
-        <Toaster position="top-right" richColors closeButton />
+        <LanguageProvider>
+          {children}
+          <Toaster position="top-right" richColors closeButton />
+        </LanguageProvider>
       </body>
     </html>
   );

@@ -4,6 +4,8 @@ import { prisma } from '@/lib/prisma';
 import Link from 'next/link';
 import RateBuyerButton from './RateBuyerButton';
 import SyncPoller from './SyncPoller';
+import EmptyState from '@/components/ui/EmptyState';
+import { getDictionary } from '@/lib/i18n/server';
 
 async function getFarmerData(phone: string) {
   const farmer = await prisma.farmer.findUnique({
@@ -52,6 +54,7 @@ export default async function FarmerDashboard() {
   if (!data) redirect('/dashboard/login');
 
   const { farmer, transactions, stats, settled } = data;
+  const t = await getDictionary();
 
   return (
     <div>
@@ -59,7 +62,7 @@ export default async function FarmerDashboard() {
       
       <div className="mb-8">
         <h1 className="text-2xl font-bold text-gray-900">
-          Welcome, {farmer.name ?? 'Farmer'} 👋
+          {t.common.welcome}, {farmer.name ?? 'Farmer'} 👋
         </h1>
         <p className="text-gray-500 text-sm mt-1">
           {farmer.ward?.name ? `${farmer.ward.name}, ` : ''}{farmer.county?.name ?? farmer.location ?? ''}
@@ -68,7 +71,7 @@ export default async function FarmerDashboard() {
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
         <div className="bg-white rounded-xl border border-gray-200 p-5 shadow-sm">
-          <p className="text-xs text-gray-500 uppercase tracking-wider">Total Transactions</p>
+          <p className="text-xs text-gray-500 uppercase tracking-wider">{t.dashboard.totalTransactions}</p>
           <p className="text-3xl font-bold text-gray-900 mt-1">{stats._count.id}</p>
         </div>
         <div className="bg-white rounded-xl border border-green-200 p-5 shadow-sm">
@@ -76,11 +79,11 @@ export default async function FarmerDashboard() {
           <p className="text-3xl font-bold text-green-700 mt-1">{settled}</p>
         </div>
         <div className="bg-white rounded-xl border border-gray-200 p-5 shadow-sm">
-          <p className="text-xs text-gray-500 uppercase tracking-wider">Total Bags Sold</p>
+          <p className="text-xs text-gray-500 uppercase tracking-wider">{t.dashboard.totalBagsSold}</p>
           <p className="text-3xl font-bold text-gray-900 mt-1">{stats._sum.quantityBags ?? 0}</p>
         </div>
         <div className="bg-white rounded-xl border border-green-300 p-5 shadow-sm">
-          <p className="text-xs text-gray-500 uppercase tracking-wider">Total Value</p>
+          <p className="text-xs text-gray-500 uppercase tracking-wider">{t.dashboard.totalValue}</p>
           <p className="text-xl font-bold text-green-700 mt-1">
             KSh {(stats._sum.totalValue ?? 0).toLocaleString()}
           </p>
@@ -106,22 +109,20 @@ export default async function FarmerDashboard() {
             </Link>
           </div>
         </div>
-        <p className="font-semibold">Ready to sell maize?</p>
+        <p className="font-semibold">{t.dashboard.readyToSell}</p>
         <p className="text-green-200 text-sm mt-1">
-          Dial <span className="font-mono font-bold">*384*53374#</span> from your phone to view buyer offers and confirm a sale.
+          {t.dashboard.dialUssd}
         </p>
       </div>
 
       <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
         <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
-          <h2 className="text-sm font-semibold text-gray-700">Recent Transactions</h2>
-          <Link href="/dashboard/transactions" className="text-xs text-green-700 hover:underline">View all →</Link>
+          <h2 className="text-sm font-semibold text-gray-700">{t.dashboard.recentTransactions}</h2>
+          <Link href="/dashboard/transactions" className="text-xs text-green-700 hover:underline">{t.dashboard.viewAll} →</Link>
         </div>
         <div className="divide-y divide-gray-100">
           {transactions.length === 0 ? (
-            <div className="py-12 text-center text-gray-400 text-sm">
-              No transactions yet. Dial *384*53374# to sell your first batch.
-            </div>
+            <EmptyState message={t.emptyStates.noTransactions} />
           ) : (
             transactions.map((tx) => (
               <div key={tx.id} className="px-6 py-4 flex items-center justify-betweengap-4">

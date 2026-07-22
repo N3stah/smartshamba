@@ -20,7 +20,7 @@ export interface SendNotificationParams {
 
 export interface NotificationResult {
   success: boolean;
-  notificationId: string;
+  notificationId?: string;
   error?: string;
 }
 

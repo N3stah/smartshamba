@@ -26,7 +26,14 @@ export function proxy(req: NextRequest) {
     }
   }
 
-  return NextResponse.next();
+  // Apply security headers to all responses
+  const response = NextResponse.next();
+  response.headers.set('X-Frame-Options', 'DENY'); // Prevent clickjacking
+  response.headers.set('X-Content-Type-Options', 'nosniff'); // Prevent MIME-sniffing
+  response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin'); // Control referrer data
+  response.headers.set('Permissions-Policy', 'camera=(), microphone=(), geolocation=()'); // Disable unwanted APIs
+  
+  return response;
 }
 
 export const config = {

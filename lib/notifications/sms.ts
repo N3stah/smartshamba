@@ -1,4 +1,3 @@
-import * as Sentry from '@sentry/nextjs';
 import AfricasTalking from 'africastalking';
 
 const username = process.env.AT_USERNAME ?? 'sandbox';
@@ -12,22 +11,34 @@ export interface SmsResult {
   providerResponse: string;
 }
 
+// Helper to timeout promises and prevent indefinite hanging
+const withTimeout = <T>(promise: Promise<T>, ms: number): Promise<T> =>
+  Promise.race([
+    promise,
+    new Promise<T>((_, reject) =>
+      setTimeout(() => reject(new Error(`Operation timed out after ${ms}ms`)), ms)
+    )
+  ]);
+
 export async function sendRawSms(
   to: string,
   message: string
 ): Promise<SmsResult> {
   const normalized = to.startsWith('+') ? to : `+${to}`;
   try {
-    const res    = await sms.send({ to: [normalized], message });
+    // Add 15-second timeout to prevent hanging
+    const res = await withTimeout(
+      sms.send({ to: [normalized], message }),
+      15000
+    );
     const status = res.SMSMessageData.Recipients[0]?.status ?? 'Unknown';
     const success = status === 'Success';
-    console.log('[NOTIFICATIONS] SMS', success ? 'sent' : 'failed', 'to recipient, status:', status);
+    console.log('[SMS]', success ? 'sent' : 'failed', 'to recipient, status:', status);
     return { success, providerResponse: status };
   } catch (error) {
     const msg = (error as Error).message;
-    console.error('[NOTIFICATIONS] sendRawSms error:', msg);
-    Sentry.captureException(error);
-    await Sentry.flush(2000);
+    console.error('[SMS] sendRawSms error:', msg);
+    // Sentry capture is handled by the orchestrator (index.ts) to avoid duplicate alerts on retries
     return { success: false, providerResponse: msg };
   }
 }

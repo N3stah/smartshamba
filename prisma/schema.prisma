@@ -34,6 +34,7 @@ model Ward {
 }
 
 model Farmer {
+  language        String   @default("en") // i18n: "en" | "sw"
   id          String   @id @default(cuid())
   nationalId  String?  // KYC-lite: 8-digit Kenya National ID
   phone     String   @unique
@@ -59,6 +60,7 @@ model Farmer {
 }
 
 model Buyer {
+  language        String   @default("en") // i18n: "en" | "sw"
   id           String    @id @default(cuid())
   name         String
   location     String
@@ -99,6 +101,10 @@ model Transaction {
   ratings Rating[]
   dispute Dispute?
   qualityAssessment      QualityAssessment?
+  @@index([createdAt])
+  @@index([buyerId])
+  @@index([farmerId])
+  @@index([reference])
 }
 
 model FarmerGroup {
@@ -256,9 +262,9 @@ model Dispute {
   farmer      Farmer      @relation(fields: [farmerId], references: [id])
   buyer       Buyer       @relation(fields: [buyerId], references: [id])
 
-  @@index([status])
   @@index([farmerId])
   @@index([buyerId])
+  @@index([transactionId])
 }
 
 enum NotificationType {
@@ -297,9 +303,9 @@ model Notification {
   buyer            Buyer?             @relation(fields: [buyerId], references: [id])
 
   @@index([farmerId])
-  @@index([status])
   @@index([type])
   @@index([createdAt])
+  @@index([recipientPhone])
 }
 
 model NotificationPreference {

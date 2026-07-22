@@ -61,7 +61,7 @@ export async function POST(req: NextRequest) {
     const rateCheck = checkRateLimit(phoneNumber);
     if (!rateCheck.allowed) {
       return new NextResponse(
-        `END Too many requests. Please wait ${rateCheck.retryAfter}s before trying again.`,
+        `END You have sent too many requests. Please wait ${rateCheck.retryAfter} seconds and try again.`,
         { status: 200, headers: { 'Content-Type': 'text/plain' } }
       );
     }
@@ -90,7 +90,7 @@ export async function POST(req: NextRequest) {
             take: 5,
           });
           const list = buyers.map((b, i) => `${i + 1}. ${b.name}\n   KSh ${b.pricePerBag}/bag`).join('\n');
-          response = con(`Buyer offers:\n${list}\n\nSelect buyer number:`);
+          response = con(`Buyer offers:\n${list}\n\nReply with buyer number:`);
 
         } else if (steps[0] === '2') {
           const transactions = await prisma.transaction.findMany({
@@ -105,7 +105,7 @@ export async function POST(req: NextRequest) {
             const list = transactions.map((t, i) =>
               `${i + 1}. ${t.buyer.name}\n   ${t.status} - KSh ${t.totalValue.toLocaleString()}`
             ).join('\n');
-            response = con(`My transactions:\n${list}\n\nSelect number for details:`);
+            response = con(`My transactions:\n${list}\n\nReply with number for details:`);
           }
 
         } else if (steps[0] === '3') {
@@ -129,7 +129,7 @@ export async function POST(req: NextRequest) {
           }
 
         } else {
-          response = end('Invalid option. Please dial *384*53374# to try again.');
+          response = end('Sorry, that option is not available.\nPlease dial *384*53374# to try again.');
         }
       }
 
@@ -144,7 +144,7 @@ export async function POST(req: NextRequest) {
           const buyerIndex    = parseInt(steps[1]) - 1;
           const selectedBuyer = buyers[buyerIndex];
           if (!selectedBuyer) {
-            response = end('Invalid selection. Please dial *384*53374# to try again.');
+            response = end('Sorry, that option is not available.\nPlease dial *384*53374# to try again.');
           } else {
             response = con(
               `${selectedBuyer.name}\nPrice: KSh ${selectedBuyer.pricePerBag}/bag\nLocation: ${selectedBuyer.location}\n\nEnter number of bags (max 500):`
@@ -161,7 +161,7 @@ export async function POST(req: NextRequest) {
           const txIndex    = parseInt(steps[1]) - 1;
           const selectedTx = transactions[txIndex];
           if (!selectedTx) {
-            response = end('Invalid selection. Please dial *384*53374# to try again.');
+            response = end('Sorry, that option is not available.\nPlease dial *384*53374# to try again.');
           } else {
             response = end(
               `Ref: ${selectedTx.reference}\nBuyer: ${selectedTx.buyer.name}\nBags: ${selectedTx.quantityBags}\nPrice: KSh ${selectedTx.pricePerBag}/bag\nTotal: KSh ${selectedTx.totalValue.toLocaleString()}\nStatus:${selectedTx.status}`
@@ -182,7 +182,7 @@ export async function POST(req: NextRequest) {
           const txIndex    = parseInt(steps[1]) - 1;
           const selectedTx = eligibleTxs[txIndex];
           if (!selectedTx) {
-            response = end('Invalid selection. Please dial *384*53374# to try again.');
+            response = end('Sorry, that option is not available.\nPlease dial *384*53374# to try again.');
           } else {
             const reasonList = Object.entries(DISPUTE_REASON_LABELS)
               .map(([num, label]) => `${num}. ${label}`)
@@ -208,7 +208,7 @@ export async function POST(req: NextRequest) {
         const selectedBuyer = buyers[buyerIndex];
         const quantity      = parseInt(steps[2]);
         if (!selectedBuyer || isNaN(quantity) || quantity <= 0 || quantity > 500) {
-          response = end('Invalid input. Bags must be between 1 and 500. Please dial *384*53374# to try again.');
+          response = end('Invalid input. Bags must be between 1 and 500.\nPlease dial *384*53374# to try again.');
         } else {
           const total = selectedBuyer.pricePerBag * quantity;
           response = con(
@@ -233,7 +233,7 @@ export async function POST(req: NextRequest) {
         const reasonNum   = parseInt(steps[2]);
         const reasonLabel = DISPUTE_REASON_LABELS[reasonNum];
         if (!selectedTx || !reasonLabel) {
-          response = end('Invalid selection. Please dial *384*53374# totry again.');
+          response = end('Sorry, that option is not available.\nPlease dial *384*53374# to try again.');
         } else {
           response = con(
             `Confirm report:\n${selectedTx.buyer.name}\nIssue: ${reasonLabel}\n\n1. Confirm\n2. Cancel`
@@ -294,7 +294,7 @@ export async function POST(req: NextRequest) {
             );
           }
         } else {
-          response = end('Invalid option. Please dial *384*53374# to try again.');
+          response = end('Sorry, that option is not available.\nPlease dial *384*53374# to try again.');
         }
       }
 
@@ -319,7 +319,7 @@ export async function POST(req: NextRequest) {
             | undefined;
 
           if (!selectedTx || !reasonEnum) {
-            response = end('Invalid session. Please dial *384*53374# totry again.');
+            response = end('Invalid session. Please dial *384*53374# to try again.');
           } else {
             await prisma.$transaction([
               prisma.dispute.create({
@@ -342,7 +342,7 @@ export async function POST(req: NextRequest) {
             );
           }
         } else {
-          response = end('Invalid option. Please dial *384*53374# to try again.');
+          response = end('Sorry, that option is not available.\nPlease dial *384*53374# to try again.');
         }
       }
 
@@ -396,7 +396,7 @@ export async function POST(req: NextRequest) {
             response = con(`Select your ward:\n${wardList}\n9. Other ward`);
           }
         } else {
-          response = end('Invalid selection. Please dial *384*53374# totry again.');
+          response = end('Sorry, that option is not available.\nPlease dial *384*53374# to try again.');
         }
       }
 
@@ -420,7 +420,7 @@ export async function POST(req: NextRequest) {
             const countyName = PILOT_COUNTIES[countyChoice - 1];
             const county     = await prisma.county.findUnique({ where: { name: countyName } });
             if (!county) {
-              response = end('Service error. Please dial *384*53374# totry again.');
+              response = end('Service error. Please dial *384*53374# to try again.');
             } else {
               const wards = await prisma.ward.findMany({
                 where: { countyId: county.id },
