@@ -8,7 +8,7 @@ import * as Sentry from '@sentry/nextjs';
 
 export async function POST(req: NextRequest) {
   try {
-    const { phone } = await req.json();
+    const { phone, role = 'FARMER' } = await req.json();
 
     if (!phone || typeof phone !== 'string') {
       return NextResponse.json({ error: 'Phone number is required' }, {status: 400 });
@@ -30,12 +30,26 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const farmer = await prisma.farmer.findUnique({ where: { phone: normalized } });
-    if (!farmer) {
-      return NextResponse.json(
-        { error: 'No account found for this number. Please register viaUSSD first by dialling *384*53374#.' },
-        { status: 404 }
-      );
+    let accountId: string | null = null;
+
+    if (role === 'BUYER') {
+      const buyer = await prisma.buyer.findFirst({ where: { phone: normalized } });
+      if (!buyer) {
+        return NextResponse.json(
+          { error: 'No buyer account found for this number. Please register via USSD first.' },
+          { status: 404 }
+        );
+      }
+      accountId = buyer.id;
+    } else {
+      const farmer = await prisma.farmer.findUnique({ where: { phone: normalized } });
+      if (!farmer) {
+        return NextResponse.json(
+          { error: 'No farmer account found for this number. Please register via USSD first.' },
+          { status: 404 }
+        );
+      }
+      accountId = farmer.id;
     }
 
     const { code, error } = await createOtp(normalized);
@@ -49,7 +63,8 @@ export async function POST(req: NextRequest) {
       type:           'OTP',
       recipientPhone: normalized,
       body,
-      farmerId:       farmer.id,
+      farmerId:       role === 'FARMER' ? accountId ?? undefined : undefined,
+      buyerId:        role === 'BUYER' ? accountId ?? undefined : undefined,
     }).catch((err) => {
       console.error('[OTP] SMS failed:', err);
     });

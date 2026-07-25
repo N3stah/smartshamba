@@ -1,13 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { verifyOtp } from '@/lib/otp';
-import { setFarmerSessionCookie } from '@/lib/auth';
+import { setFarmerSessionCookie, setBuyerSessionCookie } from '@/lib/auth';
 import { checkRateLimit } from '@/lib/rateLimit';
 import * as Sentry from '@sentry/nextjs';
 
 export async function POST(req: NextRequest) {
   try {
-    const { phone, code } = await req.json();
+    const { phone, code, role = 'FARMER' } = await req.json();
 
     if (!phone || !code) {
       return NextResponse.json({ error: 'Phone and code are required' }, { status: 400 });
@@ -15,7 +15,6 @@ export async function POST(req: NextRequest) {
 
     const normalized = phone.trim().replace(/\s/g, '');
 
-    // Rate limit OTP verification to prevent brute-force attacks
     const rateCheck = checkRateLimit(`otp-verify:${normalized}`);
     if (!rateCheck.allowed) {
       return NextResponse.json(
@@ -29,19 +28,20 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error }, { status: 401 });
     }
 
-    const farmer = await prisma.farmer.findUnique({
-      where: { phone: normalized },
-      select: { id: true, name: true, phone: true, location: true, county: true, ward: true },
-    });
+    const response = NextResponse.json({ success: true });
 
-    if (!farmer) {
-      return NextResponse.json({ error: 'Account not found' }, { status: 404 });
+    if (role === 'BUYER') {
+      const buyer = await prisma.buyer.findFirst({ where: { phone: normalized } });
+      if (!buyer) return NextResponse.json({ error: 'Account not found' }, { status: 404 });
+      setBuyerSessionCookie(response, normalized);
+      console.log('[OTP] Buyer login successful:', normalized);
+    } else {
+      const farmer = await prisma.farmer.findUnique({ where: { phone: normalized } });
+      if (!farmer) return NextResponse.json({ error: 'Account not found' }, { status: 404 });
+      setFarmerSessionCookie(response, normalized);
+      console.log('[OTP] Farmer login successful:', normalized);
     }
 
-    const response = NextResponse.json({ success: true, farmer });
-    setFarmerSessionCookie(response, normalized);
-
-    console.log('[OTP] Login successful:', normalized);
     return response;
   } catch (error) {
     console.error('[OTP] Verify error:', (error as Error).message);

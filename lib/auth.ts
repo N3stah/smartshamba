@@ -1,53 +1,68 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-const COOKIE_NAME = 'smartshamba_admin';
+const ADMIN_COOKIE = 'smartshamba_admin';
+const FARMER_COOKIE = 'smartshamba_farmer';
+const BUYER_COOKIE = 'smartshamba_buyer';
 
+// Admin Auth
 export function requireAdminAuth(req: NextRequest): NextResponse | null {
-  // Accept x-admin-key header (curl / server-side fetches)
+  const cookie = req.cookies.get(ADMIN_COOKIE);
   const apiKey = req.headers.get('x-admin-key');
-  if (apiKey && apiKey === process.env.ADMIN_API_KEY) return null;
-
-  // Accept session cookie (browser client components)
-  const cookie = req.cookies.get(COOKIE_NAME);
-  if (cookie?.value && cookie.value === process.env.ADMIN_API_KEY) return null;
-
+  
+  if (cookie?.value === process.env.ADMIN_API_KEY || apiKey === process.env.ADMIN_API_KEY) {
+    return null;
+  }
   return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 }
 
-const FARMER_COOKIE_NAME = 'smartshamba_farmer';
-const FARMER_SESSION_DURATION = 60 * 60 * 8; // 8 hours
-
+// Farmer Auth
 export function getFarmerSession(req: NextRequest): string | null {
-  const cookie = req.cookies.get(FARMER_COOKIE_NAME);
-  if (!cookie?.value) return null;
-  // Cookie value is the farmer's phone number, signed by presence of a valid session
-  return cookie.value;
+  return req.cookies.get(FARMER_COOKIE)?.value ?? null;
+}
+
+export function requireFarmerAuth(req: NextRequest): NextResponse | null {
+  if (!getFarmerSession(req)) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+  return null;
 }
 
 export function setFarmerSessionCookie(response: NextResponse, phone: string): void {
-  response.cookies.set(FARMER_COOKIE_NAME, phone, {
+  response.cookies.set(FARMER_COOKIE, phone, {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
-    sameSite: 'strict',
+    sameSite: 'lax',
     path: '/',
-    maxAge: FARMER_SESSION_DURATION,
+    maxAge: 60 * 60 * 24 * 7,
   });
 }
 
 export function clearFarmerSessionCookie(response: NextResponse): void {
-  response.cookies.set(FARMER_COOKIE_NAME, '', {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'strict',
-    path: '/',
-    maxAge: 0,
-  });
+  response.cookies.set(FARMER_COOKIE, '', { maxAge: 0, path: '/' });
 }
 
-export function requireFarmerAuth(req: NextRequest): NextResponse | null {
-  const phone = getFarmerSession(req);
-  if (!phone) {
+// Buyer Auth
+export function getBuyerSession(req: NextRequest): string | null {
+  return req.cookies.get(BUYER_COOKIE)?.value ?? null;
+}
+
+export function requireBuyerAuth(req: NextRequest): NextResponse | null {
+  if (!getBuyerSession(req)) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
   return null;
+}
+
+export function setBuyerSessionCookie(response: NextResponse, phone: string): void {
+  response.cookies.set(BUYER_COOKIE, phone, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'lax',
+    path: '/',
+    maxAge: 60 * 60 * 24 * 7,
+  });
+}
+
+export function clearBuyerSessionCookie(response: NextResponse): void {
+  response.cookies.set(BUYER_COOKIE, '', { maxAge: 0, path: '/' });
 }
