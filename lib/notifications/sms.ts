@@ -5,20 +5,22 @@ const apiKey   = process.env.AT_API_KEY   ?? '';
 
 console.log('[SMS] Initializing Africa\'s Talking SDK. Username:', username, 'API Key present:', !!apiKey);
 
-let at: any;
-let sms: any;
-
-try {
-  at = AfricasTalking({ username, apiKey });
-  sms = at.SMS;
-  console.log('[SMS] Africa\'s Talking SDK initialized successfully.');
-} catch (initError) {
-  console.error('[SMS] CRITICAL: Failed to initialize Africa\'s Talking SDK:', (initError as Error).message);
-}
+const at = AfricasTalking({ username, apiKey });
+const sms = at.SMS;
 
 export interface SmsResult {
   success: boolean;
   providerResponse: string;
+}
+
+interface ATRecipient {
+  status: string;
+}
+
+interface ATResponse {
+  SMSMessageData: {
+    Recipients: ATRecipient[];
+  };
 }
 
 // Helper to timeout promises and prevent indefinite hanging
@@ -35,15 +37,10 @@ export async function sendRawSms(
   message: string
 ): Promise<SmsResult> {
   console.log('[SMS] Attempting to send SMS to:', to);
-  
-  if (!sms) {
-    console.error('[SMS] SMS service is not initialized.');
-    return { success: false, providerResponse: 'SMS service not initialized' };
-  }
 
   const normalized = to.startsWith('+') ? to : `+${to}`;
   try {
-    const payload: any = { to: [normalized], message };
+    const payload: { to: string[]; message: string; from?: string } = { to: [normalized], message };
     if (username !== 'sandbox' && process.env.AT_SHORTCODE) {
       payload.from = process.env.AT_SHORTCODE;
     }
@@ -51,7 +48,7 @@ export async function sendRawSms(
     console.log('[SMS] Sending payload:', JSON.stringify(payload));
     
     const res = await withTimeout(
-      sms.send(payload),
+      sms.send(payload) as Promise<ATResponse>,
       15000
     );
     
@@ -61,9 +58,10 @@ export async function sendRawSms(
     const success = status === 'Success';
     console.log('[SMS]', success ? 'sent' : 'failed', 'to recipient, status:', status);
     return { success, providerResponse: status };
-  } catch (error: any) {
-    console.error('[SMS] sendRawSms error:', error.message);
-    console.error('[SMS] Error details:', JSON.stringify(error));
-    return { success: false, providerResponse: error.message };
+  } catch (error) {
+    const err = error as Error;
+    console.error('[SMS] sendRawSms error:', err.message);
+    console.error('[SMS] Error details:', JSON.stringify(err));
+    return { success: false, providerResponse: err.message };
   }
 }

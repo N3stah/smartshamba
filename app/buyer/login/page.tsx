@@ -26,8 +26,9 @@ export default function BuyerLogin() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Failed to send OTP');
       setStep(2);
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err) {
+      const e = err as Error;
+      setError(e.message);
     } finally {
       setLoading(false);
     }
@@ -46,8 +47,9 @@ export default function BuyerLogin() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Invalid code');
       router.push('/buyer/dashboard');
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err) {
+      const e = err as Error;
+      setError(e.message);
     } finally {
       setLoading(false);
     }
