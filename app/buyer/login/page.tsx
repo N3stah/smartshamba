@@ -129,7 +129,7 @@ function LoginForm() {
                     required
                     autoFocus
                     maxLength={6}
-                    className="w-full border border-gray-300 rounded-lg px-4 py-3 text-gray-900 placeholder-gray-400 focus:outline-none focus:border-green-600 focus:ring-2 focus:ring-green-100 text-sm font-mono text-center text-xl tracking-widest"
+                    className="w-full border border-gray-300 rounded-lg px-4 py-3 text-gray-900 placeholder-gray-400 focus:outline-none focus:border-green-600 focus:ring-2 focus:ring-green-100 font-mono text-center text-xl tracking-widest"
                   />
                 </div>
                 {error && (
