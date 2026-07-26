@@ -5,7 +5,6 @@ import { sendNotification } from '@/lib/notifications';
 import { recordAuditLog } from '@/lib/auditLog';
 import * as Sentry from '@sentry/nextjs';
 
-// Allowed state transitions
 const validTransitions: Record<string, string[]> = {
   PENDING: ['AGREED', 'DISPUTED'],
   AGREED: ['DELIVERY_SCHEDULED', 'DISPUTED'],
@@ -37,13 +36,11 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
 
     if (!transaction) return NextResponse.json({ error: 'Transaction not found' }, { status: 404 });
 
-    // Validate transition
     const allowedNext = validTransitions[transaction.status] || [];
     if (!allowedNext.includes(status)) {
       return NextResponse.json({ error: `Invalid transition from ${transaction.status} to ${status}` }, { status: 400 });
     }
 
-    // Role-based authorization for specific transitions
     if (status === 'DELIVERED' && !farmerPhone && !isAdmin) {
       return NextResponse.json({ error: 'Only the farmer can mark as delivered' }, { status: 403 });
     }
@@ -51,27 +48,36 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
       return NextResponse.json({ error: 'Only the buyer can confirm payment' }, { status: 403 });
     }
 
+    // Prepare data, parsing date if present
+    const dataToUpdate: any = { status };
+    if (fulfillmentData) {
+      if (fulfillmentData.deliveryMethod) dataToUpdate.deliveryMethod = fulfillmentData.deliveryMethod;
+      if (fulfillmentData.deliveryLocation) dataToUpdate.deliveryLocation = fulfillmentData.deliveryLocation;
+      if (fulfillmentData.fulfillmentNotes) dataToUpdate.fulfillmentNotes = fulfillmentData.fulfillmentNotes;
+      if (fulfillmentData.scheduledDate) {
+        const parsedDate = new Date(fulfillmentData.scheduledDate);
+        if (!isNaN(parsedDate.getTime())) {
+          dataToUpdate.scheduledDate = parsedDate;
+        }
+      }
+    }
+
     const updatedTx = await prisma.transaction.update({
       where: { id: transactionId },
-      data: {
-        status,
-        ...fulfillmentData,
-      },
+      data: dataToUpdate,
     });
 
-    // Notify the other party
     const recipientPhone = farmerPhone ? transaction.buyer.phone : transaction.farmer.phone;
     if (recipientPhone) {
       await sendNotification({
         type: 'TRANSACTION_CONFIRMATION',
         recipientPhone,
-        body: `SmartShamba: Transaction ${transaction.reference} status updated to ${status}. Check your dashboard.`,
+        body: `SmartShamba: Transaction ${transaction.reference} status updated to ${status.replace(/_/g, ' ')}. Check your dashboard.`,
         farmerId: buyerPhone ? transaction.farmer.id : undefined,
         buyerId: farmerPhone ? transaction.buyer.id : undefined,
       }).catch(err => console.error('[NOTIFICATIONS] Failed:', err));
     }
 
-    // Audit Log - Map farmer/buyer to 'SYSTEM' to satisfy TypeScript types
     await recordAuditLog({
       action: `UPDATE_TX_STATUS_${status}`,
       actorType: isAdmin ? 'ADMIN' : 'SYSTEM',

@@ -1,37 +1,48 @@
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
+import Link from 'next/link';
 import { prisma } from '@/lib/prisma';
 import ChatWindow from '@/components/chat/ChatWindow';
 import StatusBadge from '@/components/ui/StatusBadge';
 import TransactionActions from '@/components/TransactionActions';
-import { Truck, MapPin, Calendar, FileText } from 'lucide-react';
+import { ArrowLeft, Truck, MapPin, Calendar, FileText } from 'lucide-react';
 
-export default async function FarmerTransactionDetail({ params }: { params: Promise<{ id: string }> }) {
+export default async function AdminTransactionDetail({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const cookieStore = await cookies();
-  const phone = cookieStore.get('smartshamba_farmer')?.value;
-  if (!phone) redirect('/dashboard/login');
-
-  const farmer = await prisma.farmer.findUnique({ where: { phone } });
-  if (!farmer) redirect('/dashboard/login');
+  const isAdmin = cookieStore.get('smartshamba_admin')?.value === process.env.ADMIN_API_KEY;
+  if (!isAdmin) redirect('/admin/login');
 
   const transaction = await prisma.transaction.findUnique({
     where: { id },
-    include: { buyer: true },
+    include: { farmer: true, buyer: true },
   });
 
-  if (!transaction) redirect('/dashboard/transactions');
-  if (transaction.farmerId !== farmer.id) redirect('/dashboard/transactions');
+  if (!transaction) {
+    return (
+      <div className="text-center py-12">
+        <h1 className="text-2xl font-bold text-gray-900 mb-4">Transaction Not Found</h1>
+        <Link href="/admin/transactions" className="text-[#00703C] hover:underline">← Back to Transactions</Link>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold text-gray-900">Transaction Details</h1>
+      <div className="flex items-center justify-between">
+        <h1 className="text-2xl font-bold text-gray-900">Transaction Oversight</h1>
+        <Link href="/admin/transactions" className="text-sm text-gray-500 hover:text-gray-900 flex items-center gap-1">
+          <ArrowLeft className="w-4 h-4" /> Back to List
+        </Link>
+      </div>
       
       <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
         <div className="flex justify-between items-start mb-6">
           <div>
             <p className="font-mono text-xs text-gray-500">{transaction.reference}</p>
-            <h2 className="text-xl font-bold text-gray-900 mt-1">Buyer: {transaction.buyer.name}</h2>
+            <h2 className="text-xl font-bold text-gray-900 mt-1">
+              {transaction.farmer.name ?? 'Unknown'} <span className="text-gray-400 mx-2">→</span> {transaction.buyer.name}
+            </h2>
           </div>
           <StatusBadge status={transaction.status} />
         </div>
@@ -59,14 +70,14 @@ export default async function FarmerTransactionDetail({ params }: { params: Prom
         )}
 
         <div className="mt-6 pt-6 border-t border-gray-100">
-          <h3 className="text-sm font-semibold text-gray-700 mb-3">Actions</h3>
-          <TransactionActions transactionId={transaction.id} currentStatus={transaction.status} userRole="FARMER" />
+          <h3 className="text-sm font-semibold text-gray-700 mb-3">Admin Actions</h3>
+          <TransactionActions transactionId={transaction.id} currentStatus={transaction.status} userRole="ADMIN" />
         </div>
       </div>
 
       <div>
-        <h3 className="text-lg font-bold text-gray-900 mb-4">Negotiation Chat</h3>
-        <ChatWindow transactionId={transaction.id} currentUserId={transaction.farmerId} />
+        <h3 className="text-lg font-bold text-gray-900 mb-4">Negotiation Chat (Read Only/Admin)</h3>
+        <ChatWindow transactionId={transaction.id} currentUserId="admin" />
       </div>
     </div>
   );
