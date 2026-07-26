@@ -71,7 +71,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
       }).catch(err => console.error('[NOTIFICATIONS] Failed:', err));
     }
 
-    // Audit Log
+    // Audit Log - Map farmer/buyer to 'SYSTEM' to satisfy TypeScript types
     await recordAuditLog({
       action: `UPDATE_TX_STATUS_${status}`,
       actorType: isAdmin ? 'ADMIN' : 'SYSTEM',
