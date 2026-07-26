@@ -1,4 +1,5 @@
 'use client';
+import SmartShambaLogo from '@/components/SmartShambaLogo';
 
 import { useState } from 'react';
 import Link from 'next/link';
@@ -24,12 +25,7 @@ export default function FarmerLayout({ children }: { children: React.ReactNode }
     <div className="min-h-screen bg-gray-50 flex">
       {/* Mobile Top Bar */}
       <header className="lg:hidden fixed top-0 left-0 right-0 bg-[#00703C] text-white p-4 flex items-center justify-between z-50 shadow-md h-16">
-        <div className="flex items-center gap-2">
-          <div className="w-8 h-8 bg-white rounded-md flex items-center justify-center">
-            <span className="text-[#00703C] font-bold text-xs">SS</span>
-          </div>
-          <span className="font-bold text-sm">Farmer Portal</span>
-        </div>
+        <SmartShambaLogo variant="full" size="sm" theme="dark" />
         <button 
           onClick={() => setSidebarOpen(!sidebarOpen)} 
           className="p-2 rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-white"
@@ -54,15 +50,7 @@ export default function FarmerLayout({ children }: { children: React.ReactNode }
         ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0`}
       >
         <div className="p-6 border-b border-green-700/50 hidden lg:block">
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 bg-white rounded-lg flex items-center justify-center">
-              <span className="text-[#00703C] font-bold text-sm">SS</span>
-            </div>
-            <div>
-              <p className="font-bold text-white text-sm">{t.common.appName}</p>
-              <p className="text-xs text-green-200">Farmer Portal</p>
-            </div>
-          </div>
+          <SmartShambaLogo variant="full" size="md" theme="dark" />
         </div>
         
         {/* Mobile Header inside Sidebar */}

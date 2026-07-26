@@ -1,4 +1,5 @@
 'use client';
+import SmartShambaLogo from '@/components/SmartShambaLogo';
 
 import { useState } from 'react';
 import Link from 'next/link';
@@ -20,12 +21,7 @@ export default function BuyerLayout({ children }: { children: React.ReactNode })
   return (
     <div className="min-h-screen bg-gray-50 flex">
       <header className="lg:hidden fixed top-0 left-0 right-0 bg-[#00703C] text-white p-4 flex items-center justify-between z-50 shadow-md h-16">
-        <div className="flex items-center gap-2">
-          <div className="w-8 h-8 bg-white rounded-md flex items-center justify-center">
-            <span className="text-[#00703C] font-bold text-xs">SS</span>
-          </div>
-          <span className="font-bold text-sm">Buyer Portal</span>
-        </div>
+        <SmartShambaLogo variant="full" size="sm" theme="dark" />
         <button onClick={() => setSidebarOpen(!sidebarOpen)} className="p-2 rounded-md hover:bg-green-700">
           {sidebarOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
         </button>
@@ -37,15 +33,7 @@ export default function BuyerLayout({ children }: { children: React.ReactNode })
 
       <aside className={`w-72 bg-[#00703C] flex flex-col fixed top-0 left-0 bottom-0 shadow-xl z-50 transition-transform duration-300 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0`}>
         <div className="p-6 border-b border-green-700/50 hidden lg:block">
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 bg-white rounded-lg flex items-center justify-center">
-              <span className="text-[#00703C] font-bold text-sm">SS</span>
-            </div>
-            <div>
-              <p className="font-bold text-white text-sm">SmartShamba</p>
-              <p className="text-xs text-green-200">Buyer Portal</p>
-            </div>
-          </div>
+          <SmartShambaLogo variant="full" size="md" theme="dark" />
         </div>
 
         <nav className="flex-1 p-4 space-y-1 overflow-y-auto">

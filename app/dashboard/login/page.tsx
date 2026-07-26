@@ -1,4 +1,5 @@
 'use client';
+import SmartShambaLogo from '@/components/SmartShambaLogo';
 import { useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 
@@ -64,9 +65,7 @@ function LoginForm() {
       <div className="w-full max-w-md">
         {/* Logo */}
         <div className="text-center mb-8">
-          <div className="w-16 h-16 bg-white rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
-            <span className="text-green-800 font-bold text-2xl">SS</span>
-          </div>
+          <SmartShambaLogo variant="full" size="lg" className="justify-center mb-4" />
           <h1 className="text-2xl font-bold text-white">SmartShamba</h1>
           <p className="text-green-200 mt-1 text-sm">Farmer Portal</p>
         </div>

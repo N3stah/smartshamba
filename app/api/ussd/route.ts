@@ -75,7 +75,6 @@ export async function POST(req: NextRequest) {
         } 
         else if (step === 3) {
           const rawId = steps[2];
-          console.log('[USSD] Raw ID input:', rawId);
           if (!isValidKenyanNationalId(rawId)) {
             response = end('Invalid ID. Must be 8 digits.\nPlease dial *384*53374# to try again.');
           } else {
@@ -210,21 +209,32 @@ export async function POST(req: NextRequest) {
         if (step === 1) {
           response = con(`Farmer Menu\n\n1. Sell Maize / Beans\n2. My Groups\n3. Market Prices & Alerts\n4. My Transactions\n5. Quality Check\n6. Website Login\n0. Back`);
         } 
+        
+        // 1. SELL PRODUCE
         else if (steps[1] === '1') {
           if (step === 2) {
             response = con('Select Bag Type:\n1. 90kg (Standard)\n2. 50kg (Small)\n0. Back');
           } 
           else if (step === 3) {
-            response = con('Enter number of bags (max 500):');
+            if (steps[2] !== '1' && steps[2] !== '2') {
+              response = end('Invalid bag type. Please dial *384*53374# to try again.');
+            } else {
+              response = con('Enter number of bags (max 500):');
+            }
           } 
           else if (step === 4) {
-            const buyers = await prisma.buyer.findMany({
-              where: { active: true },
-              orderBy: { pricePerBag: 'desc' },
-              take: 5,
-            });
-            const list = buyers.map((b, i) => `${i + 1}. ${b.name}\n   KSh ${b.pricePerBag}/bag`).join('\n');
-            response = con(`Buyer offers:\n${list}\n\nReply with buyer number:`);
+            const quantity = parseInt(steps[3]);
+            if (isNaN(quantity) || quantity <= 0 || quantity > 500) {
+              response = end('Invalid quantity. Must be between 1 and 500.\nPlease dial *384*53374# to try again.');
+            } else {
+              const buyers = await prisma.buyer.findMany({
+                where: { active: true },
+                orderBy: { pricePerBag: 'desc' },
+                take: 5,
+              });
+              const list = buyers.map((b, i) => `${i + 1}. ${b.name}\n   KSh ${b.pricePerBag}/bag`).join('\n');
+              response = con(`Buyer offers:\n${list}\n\nReply with buyer number:`);
+            }
           } 
           else if (step === 5) {
             const buyers = await prisma.buyer.findMany({
@@ -232,26 +242,29 @@ export async function POST(req: NextRequest) {
               orderBy: { pricePerBag: 'desc' },
               take: 5,
             });
-            const buyerIndex = parseInt(steps[3]) - 1;
+            const buyerIndex = parseInt(steps[4]) - 1;
             const selectedBuyer = buyers[buyerIndex];
-            const quantity = parseInt(steps[2]);
-            if (!selectedBuyer || isNaN(quantity) || quantity <= 0 || quantity > 500) {
-              response = end('Invalid input. Please dial *384*53374# to try again.');
+            const quantity = parseInt(steps[3]);
+            
+            if (!selectedBuyer) {
+              response = end('Invalid buyer selection. Please dial *384*53374# to try again.');
             } else {
               const total = selectedBuyer.pricePerBag * quantity;
               response = con(`Confirm offer:\nBuyer: ${selectedBuyer.name}\nBags: ${quantity}\nTotal: KSh ${total.toLocaleString()}\n\n1. Confirm\n2. Cancel`);
             }
           } 
           else if (step === 6) {
-            if (steps[4] === '1') {
+            if (steps[5] === '2') {
+              response = end('Offer cancelled.');
+            } else if (steps[5] === '1') {
               const buyers = await prisma.buyer.findMany({
                 where: { active: true },
                 orderBy: { pricePerBag: 'desc' },
                 take: 5,
               });
-              const buyerIndex = parseInt(steps[3]) - 1;
+              const buyerIndex = parseInt(steps[4]) - 1;
               const selectedBuyer = buyers[buyerIndex];
-              const quantity = parseInt(steps[2]);
+              const quantity = parseInt(steps[3]);
               const reference = generateReference();
               const totalValue = selectedBuyer.pricePerBag * quantity;
               
@@ -286,14 +299,18 @@ export async function POST(req: NextRequest) {
               }
               response = end(`Offer confirmed!\nRef: ${reference}\nTotal: KSh ${totalValue.toLocaleString()}\nSMS sent.`);
             } else {
-              response = end('Offer cancelled.');
+              response = end('Invalid input. Please dial *384*53374# to try again.');
             }
           }
         } 
+        
+        // 2. MY GROUPS
         else if (steps[1] === '2') {
           if (step === 2) response = con('My Groups\n1. Join Village Group\n2. Create New Group\n3. My Active Groups\n0. Back');
           else response = end('Please visit smartshamba.vercel.app/dashboard/groups to manage your groups easily.');
         } 
+        
+        // 3. MARKET PRICES & ALERTS
         else if (steps[1] === '3') {
           if (step === 2) response = con('Market Prices & Alerts\n1. Current Prices\n2. Subscribe to Alerts\n0. Back');
           else if (step === 3) {
@@ -305,6 +322,8 @@ export async function POST(req: NextRequest) {
             }
           }
         } 
+        
+        // 4. MY TRANSACTIONS
         else if (steps[1] === '4') {
           if (step === 2) {
             const transactions = await prisma.transaction.findMany({
@@ -336,6 +355,8 @@ export async function POST(req: NextRequest) {
             }
           }
         } 
+        
+        // 5. QUALITY CHECK
         else if (steps[1] === '5') {
           if (step === 2) response = con('Quality Check\nEnter moisture level (e.g. 13):');
           else if (step === 3) {
@@ -349,6 +370,8 @@ export async function POST(req: NextRequest) {
             }
           }
         } 
+        
+        // 6. WEBSITE LOGIN
         else if (steps[1] === '6') {
           if (step === 2) response = con('We will send an OTP to your phone.\n1. Send OTP\n0. Back');
           else if (step === 3) {
@@ -443,8 +466,6 @@ export async function POST(req: NextRequest) {
             const price = parseInt(steps[2]);
             if (isNaN(price) || price <= 0) {
               response = end('Invalid price. Please try again.');
-            } else if (!buyer) {
-              response = end('Buyer account not found. Please register first.');
             } else {
               await prisma.buyer.update({ where: { id: buyer.id }, data: { pricePerBag: price } });
               response = end('Buying offer updated! Farmers can now see your price.');
@@ -454,7 +475,7 @@ export async function POST(req: NextRequest) {
         else if (steps[1] === '3') {
           if (step === 2) {
             const transactions = await prisma.transaction.findMany({
-              where: { buyerId: buyer?.id },
+              where: { buyerId: buyer.id },
               orderBy: { createdAt: 'desc' },
               take: 3,
               include: { farmer: true },

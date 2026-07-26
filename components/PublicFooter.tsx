@@ -1,13 +1,11 @@
 import Link from 'next/link';
+import SmartShambaLogo from './SmartShambaLogo';
 export default function PublicFooter() {
   return (
     <footer className="bg-gray-900 text-gray-400">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 grid grid-cols-1 md:grid-cols-4 gap-8">
         <div>
-          <div className="flex items-center gap-2 mb-4">
-            <div className="w-9 h-9 bg-[#00703C] rounded-lg flex items-center justify-center text-white font-bold text-sm">SS</div>
-            <span className="font-bold text-lg text-white">SmartShamba</span>
-          </div>
+          <SmartShambaLogo variant="full" size="md" theme="dark" className="mb-4" />
           <p className="text-sm">Direct, transparent maize trading for Kenya's farmers and buyers.</p>
         </div>
         <div>
@@ -29,7 +27,7 @@ export default function PublicFooter() {
           <h4 className="text-white font-semibold mb-4 text-sm uppercase tracking-wider">Support</h4>
           <ul className="space-y-3 text-sm">
             <li>USSD: <span className="font-mono text-white">*384*53374#</span></li>
-            <li>Help: 0712345678</li>
+            <li>Help: <a href="tel:+254722138632" className="hover:text-white transition-colors">+254722138632</a></li>
             <li>Privacy Policy</li>
           </ul>
         </div>

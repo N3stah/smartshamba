@@ -15,6 +15,8 @@ import {
   CreditCard
 } from 'lucide-react';
 import { useState } from 'react';
+import SmartShambaLogo from '@/components/SmartShambaLogo';
+import WelcomeAnimation from '@/components/WelcomeAnimation';
 
 // A simple interactive USSD visual component for the "How it Works" section
 function UssdVisual() {
@@ -76,6 +78,7 @@ export default function LandingPage() {
   const [isOpen, setIsOpen] = useState(false);
   return (
     <div className="bg-white text-gray-900 min-h-screen">
+      <WelcomeAnimation />
       
       {/* Announcement Bar */}
       <div className="bg-[#00703C] text-white text-center text-xs sm:text-sm py-2 px-4 font-medium">
@@ -85,16 +88,13 @@ export default function LandingPage() {
       {/* Navigation Header */}
       <header className="sticky top-0 z-50 bg-white/95 backdrop-blur border-b border-gray-100">
         <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between h-16">
-          <div className="flex items-center gap-2">
-            <div className="w-9 h-9 bg-[#00703C] rounded-lg flex items-center justify-center text-white font-bold text-sm">SS</div>
-            <span className="font-bold text-lg text-gray-900">SmartShamba</span>
-          </div>
+          <SmartShambaLogo variant="full" size="md" />
           
           <div className="hidden md:flex items-center gap-8 text-sm font-medium text-gray-600">
-            <Link href="#buyers" className="hover:text-[#00703C] transition-colors">Verified Buyers</Link>
-            <Link href="#prices" className="hover:text-[#00703C] transition-colors">Market Prices</Link>
-            <Link href="#group-selling" className="hover:text-[#00703C] transition-colors">Group Selling</Link>
-            <Link href="#about" className="hover:text-[#00703C] transition-colors">About Us</Link>
+            <Link href="/buyers" className="hover:text-[#00703C] transition-colors">Verified Buyers</Link>
+            <Link href="/market-prices" className="hover:text-[#00703C] transition-colors">Market Prices</Link>
+            <Link href="/group-selling" className="hover:text-[#00703C] transition-colors">Group Selling</Link>
+            <Link href="/about" className="hover:text-[#00703C] transition-colors">About Us</Link>
           </div>
 
           <div className="hidden md:flex items-center gap-3">
@@ -114,10 +114,10 @@ export default function LandingPage() {
         </nav>
         {isOpen && (
           <div className="md:hidden bg-white border-t border-gray-100 px-4 py-4 space-y-4">
-            <Link href="#buyers" onClick={() => setIsOpen(false)} className="block text-gray-600 hover:text-[#00703C]">Verified Buyers</Link>
-            <Link href="#prices" onClick={() => setIsOpen(false)} className="block text-gray-600 hover:text-[#00703C]">Market Prices</Link>
-            <Link href="#group-selling" onClick={() => setIsOpen(false)} className="block text-gray-600 hover:text-[#00703C]">Group Selling</Link>
-            <Link href="#about" onClick={() => setIsOpen(false)} className="block text-gray-600 hover:text-[#00703C]">About Us</Link>
+            <Link href="/buyers" onClick={() => setIsOpen(false)} className="block text-gray-600 hover:text-[#00703C]">Verified Buyers</Link>
+            <Link href="/market-prices" onClick={() => setIsOpen(false)} className="block text-gray-600 hover:text-[#00703C]">Market Prices</Link>
+            <Link href="/group-selling" onClick={() => setIsOpen(false)} className="block text-gray-600 hover:text-[#00703C]">Group Selling</Link>
+            <Link href="/about" onClick={() => setIsOpen(false)} className="block text-gray-600 hover:text-[#00703C]">About Us</Link>
             <div className="flex flex-col gap-2 pt-4 border-t border-gray-100">
               <Link href="/buyer/login" className="w-full text-center px-4 py-2 text-sm font-semibold text-[#00703C] border border-[#00703C] rounded-lg">Buyer Portal</Link>
               <Link href="/dashboard/login?from=%2Fdashboard" className="w-full text-center px-4 py-2 text-sm font-semibold text-white bg-[#00703C] rounded-lg">Farmer Portal</Link>
@@ -190,7 +190,7 @@ export default function LandingPage() {
       </section>
 
       {/* How It Works Section */}
-      <section id="how-it-works" className="py-24 bg-gray-50">
+      <section className="py-24 bg-gray-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-3xl sm:text-4xl font-extrabold text-gray-900">How It Works</h2>
@@ -222,7 +222,7 @@ export default function LandingPage() {
       </section>
 
       {/* Feature Grid / Group Selling */}
-      <section id="group-selling" className="py-24 bg-white">
+      <section className="py-24 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-3xl sm:text-4xl font-extrabold text-gray-900">Built for Fair Trade</h2>
@@ -258,7 +258,7 @@ export default function LandingPage() {
       </section>
 
       {/* Market Prices Section */}
-      <section id="prices" className="py-24 bg-gray-50">
+      <section className="py-24 bg-gray-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-3xl sm:text-4xl font-extrabold text-gray-900">Market Price Insights</h2>
@@ -299,7 +299,7 @@ export default function LandingPage() {
       </section>
 
       {/* Verified Buyers Section */}
-      <section id="buyers" className="py-24 bg-white">
+      <section className="py-24 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-3xl sm:text-4xl font-extrabold text-gray-900">Verified Buyers Directory</h2>
@@ -356,13 +356,10 @@ export default function LandingPage() {
       </section>
 
       {/* Footer / About */}
-      <footer id="about" className="bg-gray-900 text-gray-400">
+      <footer className="bg-gray-900 text-gray-400">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 grid grid-cols-1 md:grid-cols-4 gap-8">
           <div>
-            <div className="flex items-center gap-2 mb-4">
-              <div className="w-9 h-9 bg-[#00703C] rounded-lg flex items-center justify-center text-white font-bold text-sm">SS</div>
-              <span className="font-bold text-lg text-white">SmartShamba</span>
-            </div>
+            <SmartShambaLogo variant="full" size="md" theme="dark" className="mb-4" />
             <p className="text-sm">Direct, transparent maize trading for Kenya&apos;s farmers and buyers.</p>
           </div>
 

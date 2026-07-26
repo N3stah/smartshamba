@@ -1,4 +1,5 @@
 'use client';
+import SmartShambaLogo from '@/components/SmartShambaLogo';
 import { useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 
