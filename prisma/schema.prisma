@@ -37,6 +37,8 @@ model Farmer {
   language        String   @default("en") // i18n: "en" | "sw"
   id          String   @id @default(cuid())
   nationalId  String?  // KYC-lite: 8-digit Kenya National ID
+  password    String?
+  verified    Boolean  @default(false)
   phone     String   @unique
   name      String?
   location  String?
@@ -57,10 +59,12 @@ model Farmer {
 
   notifications          Notification[]
   notificationPreference NotificationPreference?
+  ProduceListing        ProduceListing[]
 }
 
 model Buyer {
   phone           String? @unique // Added for USSD/OTP login
+  password    String?
   language        String   @default("en") // i18n: "en" | "sw"
   id           String    @id @default(cuid())
   name         String
@@ -82,19 +86,27 @@ model Buyer {
   county County? @relation(fields: [countyId], references: [id])
   ward   Ward?   @relation(fields: [wardId], references: [id])
   notifications          Notification[]
+  BuyerDemand           BuyerDemand[]
 }
 
 model Transaction {
   id           String   @id @default(cuid())
   farmerId     String
   buyerId      String
+  produceListingId String?
+  buyerDemandId    String?
+  conversation    Conversation?
   createdAt    DateTime @default(now())
   mpesaRef     String?
   pricePerBag  Float
   quantityBags Int
   reference    String   @unique
   totalValue   Float
-  status       TxStatus @default(PENDING)
+  status          TxStatus @default(PENDING)
+  deliveryMethod  String?  // "PICKUP" | "DELIVERY"
+  deliveryLocation String?
+  scheduledDate   DateTime?
+  fulfillmentNotes String?
 
   buyer  Buyer  @relation(fields: [buyerId], references: [id])
   farmer Farmer @relation(fields: [farmerId], references: [id])
@@ -112,6 +124,7 @@ model FarmerGroup {
   id          String  @id @default(cuid())
   name        String
   description String?
+  whatsappLink String?
 
   countyId String?
   wardId   String?
@@ -199,9 +212,12 @@ model OtpCode {
 
 enum TxStatus {
   PENDING
+  AGREED
+  DELIVERY_SCHEDULED
   CONFIRMED
   DELIVERED
   SETTLED
+  CLOSED
   DISPUTED
 }
 
@@ -367,4 +383,50 @@ model AuditLog {
   @@index([entityType, entityId])
   @@index([actorType, actorId])
   @@index([createdAt])
+}
+
+model ProduceListing {
+  id           String   @id @default(cuid())
+  farmerId     String
+  product      String   // e.g., "Maize", "Beans"
+  quantityBags Int
+  pricePerBag  Float
+  status       String   @default("ACTIVE") // ACTIVE, CLOSED
+  createdAt    DateTime @default(now())
+  farmer       Farmer   @relation(fields: [farmerId], references: [id])
+  @@index([farmerId])
+}
+
+model BuyerDemand {
+  id           String   @id @default(cuid())
+  buyerId      String
+  product      String
+  quantityBags Int
+  location     String
+  status       String   @default("ACTIVE") // ACTIVE, CLOSED
+  createdAt    DateTime @default(now())
+  buyer        Buyer    @relation(fields: [buyerId], references: [id])
+  @@index([buyerId])
+}
+
+
+model Conversation {
+  id             String       @id @default(cuid())
+  transactionId  String       @unique
+  transaction    Transaction  @relation(fields: [transactionId], references: [id])
+  messages       Message[]
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+}
+
+model Message {
+  id             String       @id @default(cuid())
+  conversationId String
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  senderId       String
+  senderType     String       // "FARMER" | "BUYER"
+  body           String
+  createdAt      DateTime     @default(now())
+
+  @@index([conversationId])
 }
