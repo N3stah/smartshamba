@@ -17,7 +17,7 @@ export default function FarmerLayout({ children }: { children: React.ReactNode }
     { href: '/dashboard/transactions', label: 'My Transactions', icon: ArrowLeftRight },
     { href: '/dashboard/disputes', label: 'My Disputes', icon: AlertTriangle },
     { href: '/dashboard/notifications', label: 'Notifications', icon: Bell },
-    { href: '/buyer', label: 'Buyer Directory', icon: Building2 },
+    { href: '/dashboard/buyers', label: 'Buyer Directory', icon: Building2 },
   ];
 
   return (
