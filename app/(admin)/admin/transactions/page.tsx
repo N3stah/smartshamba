@@ -74,7 +74,7 @@ function SettleModal({
           <div className="grid grid-cols-2 gap-3 text-sm">
             <div>
               <p className="text-xs text-gray-400 uppercase tracking-wider">Reference</p>
-              <p className="font-mono text-gray-900 font-medium mt-0.5">{tx.reference}</p>
+              <p className="font-mono text-gray-900 font-medium mt-0.5"><Link href={`/admin/transactions/${tx.id}`} className="text-[#00703C] hover:underline">{tx.reference}</Link></p>
             </div>
             <div>
               <p className="text-xs text-gray-400 uppercase tracking-wider">Amount</p>
@@ -277,7 +277,7 @@ export default function TransactionsPage() {
                 <tr key={tx.id} className="hover:bg-gray-50 transition-colors">
                   <td className="px-4 py-3">
                     <span className="font-mono text-xs text-gray-700 bg-gray-100 px-2 py-1 rounded">
-                      {tx.reference}
+                      <Link href={`/admin/transactions/${tx.id}`} className="text-[#00703C] hover:underline">{tx.reference}</Link>
                     </span>
                   </td>
                   <td className="px-4 py-3">
