@@ -96,6 +96,7 @@ model Transaction {
   produceListingId String?
   buyerDemandId    String?
   conversation    Conversation?
+  b2cPayout       B2CPayout?
   createdAt    DateTime @default(now())
   mpesaRef     String?
   pricePerBag  Float
@@ -107,6 +108,8 @@ model Transaction {
   deliveryLocation String?
   scheduledDate   DateTime?
   fulfillmentNotes String?
+  platformFee     Float    @default(0)
+  b2cRef          String?  // M-PESA B2C ConversationID
 
   buyer  Buyer  @relation(fields: [buyerId], references: [id])
   farmer Farmer @relation(fields: [farmerId], references: [id])
@@ -216,6 +219,7 @@ enum TxStatus {
   DELIVERY_SCHEDULED
   CONFIRMED
   DELIVERED
+  SETTLING
   SETTLED
   CLOSED
   DISPUTED
@@ -429,4 +433,28 @@ model Message {
   createdAt      DateTime     @default(now())
 
   @@index([conversationId])
+}
+
+
+model B2CPayout {
+  id                    String   @id @default(cuid())
+  transactionId         String   @unique
+  transaction           Transaction @relation(fields: [transactionId], references: [id])
+  conversationId        String?  // Safaricom ConversationID
+  originatorConversationID String? // Safaricom OriginatorConversationID
+  amount                Float
+  status                String   @default("PENDING") // PENDING, SUCCESS, FAILED
+  mpesaRef              String?  // M-PESA Transaction ID if successful
+  failureReason         String?
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+}
+
+
+model PushSubscription {
+  id        String   @id @default(cuid())
+  userId    String   // Generic ID (Farmer ID or Buyer ID)
+  endpoint  String   @unique
+  keys      Json
+  createdAt DateTime @default(now())
 }

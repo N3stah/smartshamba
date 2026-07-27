@@ -40,6 +40,7 @@ export async function recordAuditLog(params: {
  */
 export async function getAuditLogs(params: {
   entityType?: string;
+  action?: string;
   entityId?: string;
   actorId?: string;
   limit?: number;
@@ -48,6 +49,7 @@ export async function getAuditLogs(params: {
   const where: Prisma.AuditLogWhereInput = {};
   
   if (params.entityType) where.entityType = params.entityType;
+  if (params.action) where.action = { contains: params.action, mode: "insensitive" };
   if (params.entityId) where.entityId = params.entityId;
   if (params.actorId) where.actorId = params.actorId;
 

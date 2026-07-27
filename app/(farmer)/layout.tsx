@@ -4,9 +4,10 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import LanguageSwitcher from '@/components/LanguageSwitcher';
+import NotificationPermission from '@/components/NotificationPermission';
 import SmartShambaLogo from '@/components/SmartShambaLogo';
 import { useI18n } from '@/lib/i18n';
-import { LayoutDashboard, ArrowLeftRight, AlertTriangle, Bell, Building2, Tag, Settings, Megaphone, LogOut, Menu, X } from 'lucide-react';
+import { LayoutDashboard, ArrowLeftRight, AlertTriangle, Bell, Building2, Tag, Settings, Megaphone, LogOut, Menu, X, BarChart2 } from 'lucide-react';
 
 export default function FarmerLayout({ children }: { children: React.ReactNode }) {
   const { t } = useI18n();
@@ -15,6 +16,7 @@ export default function FarmerLayout({ children }: { children: React.ReactNode }
 
   const navItems = [
     { href: '/dashboard', label: t.dashboard.title, icon: LayoutDashboard },
+    { href: '/dashboard/analytics', label: 'Analytics', icon: BarChart2 },
     { href: '/dashboard/listings', label: 'Sell Produce', icon: Tag },
     { href: '/dashboard/demands', label: 'Active Demands', icon: Megaphone },
     { href: '/dashboard/transactions', label: 'My Transactions', icon: ArrowLeftRight },
@@ -60,6 +62,7 @@ export default function FarmerLayout({ children }: { children: React.ReactNode }
         </nav>
 
         <div className="p-4 border-t border-green-700/50 space-y-3">
+          <NotificationPermission />
           <LanguageSwitcher />
           <p className="text-xs text-green-300 mb-1 text-center">Dial *384*53374# to sell maize</p>
           <form action="/api/auth/logout" method="POST">

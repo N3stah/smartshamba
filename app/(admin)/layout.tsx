@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import LanguageSwitcher from '@/components/LanguageSwitcher';
 import { useI18n } from '@/lib/i18n';
-import { LayoutDashboard, ArrowLeftRight, Building2, Users, Bell, Megaphone, ShieldCheck, LogOut, Menu, X } from 'lucide-react';
+import { LayoutDashboard, ArrowLeftRight, Building2, Users, Bell, Megaphone, ShieldCheck, LogOut, Menu, X, BarChart2, Package } from 'lucide-react';
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const { t } = useI18n();
@@ -15,7 +15,10 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   const navItems = [
     { href: '/admin', label: t.dashboard.title, icon: LayoutDashboard },
+    { href: '/admin/analytics', label: 'Analytics', icon: BarChart2 },
     { href: '/admin/transactions', label: 'Transactions', icon: ArrowLeftRight },
+    { href: '/admin/listings', label: 'Listings', icon: Package },
+    { href: '/admin/demands', label: 'Demands', icon: Megaphone },
     { href: '/admin/buyers', label: 'Buyers', icon: Building2 },
     { href: '/admin/farmers', label: 'Farmers', icon: Users },
     { href: '/admin/notifications', label: 'Notifications', icon: Bell },

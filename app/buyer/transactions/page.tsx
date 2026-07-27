@@ -20,7 +20,10 @@ export default async function BuyerTransactions() {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold text-gray-900 mb-6">My Transactions</h1>
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-2xl font-bold text-gray-900">My Transactions</h1>
+        <a href="/api/buyers/export/transactions" className="bg-green-700 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-green-600">Export to CSV</a>
+      </div>
       <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-sm">

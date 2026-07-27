@@ -1,7 +1,7 @@
 'use client';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Loader2, CheckCircle, Truck, DollarSign, PackageCheck, Calendar } from 'lucide-react';
+import { Loader2, CheckCircle, Truck, DollarSign, PackageCheck, Calendar, AlertTriangle } from 'lucide-react';
 
 interface Props {
   transactionId: string;
@@ -64,7 +64,7 @@ export default function TransactionActions({ transactionId, currentStatus, userR
     </button>
   );
 
-  if (error) return <div className="text-red-500 text-sm mb-4">{error}</div>;
+  if (error) return <div className="text-red-500 text-sm mb-4 bg-red-50 p-2 rounded">{error}</div>;
 
   return (
     <div className="space-y-4">
@@ -84,13 +84,31 @@ export default function TransactionActions({ transactionId, currentStatus, userR
         )}
         
         {currentStatus === 'DELIVERED' && userRole !== 'FARMER' && (
-          <Button onClick={() => updateStatus('SETTLED')} color="bg-green-600" icon={DollarSign}>Confirm Payment</Button>
+          <Button onClick={() => updateStatus('SETTLING')} color="bg-green-600" icon={DollarSign}>Initiate M-PESA Payment</Button>
+        )}
+        
+        {currentStatus === 'SETTLING' && (
+          <div className="text-sm text-orange-700 font-medium bg-orange-50 px-4 py-2 rounded-lg flex items-center gap-2">
+            <Loader2 className="w-4 h-4 animate-spin" /> Processing M-PESA Payment...
+          </div>
         )}
         
         {currentStatus === 'SETTLED' && (
           <Button onClick={() => updateStatus('CLOSED')} color="bg-gray-600" icon={CheckCircle}>Close Transaction</Button>
         )}
       </div>
+
+      {/* Admin Manual Override for B2C Failures (Sandbox Testing) */}
+      {userRole === 'ADMIN' && currentStatus === 'SETTLING' && (
+        <div className="mt-4 p-4 border border-red-200 bg-red-50 rounded-lg">
+          <div className="flex items-center gap-2 mb-2">
+            <AlertTriangle className="w-4 h-4 text-red-600" />
+            <h4 className="text-sm font-bold text-red-800">Admin Manual Override</h4>
+          </div>
+          <p className="text-xs text-red-700 mb-3">If the automated M-PESA B2C fails (common in Sandbox), you can manually mark this transaction as SETTLED to bypass it.</p>
+          <Button onClick={() => updateStatus('SETTLED')} color="bg-red-600" icon={CheckCircle}>Force Settle (Admin)</Button>
+        </div>
+      )}
 
       {showLogisticsForm && (
         <form onSubmit={handleScheduleSubmit} className="bg-gray-50 p-4 rounded-lg border border-gray-200 space-y-3">

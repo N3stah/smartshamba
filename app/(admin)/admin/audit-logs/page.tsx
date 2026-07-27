@@ -18,30 +18,48 @@ export default function AdminAuditLogsPage() {
   const [logs, setLogs] = useState<AuditLog[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [filter, setFilter] = useState<string>('');
-
-  const fetchLogs = useCallback(async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const url = filter 
-        ? `/api/admin/audit-logs?entityType=${filter}&limit=100`
-        : `/api/admin/audit-logs?limit=100`;
-      const res = await fetch(url);
-      if (!res.ok) throw new Error('Failed to fetch logs');
-      const data = await res.json();
-      setLogs(data.logs);
-    } catch (err) {
-      console.error('[ADMIN]', err);
-      setError('Failed to load audit logs.');
-    } finally {
-      setLoading(false);
-    }
-  }, [filter]);
+  
+  // Filter states
+  const [entityType, setEntityType] = useState('');
+  const [action, setAction] = useState('');
+  const [filterKey, setFilterKey] = useState(0); // Used to force refetch
 
   useEffect(() => {
-    fetchLogs();
-  }, [fetchLogs]);
+    let cancelled = false;
+
+    async function load() {
+      setLoading(true);
+      setError(null);
+      try {
+        const params = new URLSearchParams();
+        if (entityType) params.set('entityType', entityType);
+        if (action) params.set('action', action);
+        
+        const res = await fetch(`/api/admin/audit-logs?${params.toString()}`);
+        if (!res.ok) throw new Error('Failed to fetch logs');
+        const data = await res.json();
+        if (!cancelled) setLogs(data.logs);
+      } catch (err) {
+        console.error('[DISPUTES]', err);
+        if (!cancelled) setError('Failed to load audit logs. Try refreshing.');
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    }
+
+    load();
+    return () => { cancelled = true; };
+  }, [filterKey, entityType, action]);
+
+  const handleApplyFilters = () => {
+    setFilterKey(k => k + 1); // Trigger useEffect refetch
+  };
+
+  const handleClearFilters = () => {
+    setEntityType('');
+    setAction('');
+    setFilterKey(k => k + 1);
+  };
 
   return (
     <main className="min-h-screen bg-gray-50 p-6">
@@ -50,19 +68,47 @@ export default function AdminAuditLogsPage() {
         Track all administrative actions and system changes.
       </p>
 
-      <div className="mb-4 flex gap-2">
-        <input
-          type="text"
-          placeholder="Filter by entity (e.g. Transaction, Dispute)"
-          className="p-2 border rounded text-sm w-64 focus:ring-1 focus:ring-green-500 outline-none"
-          value={filter}
-          onChange={(e) => setFilter(e.target.value)}
-        />
+      {/* Filter Bar */}
+      <div className="mb-6 flex flex-wrap items-end gap-4 bg-white p-4 rounded-lg border border-gray-200">
+        <div className="flex flex-col">
+          <label className="text-xs font-semibold text-gray-500 mb-1">Entity Type</label>
+          <select 
+            value={entityType} 
+            onChange={(e) => setEntityType(e.target.value)}
+            className="border border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-1 focus:ring-green-500 outline-none"
+          >
+            <option value="">All</option>
+            <option value="Transaction">Transaction</option>
+            <option value="Farmer">Farmer</option>
+            <option value="Buyer">Buyer</option>
+            <option value="Dispute">Dispute</option>
+            <option value="ProduceListing">ProduceListing</option>
+            <option value="BuyerDemand">BuyerDemand</option>
+          </select>
+        </div>
+        
+        <div className="flex flex-col">
+          <label className="text-xs font-semibold text-gray-500 mb-1">Action Contains</label>
+          <input 
+            type="text" 
+            placeholder="e.g. UPDATE, DELETE, SETTLE" 
+            value={action}
+            onChange={(e) => setAction(e.target.value)}
+            className="border border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-1 focus:ring-green-500 outline-none"
+          />
+        </div>
+
         <button 
-          onClick={fetchLogs}
-          className="bg-green-600 text-white px-4 py-2 rounded text-sm hover:bg-green-700"
+          onClick={handleApplyFilters}
+          className="bg-green-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-green-700"
         >
-          Apply Filter
+          Apply Filters
+        </button>
+        <button 
+          onClick={handleClearFilters}
+          className="bg-gray-200 text-gray-700 px-4 py-2 rounded-md text-sm font-medium hover:bg-gray-300"
+        >
+          Clear
         </button>
       </div>
 
@@ -93,7 +139,7 @@ export default function AdminAuditLogsPage() {
             ) : logs.length === 0 ? (
               <tr>
                 <td colSpan={5} className="p-8 text-center text-gray-500">
-                  No audit logs found.
+                  No audit logs found matching your filters.
                 </td>
               </tr>
             ) : (

@@ -66,7 +66,8 @@ export default async function FarmerTransactionDetail({ params }: { params: Prom
 
       <div>
         <h3 className="text-lg font-bold text-gray-900 mb-4">Negotiation Chat</h3>
-        <ChatWindow transactionId={transaction.id} currentUserId={transaction.farmerId} />
+        {/* Passing viewerRole="FARMER" explicitly */}
+        <ChatWindow transactionId={transaction.id} currentUserId={farmer.id} viewerRole="FARMER" />
       </div>
     </div>
   );

@@ -172,3 +172,61 @@ export async function registerC2BUrlWithRetry(
   console.error(`[MPESA] C2B registration failed after ${maxRetries} attempts`);
   return { ...lastResult, attempts: maxRetries };
 }
+
+
+// ─── B2C (Business-to-Customer) Disbursement ──────────────────────────────
+
+const B2C_INITIATOR = process.env.MPESA_B2C_INITIATOR_NAME ?? 'test';
+const B2C_SECURITY_CRED = process.env.MPESA_B2C_SECURITY_CREDENTIAL ?? '';
+const B2C_SHORTCODE = process.env.MPESA_B2C_SHORTCODE ?? SHORTCODE;
+const B2C_QUEUE_URL = process.env.MPESA_B2C_QUEUE_URL ?? '';
+const B2C_RESULT_URL = process.env.MPESA_B2C_RESULT_URL ?? '';
+
+export async function sendB2CPayout(
+  phone: string, 
+  amount: number, 
+  ref: string
+): Promise<{ success: boolean; conversationId?: string; error?: string }> {
+  try {
+    const token = await getMpesaToken();
+    
+    // Format phone for M-PESA (remove + and leading 0, add 254)
+    let normalized = phone.replace(/\+/g, '');
+    if (normalized.startsWith('0')) normalized = '254' + normalized.substring(1);
+    if (!normalized.startsWith('254')) normalized = '254' + normalized;
+    
+    const payload = {
+      InitiatorName: B2C_INITIATOR,
+      SecurityCredential: B2C_SECURITY_CRED,
+      CommandID: 'BusinessPayment',
+      Amount: Math.round(amount),
+      PartyA: B2C_SHORTCODE,
+      PartyB: normalized,
+      Remarks: `Payment for ${ref}`,
+      QueueTimeOutURL: B2C_QUEUE_URL,
+      ResultURL: B2C_RESULT_URL,
+      Occasion: 'SmartShamba Sale',
+    };
+
+    const res = await fetch(`${DARAJA_BASE_URL}/mpesa/b2c/v1/paymentrequest`, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(payload),
+    });
+
+    const data = await res.json();
+    console.log('[MPESA] B2C Response:', JSON.stringify(data));
+
+    if (data.ResponseCode === '0') {
+      return { success: true, conversationId: data.ConversationID };
+    } else {
+      return { success: false, error: data.errorMessage || data.ResponseDescription };
+    }
+  } catch (error) {
+    console.error('[MPESA] B2C Payout failed:', (error as Error).message);
+    return { success: false, error: (error as Error).message };
+  }
+}

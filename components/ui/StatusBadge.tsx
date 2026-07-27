@@ -8,6 +8,7 @@ const STATUS_STYLES: Record<string, string> = {
   DELIVERY_SCHEDULED: 'bg-indigo-100 text-indigo-800',
   CONFIRMED: 'bg-blue-100 text-blue-800',
   DELIVERED: 'bg-purple-100 text-purple-800',
+  SETTLING: 'bg-orange-100 text-orange-800 animate-pulse', // Added SETTLING
   SETTLED: 'bg-green-100 text-green-800',
   CLOSED: 'bg-gray-100 text-gray-800',
   DISPUTED: 'bg-red-100 text-red-800',

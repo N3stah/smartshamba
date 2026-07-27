@@ -4,6 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import LanguageSwitcher from '@/components/LanguageSwitcher';
+import NotificationPermission from '@/components/NotificationPermission';
 import SmartShambaLogo from '@/components/SmartShambaLogo';
 import { useI18n } from '@/lib/i18n';
 import { LayoutDashboard, Megaphone, Settings, LogOut, Menu, X, ArrowLeftRight, AlertTriangle, Bell, Package } from 'lucide-react';
@@ -57,6 +58,7 @@ export default function BuyerLayout({ children }: { children: React.ReactNode })
         </nav>
 
         <div className="p-4 border-t border-green-700/50 space-y-3">
+          <NotificationPermission />
           <LanguageSwitcher />
           <form action="/api/auth/logout" method="POST">
             <button type="submit" className="w-full bg-red-600 hover:bg-red-700 text-white rounded-lg px-3 py-2 text-sm font-medium flex items-center justify-center gap-2">

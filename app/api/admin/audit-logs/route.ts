@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { prisma } from '@/lib/prisma';
 import { requireAdminAuth } from '@/lib/auth';
 import { getAuditLogs } from '@/lib/auditLog';
 import * as Sentry from '@sentry/nextjs';
@@ -10,15 +11,13 @@ export async function GET(req: NextRequest) {
 
     const { searchParams } = new URL(req.url);
     const entityType = searchParams.get('entityType') ?? undefined;
-    const entityId = searchParams.get('entityId') ?? undefined;
-    const actorId = searchParams.get('actorId') ?? undefined;
+    const action = searchParams.get('action') ?? undefined;
     const limit = parseInt(searchParams.get('limit') ?? '50');
     const offset = parseInt(searchParams.get('offset') ?? '0');
 
     const result = await getAuditLogs({
       entityType,
-      entityId,
-      actorId,
+      action,
       limit,
       offset,
     });

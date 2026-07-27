@@ -3,13 +3,15 @@ import { prisma } from '@/lib/prisma';
 import { getFarmerSession, getBuyerSession, requireAdminAuth } from '@/lib/auth';
 import { sendNotification } from '@/lib/notifications';
 import { recordAuditLog } from '@/lib/auditLog';
+import { sendB2CPayout } from '@/lib/mpesa';
 import * as Sentry from '@sentry/nextjs';
 
 const validTransitions: Record<string, string[]> = {
   PENDING: ['AGREED', 'DISPUTED'],
   AGREED: ['DELIVERY_SCHEDULED', 'DISPUTED'],
   DELIVERY_SCHEDULED: ['DELIVERED', 'DISPUTED'],
-  DELIVERED: ['SETTLED', 'DISPUTED'],
+  DELIVERED: ['SETTLING', 'DISPUTED'], // Changed to SETTLING
+  SETTLING: ['SETTLED', 'DELIVERED'], // Allow revert if B2C fails immediately, or Admin Force Settle
   SETTLED: ['CLOSED'],
   CLOSED: [],
   DISPUTED: ['AGREED', 'CLOSED'],
@@ -41,14 +43,17 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
       return NextResponse.json({ error: `Invalid transition from ${transaction.status} to ${status}` }, { status: 400 });
     }
 
+    // Role-based authorization for specific transitions
     if (status === 'DELIVERED' && !farmerPhone && !isAdmin) {
       return NextResponse.json({ error: 'Only the farmer can mark as delivered' }, { status: 403 });
     }
-    if (status === 'SETTLED' && !buyerPhone && !isAdmin) {
-      return NextResponse.json({ error: 'Only the buyer can confirm payment' }, { status: 403 });
+    if (status === 'SETTLING' && !buyerPhone && !isAdmin) {
+      return NextResponse.json({ error: 'Only the buyer can initiate payment' }, { status: 403 });
+    }
+    if (status === 'SETTLED' && transaction.status === 'SETTLING' && !isAdmin) {
+      return NextResponse.json({ error: 'Only admins can manually force settle' }, { status: 403 });
     }
 
-    // Prepare data, parsing date if present
     const dataToUpdate: any = { status };
     if (fulfillmentData) {
       if (fulfillmentData.deliveryMethod) dataToUpdate.deliveryMethod = fulfillmentData.deliveryMethod;
@@ -62,13 +67,43 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
       }
     }
 
+    // ─── B2C Disbursement Logic ──────────────────────────────────────────
+    if (status === 'SETTLING') {
+      const PLATFORM_FEE_RATE = 0.02; // 2% fee
+      const platformFee = transaction.totalValue * PLATFORM_FEE_RATE;
+      const payoutAmount = transaction.totalValue - platformFee;
+      
+      dataToUpdate.platformFee = platformFee;
+
+      // Initiate B2C
+      const b2cResult = await sendB2CPayout(transaction.farmer.phone, payoutAmount, transaction.reference);
+      
+      if (b2cResult.success && b2cResult.conversationId) {
+        dataToUpdate.b2cRef = b2cResult.conversationId;
+        
+        // Create B2C Payout record
+        await prisma.b2CPayout.create({
+          data: {
+            transactionId: transaction.id,
+            conversationId: b2cResult.conversationId,
+            amount: payoutAmount,
+            status: 'PENDING'
+          }
+        });
+      } else {
+        // If B2C fails immediately (e.g., wrong number format), revert status
+        return NextResponse.json({ error: `Failed to initiate M-PESA payment: ${b2cResult.error}` }, { status: 400 });
+      }
+    }
+
     const updatedTx = await prisma.transaction.update({
       where: { id: transactionId },
       data: dataToUpdate,
     });
 
+    // Notify the other party
     const recipientPhone = farmerPhone ? transaction.buyer.phone : transaction.farmer.phone;
-    if (recipientPhone) {
+    if (recipientPhone && status !== 'SETTLING') { // Don't send generic SMS for SETTLING, B2C callback will handle it
       await sendNotification({
         type: 'TRANSACTION_CONFIRMATION',
         recipientPhone,

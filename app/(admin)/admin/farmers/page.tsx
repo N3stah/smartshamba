@@ -35,8 +35,9 @@ export default function FarmersPage() {
 
   return (
     <div>
-      <div className="mb-8">
+      <div className="mb-8 flex justify-between items-center">
         <h1 className="text-2xl font-bold text-gray-900">Farmers</h1>
+        <a href="/api/admin/export/farmers" className="bg-green-700 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-green-600 flex items-center gap-2">Export to CSV</a>
         <p className="text-gray-500 text-sm mt-1">{farmers.length} registered farmers</p>
       </div>
 

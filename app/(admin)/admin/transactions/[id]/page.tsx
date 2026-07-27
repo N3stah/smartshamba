@@ -77,7 +77,7 @@ export default async function AdminTransactionDetail({ params }: { params: Promi
 
       <div>
         <h3 className="text-lg font-bold text-gray-900 mb-4">Negotiation Chat (Read Only/Admin)</h3>
-        <ChatWindow transactionId={transaction.id} currentUserId="admin" />
+        <ChatWindow transactionId={transaction.id} currentUserId="admin" viewerRole="ADMIN" />
       </div>
     </div>
   );

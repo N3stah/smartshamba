@@ -66,7 +66,8 @@ export default async function BuyerTransactionDetail({ params }: { params: Promi
 
       <div>
         <h3 className="text-lg font-bold text-gray-900 mb-4">Negotiation Chat</h3>
-        <ChatWindow transactionId={transaction.id} currentUserId={transaction.buyerId} />
+        {/* Passing viewerRole="BUYER" explicitly */}
+        <ChatWindow transactionId={transaction.id} currentUserId={buyer.id} viewerRole="BUYER" />
       </div>
     </div>
   );
