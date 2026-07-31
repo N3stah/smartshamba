@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { getFarmerSession } from '@/lib/auth';
+import { sanitizeInput } from '@/lib/sanitize';
 import * as Sentry from '@sentry/nextjs';
 
 export async function POST(req: NextRequest) {
@@ -15,7 +16,12 @@ export async function POST(req: NextRequest) {
     if (!product || !quantityBags || !pricePerBag) return NextResponse.json({ error: 'Missing fields' }, { status: 400 });
     
     const listing = await prisma.produceListing.create({
-      data: { farmerId: farmer.id, product, quantityBags: parseInt(quantityBags), pricePerBag: parseFloat(pricePerBag) }
+      data: {
+        farmerId: farmer.id,
+        product: sanitizeInput(product),
+        quantityBags: parseInt(quantityBags),
+        pricePerBag: parseFloat(pricePerBag)
+      }
     });
     
     return NextResponse.json({ success: true, listing });

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { getBuyerSession } from '@/lib/auth';
+import { sanitizeInput } from '@/lib/sanitize';
 import * as Sentry from '@sentry/nextjs';
 
 export async function POST(req: NextRequest) {
@@ -15,7 +16,12 @@ export async function POST(req: NextRequest) {
     if (!product || !quantityBags || !location) return NextResponse.json({ error: 'Missing fields' }, { status: 400 });
     
     const demand = await prisma.buyerDemand.create({
-      data: { buyerId: buyer.id, product, quantityBags: parseInt(quantityBags), location }
+      data: {
+        buyerId: buyer.id,
+        product: sanitizeInput(product),
+        quantityBags: parseInt(quantityBags),
+        location: sanitizeInput(location)
+      }
     });
     
     return NextResponse.json({ success: true, demand });

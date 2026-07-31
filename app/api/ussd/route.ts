@@ -8,6 +8,7 @@ import { checkRateLimit } from '@/lib/rateLimit';
 import { isValidKenyanNationalId, sanitizeNationalId } from '@/lib/kyc';
 import { createOtp } from '@/lib/otp';
 import { getUssdText } from '@/lib/ussd/i18n';
+import { sanitizeInput } from '@/lib/sanitize';
 
 const PILOT_COUNTIES = [
   'Trans Nzoia',
@@ -121,7 +122,7 @@ export async function POST(req: NextRequest) {
             const name = steps[2];
             const nationalId = sanitizeNationalId(steps[3])!;
             const location = steps[5];
-            await prisma.farmer.create({ data: { phone: phoneNumber, name, location, nationalId, language: selectedLang } });
+            await prisma.farmer.create({ data: { phone: phoneNumber, name: sanitizeInput(name), location: sanitizeInput(location), nationalId, language: selectedLang } });
             response = con(getUssdText(selectedLang, `reg_success_${selectedLang}`));
           } else {
             const wardChoice = parseInt(steps[5]);
@@ -167,7 +168,7 @@ export async function POST(req: NextRequest) {
             } else if (wardChoice === 9) {
               const village = steps[6];
               await prisma.farmer.create({
-                data: { phone: phoneNumber, name, location: village, countyId: county.id, village, nationalId, language: selectedLang },
+                data: { phone: phoneNumber, name: sanitizeInput(name), location: sanitizeInput(village), countyId: county.id, village: sanitizeInput(village), nationalId, language: selectedLang },
               });
               response = con(getUssdText(selectedLang, `reg_success_${selectedLang}`));
             } else {
@@ -184,12 +185,12 @@ export async function POST(req: NextRequest) {
                 await prisma.farmer.create({
                   data: {
                     phone: phoneNumber,
-                    name,
+                    name: sanitizeInput(name),
                     nationalId,
-                    location: `${selectedWard.name}, ${countyName}`,
+                    location: sanitizeInput(`${selectedWard.name}, ${countyName}`),
                     countyId: county.id,
                     wardId: selectedWard.id,
-                    village,
+                    village: sanitizeInput(village),
                     language: selectedLang,
                   },
                 });

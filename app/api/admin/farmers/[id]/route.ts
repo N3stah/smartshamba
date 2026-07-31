@@ -4,6 +4,7 @@ import { requireAdminAuth } from '@/lib/auth';
 import { recordAuditLog } from '@/lib/auditLog';
 import { isValidKenyanNationalId, sanitizeNationalId } from '@/lib/kyc';
 import * as Sentry from '@sentry/nextjs';
+import { sanitizeInput } from '@/lib/sanitize';
 
 export async function PUT(
   req: NextRequest,
@@ -15,7 +16,9 @@ export async function PUT(
 
     const { id } = await params;
     const body = await req.json();
-    const { name, phone, nationalId } = body;
+    const name = sanitizeInput(body.name);
+    const phone = body.phone;
+    const nationalId = body.nationalId;
 
     // Validation
     if (!name || !phone) {

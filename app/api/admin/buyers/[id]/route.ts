@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { requireAdminAuth } from '@/lib/auth';
 import { recordAuditLog } from '@/lib/auditLog';
+import { sanitizeInput } from '@/lib/sanitize';
 
 export async function PUT(
   req: NextRequest,
@@ -13,7 +14,9 @@ export async function PUT(
   try {
     const { id } = await params;
     const body = await req.json();
-    const { name, location, pricePerBag, capacityBags } = body;
+    const name = sanitizeInput(body.name);
+    const location = sanitizeInput(body.location);
+    const { pricePerBag, capacityBags } = body;
 
     if (!name || !location || !pricePerBag || !capacityBags) {
       return NextResponse.json({ error: 'All fields are required' }, { status: 400 });

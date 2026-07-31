@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { sanitizeInput } from '@/lib/sanitize';
 import { getFarmerSession } from '@/lib/auth';
 import * as Sentry from '@sentry/nextjs';
 

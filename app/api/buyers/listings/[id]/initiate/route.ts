@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
+import { prisma, safeTransaction } from '@/lib/prisma';
 import { getBuyerSession } from '@/lib/auth';
 import { sendNotification } from '@/lib/notifications';
 import * as Sentry from '@sentry/nextjs';
@@ -18,10 +18,11 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
       return NextResponse.json({ error: 'This produce is no longer available.' }, { status: 400 });
     }
 
-    // Use a transaction to ensure atomicity (prevent over-selling)
     const reference = `SS-${Date.now().toString(36).toUpperCase()}-${Math.random().toString(36).substring(2, 6).toUpperCase()}`;
-    const [transaction] = await prisma.$transaction([
-      prisma.transaction.create({
+    
+    // Use safeTransaction to prevent hanging DB operations
+    const transaction = await safeTransaction(async (tx) => {
+      const newTx = await tx.transaction.create({
         data: {
           reference,
           farmerId: listing.farmerId,
@@ -32,12 +33,15 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
           totalValue: listing.quantityBags * listing.pricePerBag,
           status: 'PENDING',
         },
-      }),
-      prisma.produceListing.update({
+      });
+      
+      await tx.produceListing.update({
         where: { id: listingId },
         data: { status: 'CLOSED' },
-      }),
-    ]);
+      });
+      
+      return newTx;
+    });
 
     // Notify the farmer
     const farmer = await prisma.farmer.findUnique({ where: { id: listing.farmerId } });

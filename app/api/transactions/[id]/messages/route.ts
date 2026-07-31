@@ -1,11 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
+import { prisma, withDatabaseRetry } from '@/lib/prisma';
 import { getFarmerSession, getBuyerSession } from '@/lib/auth';
 import { sendNotification } from '@/lib/notifications';
 import { sendPushNotification } from '@/lib/push';
+import { sanitizeInput } from '@/lib/sanitize';
 import * as Sentry from '@sentry/nextjs';
 
-async function getAuthorizedUserAndTransaction(req: NextRequest, transactionId: string, role: string | null) {
+async function getAuthorizedUserAndTransaction(req: NextRequest, transactionId: string) {
   const farmerPhone = getFarmerSession(req);
   const buyerPhone = getBuyerSession(req);
 
@@ -24,14 +25,7 @@ async function getAuthorizedUserAndTransaction(req: NextRequest, transactionId: 
   let userType: 'FARMER' | 'BUYER' | null = null;
   let userId: string | null = null;
 
-  // Prioritize the role passed from the frontend to avoid cookie conflicts
-  if (role === 'BUYER' && buyerPhone && transaction.buyer.phone === buyerPhone) {
-    userType = 'BUYER';
-    userId = transaction.buyer.id;
-  } else if (role === 'FARMER' && farmerPhone && transaction.farmer.phone === farmerPhone) {
-    userType = 'FARMER';
-    userId = transaction.farmer.id;
-  } else if (farmerPhone && transaction.farmer.phone === farmerPhone) {
+  if (farmerPhone && transaction.farmer.phone === farmerPhone) {
     userType = 'FARMER';
     userId = transaction.farmer.id;
   } else if (buyerPhone && transaction.buyer.phone === buyerPhone) {
@@ -48,21 +42,22 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
   try {
     const { id: transactionId } = await params;
     const { searchParams } = new URL(req.url);
-    const role = searchParams.get('role'); // Get role from query param
+    const role = searchParams.get('role');
 
-    const auth = await getAuthorizedUserAndTransaction(req, transactionId, role);
+    const auth = await getAuthorizedUserAndTransaction(req, transactionId);
     if ('error' in auth) return auth.error;
 
-    const conversation = await prisma.conversation.findUnique({
-      where: { transactionId },
-      include: {
-        messages: { orderBy: { createdAt: 'asc' } },
-      },
-    });
+    const conversation = await withDatabaseRetry(() => 
+      prisma.conversation.findUnique({
+        where: { transactionId },
+        include: {
+          messages: { orderBy: { createdAt: 'asc' } },
+        },
+      })
+    );
 
     const messages = conversation?.messages || [];
 
-    // Fetch sender names
     const farmerIds = messages.filter(m => m.senderType === 'FARMER').map(m => m.senderId);
     const buyerIds = messages.filter(m => m.senderType === 'BUYER').map(m => m.senderId);
 
@@ -90,9 +85,9 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
   try {
     const { id: transactionId } = await params;
     const { searchParams } = new URL(req.url);
-    const role = searchParams.get('role'); // Get role from query param
+    const role = searchParams.get('role');
 
-    const auth = await getAuthorizedUserAndTransaction(req, transactionId, role);
+    const auth = await getAuthorizedUserAndTransaction(req, transactionId);
     if ('error' in auth) return auth.error;
 
     const { transaction, userType, userId } = auth;
@@ -102,20 +97,24 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
       return NextResponse.json({ error: 'Message cannot be empty' }, { status: 400 });
     }
 
-    const message = await prisma.message.create({
-      data: {
-        conversationId: (await prisma.conversation.upsert({
-          where: { transactionId },
-          update: {},
-          create: { transactionId },
-        })).id,
-        senderId: userId!,
-        senderType: userType!,
-        body: body.trim(),
-      },
-    });
+    // Sanitize input to prevent XSS
+    const cleanBody = sanitizeInput(body.trim());
 
-    // Notify the other party
+    const message = await withDatabaseRetry(async () => 
+      prisma.message.create({
+        data: {
+          conversationId: (await prisma.conversation.upsert({
+            where: { transactionId },
+            update: {},
+            create: { transactionId },
+          })).id,
+          senderId: userId!,
+          senderType: userType!,
+          body: cleanBody,
+        },
+      })
+    );
+
     const recipientPhone = userType === 'FARMER' ? transaction.buyer.phone : transaction.farmer.phone;
     const senderName = userType === 'FARMER' ? transaction.farmer.name : transaction.buyer.name;
 
@@ -128,6 +127,9 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
         buyerId: userType === 'FARMER' ? transaction.buyer.id : undefined,
       }).catch(err => console.error('[CHAT] Notification failed:', err));
     }
+
+    const recipientId = userType === 'FARMER' ? transaction.buyer.id : transaction.farmer.id;
+    await sendPushNotification(recipientId, `New message from ${senderName ?? 'User'}`, cleanBody.substring(0, 50) + '...');
 
     return NextResponse.json({ success: true, message });
   } catch (error) {

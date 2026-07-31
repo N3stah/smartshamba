@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
+import { prisma, withDatabaseRetry } from '@/lib/prisma';
 import { requireAdminAuth } from '@/lib/auth';
 import * as Sentry from '@sentry/nextjs';
 
@@ -23,14 +23,8 @@ export async function GET(req: NextRequest) {
     const endOfLastMonth = new Date(now.getFullYear(), now.getMonth(), 0);
     const last24Hours = new Date(Date.now() - 24 * 60 * 60 * 1000);
 
-    const [
-      totalFarmers, verifiedFarmers, totalBuyers, verifiedBuyers,
-      activeListings, activeDemands, openTransactions, closedTransactions,
-      txAggregates, recentTransactions, newFarmers, cropDemand,
-      thisMonthReg, lastMonthReg, smsSent, smsFailed, otpRequests, topCounties,
-      totalDisputes, resolvedDisputes, totalGroups, completedGroupTx,
-      tradedCrops
-    ] = await Promise.all([
+    // Wrap the heavy Promise.all in withDatabaseRetry to prevent cold-start drops
+    const results = await withDatabaseRetry(() => Promise.all([
       prisma.farmer.count(),
       prisma.farmer.count({ where: { verified: true } }),
       prisma.buyer.count(),
@@ -54,7 +48,16 @@ export async function GET(req: NextRequest) {
       prisma.farmerGroup.count(),
       prisma.groupTransaction.count({ where: { status: 'SETTLED' } }),
       prisma.produceListing.groupBy({ by: ['product'], where: { status: 'CLOSED' }, _sum: { quantityBags: true } })
-    ]);
+    ]));
+
+    const [
+      totalFarmers, verifiedFarmers, totalBuyers, verifiedBuyers,
+      activeListings, activeDemands, openTransactions, closedTransactions,
+      txAggregates, recentTransactions, newFarmers, cropDemand,
+      thisMonthReg, lastMonthReg, smsSent, smsFailed, otpRequests, topCounties,
+      totalDisputes, resolvedDisputes, totalGroups, completedGroupTx,
+      tradedCrops
+    ] = results;
 
     // Fetch resolved disputes to calculate average resolution time
     const resolvedDisputesData = await prisma.dispute.findMany({

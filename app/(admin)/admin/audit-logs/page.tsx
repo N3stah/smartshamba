@@ -11,6 +11,9 @@ interface AuditLog {
   entityId: string;
   before: any;
   after: any;
+  ipAddress: string | null;
+  userAgent: string | null;
+  reason: string | null;
   createdAt: string;
 }
 
@@ -126,7 +129,8 @@ export default function AdminAuditLogsPage() {
               <th className="p-3 font-medium">Action</th>
               <th className="p-3 font-medium">Actor</th>
               <th className="p-3 font-medium">Entity</th>
-              <th className="p-3 font-medium">Details</th>
+              <th className="p-3 font-medium">Reason / Details</th>
+              <th className="p-3 font-medium">IP Address</th>
             </tr>
           </thead>
           <tbody>
@@ -160,7 +164,10 @@ export default function AdminAuditLogsPage() {
                     <span className="font-mono text-gray-500">{log.entityId.substring(0,8)}...</span>
                   </td>
                   <td className="p-3 text-xs text-gray-600 max-w-xs truncate">
-                    {log.after ? JSON.stringify(log.after) : 'N/A'}
+                    {log.reason ? <span className="text-red-700 font-medium">{log.reason}</span> : (log.after ? JSON.stringify(log.after) : 'N/A')}
+                  </td>
+                  <td className="p-3 text-xs text-gray-500 font-mono">
+                    {log.ipAddress ?? 'N/A'}
                   </td>
                 </tr>
               ))

@@ -1,6 +1,6 @@
 'use client';
 import { useState, useEffect, useRef } from 'react';
-import { Loader2, Send, Paperclip, CheckCheck } from 'lucide-react';
+import { Loader2, Send, Paperclip, CheckCheck, Clock, AlertCircle } from 'lucide-react';
 
 interface Message {
   id: string;
@@ -9,6 +9,7 @@ interface Message {
   senderName: string;
   body: string;
   createdAt: string;
+  status?: 'pending' | 'sent' | 'failed'; // Local state only
 }
 
 interface ChatWindowProps {
@@ -27,9 +28,24 @@ export default function ChatWindow({ transactionId, currentUserId, viewerRole }:
   useEffect(() => {
     const fetchMessages = async () => {
       try {
-        // Pass role to API so it knows which cookie to use
         const res = await fetch(`/api/transactions/${transactionId}/messages?role=${viewerRole}`);
-        if (res.ok) setMessages(await res.json());
+        if (!res.ok) return;
+        
+        const serverMessages: Message[] = await res.json();
+        
+        setMessages(prev => {
+          // Keep local optimistic messages (pending/failed)
+          const localOptimistic = prev.filter(m => m.status === 'pending' || m.status === 'failed');
+          
+          // Merge server messages with local optimistic ones
+          const merged = [...serverMessages, ...localOptimistic];
+          
+          // Deduplicate just in case (shouldn't be needed if server IDs are unique)
+          const unique = merged.filter((msg, index, self) => index === self.findIndex((m) => m.id === msg.id));
+          
+          // Sort by time to maintain strict ordering
+          return unique.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
+        });
       } catch (err) { console.error(err); }
       finally { setLoading(false); }
     };
@@ -45,6 +61,28 @@ export default function ChatWindow({ transactionId, currentUserId, viewerRole }:
     }
   }, [messages]);
 
+  const sendRequest = async (tempId: string, body: string) => {
+    try {
+      const res = await fetch(`/api/transactions/${transactionId}/messages?role=${viewerRole}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ body }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to send');
+      
+      // Update the specific temp message to 'sent' and apply real DB ID
+      setMessages(prev => prev.map(m => 
+        m.id === tempId ? { ...m, id: data.message.id, status: 'sent' } : m
+      ));
+    } catch (err) {
+      // Mark as failed, but keep the message in the UI
+      setMessages(prev => prev.map(m => 
+        m.id === tempId ? { ...m, status: 'failed' } : m
+      ));
+    }
+  };
+
   const handleSend = async (e: React.FormEvent | React.KeyboardEvent) => {
     e.preventDefault();
     if (!input.trim()) return;
@@ -58,26 +96,21 @@ export default function ChatWindow({ transactionId, currentUserId, viewerRole }:
       senderName: 'You',
       body: input.trim(),
       createdAt: new Date().toISOString(),
+      status: 'pending', // Optimistic UI starts as pending
     };
+    
     setMessages(prev => [...prev, tempMsg]);
+    const messageBody = input.trim();
     setInput('');
 
-    try {
-      const res = await fetch(`/api/transactions/${transactionId}/messages?role=${viewerRole}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ body: tempMsg.body }),
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Failed to send');
-      
-      setMessages(prev => prev.map(m => m.id === tempId ? data.message : m));
-    } catch (err) {
-      setMessages(prev => prev.filter(m => m.id !== tempId));
-      alert('Failed to send message. Please try again.');
-    } finally {
-      setSending(false);
-    }
+    await sendRequest(tempId, messageBody);
+    setSending(false);
+  };
+
+  const handleRetry = async (msgId: string, body: string) => {
+    // Set back to pending
+    setMessages(prev => prev.map(m => m.id === msgId ? { ...m, status: 'pending' } : m));
+    await sendRequest(msgId, body);
   };
 
   return (
@@ -102,18 +135,20 @@ export default function ChatWindow({ transactionId, currentUserId, viewerRole }:
           </div>
         ) : (
           messages.map((msg) => {
-            const isSent = msg.senderType === viewerRole;
+            const isOutgoing = msg.senderType === viewerRole;
+            const isFailed = msg.status === 'failed';
+            const isPending = msg.status === 'pending';
             
             return (
               <div
                 key={msg.id}
                 className={`relative max-w-[75%] px-3.5 py-2 text-sm shadow-sm ${
-                  isSent
+                  isOutgoing
                     ? 'self-end bg-[#d9fdd3] text-gray-900 rounded-2xl rounded-tr-none'
                     : 'self-start bg-white text-gray-900 rounded-2xl rounded-tl-none border border-gray-100'
                 }`}
               >
-                {!isSent && (
+                {!isOutgoing && (
                   <p className="text-[11px] font-bold text-[#00703C] mb-0.5 capitalize">
                     {msg.senderName || msg.senderType.toLowerCase()}
                   </p>
@@ -123,7 +158,15 @@ export default function ChatWindow({ transactionId, currentUserId, viewerRole }:
                 
                 <div className="absolute bottom-1 right-2 flex items-center gap-1 text-[10px] text-gray-500 select-none">
                   <span>{new Date(msg.createdAt).toLocaleTimeString('en-KE', { hour: '2-digit', minute: '2-digit' })}</span>
-                  {isSent && <CheckCheck className="w-3.5 h-3.5 text-emerald-600" />}
+                  
+                  {/* Status Icons */}
+                  {isOutgoing && isPending && <Clock className="w-3 h-3 text-gray-400 animate-pulse" />}
+                  {isOutgoing && !isPending && !isFailed && <CheckCheck className="w-3.5 h-3.5 text-emerald-600" />}
+                  {isOutgoing && isFailed && (
+                    <button onClick={() => handleRetry(msg.id, msg.body)} className="text-red-500 hover:text-red-700">
+                      <AlertCircle className="w-3.5 h-3.5" />
+                    </button>
+                  )}
                 </div>
               </div>
             );

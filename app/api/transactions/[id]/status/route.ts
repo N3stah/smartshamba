@@ -5,6 +5,7 @@ import { sendNotification } from '@/lib/notifications';
 import { recordAuditLog } from '@/lib/auditLog';
 import { sendB2CPayout } from '@/lib/mpesa';
 import * as Sentry from '@sentry/nextjs';
+import { sanitizeInput } from '@/lib/sanitize';
 
 const validTransitions: Record<string, string[]> = {
   PENDING: ['AGREED', 'DISPUTED'],
@@ -21,6 +22,10 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
   try {
     const { id: transactionId } = await params;
     const body = await req.json();
+
+    // Extract network metadata for audit logging
+    const ipAddress = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || req.headers.get('x-real-ip');
+    const userAgent = req.headers.get('user-agent');
     const { status, fulfillmentData } = body;
 
     const farmerPhone = getFarmerSession(req);
@@ -58,7 +63,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
     if (fulfillmentData) {
       if (fulfillmentData.deliveryMethod) dataToUpdate.deliveryMethod = fulfillmentData.deliveryMethod;
       if (fulfillmentData.deliveryLocation) dataToUpdate.deliveryLocation = fulfillmentData.deliveryLocation;
-      if (fulfillmentData.fulfillmentNotes) dataToUpdate.fulfillmentNotes = fulfillmentData.fulfillmentNotes;
+      if (fulfillmentData.fulfillmentNotes) dataToUpdate.fulfillmentNotes = sanitizeInput(fulfillmentData.fulfillmentNotes);
       if (fulfillmentData.scheduledDate) {
         const parsedDate = new Date(fulfillmentData.scheduledDate);
         if (!isNaN(parsedDate.getTime())) {
@@ -114,13 +119,16 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
     }
 
     await recordAuditLog({
-      action: `UPDATE_TX_STATUS_${status}`,
+      action: status === 'SETTLED' && transaction.status === 'DELIVERED' ? 'ADMIN_FORCE_SETTLE' : `UPDATE_TX_STATUS_${status}`,
       actorType: isAdmin ? 'ADMIN' : 'SYSTEM',
       actorId: farmerPhone || buyerPhone || 'admin',
       entityType: 'Transaction',
       entityId: transactionId,
       before: { status: transaction.status },
-      after: { status },
+      after: { status, reason: body.reason || 'Manual override' },
+      ipAddress,
+      userAgent,
+      reason: status === 'SETTLED' && transaction.status === 'DELIVERED' ? (body.reason || 'Admin manual settlement override') : null,
     });
 
     return NextResponse.json({ success: true, transaction: updatedTx });

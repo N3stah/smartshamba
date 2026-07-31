@@ -382,6 +382,9 @@ model AuditLog {
   entityId   String
   before     Json?
   after      Json?
+  ipAddress  String?  // IP address of the actor
+  userAgent  String?  // User agent of the actor
+  reason     String?  // Reason for override
   createdAt  DateTime @default(now())
   
   @@index([entityType, entityId])

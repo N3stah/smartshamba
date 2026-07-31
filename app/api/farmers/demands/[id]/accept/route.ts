@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
+import { prisma, safeTransaction } from '@/lib/prisma';
 import { getFarmerSession } from '@/lib/auth';
 import { sendNotification } from '@/lib/notifications';
 import * as Sentry from '@sentry/nextjs';
@@ -15,13 +15,14 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
 
     const demand = await prisma.buyerDemand.findUnique({ where: { id: demandId } });
     if (!demand || demand.status !== 'ACTIVE') {
-      return NextResponse.json({ error: 'This demand is no longer active or has already been matched.' }, { status: 400 });
+      return NextResponse.json({ error: 'This demand is no longer active.' }, { status: 400 });
     }
 
-    // Use a transaction to ensure atomicity (prevent double-acceptance)
     const reference = `SS-${Date.now().toString(36).toUpperCase()}-${Math.random().toString(36).substring(2, 6).toUpperCase()}`;
-    const [transaction] = await prisma.$transaction([
-      prisma.transaction.create({
+    
+    // Use safeTransaction to prevent hanging DB operations
+    const transaction = await safeTransaction(async (tx) => {
+      const newTx = await tx.transaction.create({
         data: {
           reference,
           farmerId: farmer.id,
@@ -32,12 +33,15 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
           totalValue: 0,
           status: 'PENDING',
         },
-      }),
-      prisma.buyerDemand.update({
+      });
+      
+      await tx.buyerDemand.update({
         where: { id: demandId },
         data: { status: 'CLOSED' },
-      }),
-    ]);
+      });
+      
+      return newTx;
+    });
 
     // Notify the buyer
     const buyer = await prisma.buyer.findUnique({ where: { id: demand.buyerId } });

@@ -12,9 +12,11 @@ export default async function FarmerTransactionsPage() {
   const farmer = await prisma.farmer.findUnique({ where: { phone } });
   if (!farmer) redirect('/dashboard/login');
 
+  // Added take: 50 for pagination
   const transactions = await prisma.transaction.findMany({
     where: { farmerId: farmer.id },
     orderBy: { createdAt: 'desc' },
+    take: 50,
     include: { buyer: true },
   });
 
@@ -22,7 +24,7 @@ export default async function FarmerTransactionsPage() {
     <div>
       <div className="mb-8">
         <h1 className="text-2xl font-bold text-gray-900">My Transactions</h1>
-        <p className="text-gray-500 text-sm mt-1">{transactions.length} total records</p>
+        <p className="text-gray-500 text-sm mt-1">Showing latest {transactions.length} records</p>
       </div>
 
       <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">

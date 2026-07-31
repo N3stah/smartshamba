@@ -12,9 +12,11 @@ export default async function BuyerTransactions() {
   const buyer = await prisma.buyer.findFirst({ where: { phone } });
   if (!buyer) redirect('/buyer/login');
 
+  // Added take: 50 for pagination
   const transactions = await prisma.transaction.findMany({
     where: { buyerId: buyer.id },
     orderBy: { createdAt: 'desc' },
+    take: 50,
     include: { farmer: true },
   });
 
