@@ -4,6 +4,7 @@ import { prisma } from '@/lib/prisma';
 import Link from 'next/link';
 import RateBuyerButton from './RateBuyerButton';
 import SyncPoller from './SyncPoller';
+import MarketIntelligenceCard from '@/components/ai/MarketIntelligenceCard';
 import EmptyState from '@/components/ui/EmptyState';
 import { getDictionary } from '@/lib/i18n/server';
 
@@ -90,6 +91,7 @@ export default async function FarmerDashboard() {
         </div>
       </div>
 
+      <MarketIntelligenceCard role="FARMER" />
       <div className="bg-green-800 text-white rounded-xl p-6 mb-8">
         <div className="bg-white rounded-xl border border-green-200 shadow-sm p-6 mb-8">
           <div className="flex items-center justify-between">

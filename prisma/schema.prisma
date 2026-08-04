@@ -461,3 +461,21 @@ model PushSubscription {
   keys      Json
   createdAt DateTime @default(now())
 }
+
+
+// V2.0 Stage 1: AI Market Intelligence
+model MarketPrediction {
+  id             String   @id @default(cuid())
+  crop           String   // e.g., "Maize", "Beans"
+  region         String   @default("National") // e.g., "National", "Trans Nzoia"
+  horizon        String   // "7d", "14d", "30d"
+  currentPrice   Float    // Average price at time of prediction
+  predictedPrice Float    // AI predicted price
+  confidenceScore Int     // 0-100
+  recommendation String   // "SELL", "WAIT", "BUY"
+  explanation    String   // Natural language summary
+  generatedAt    DateTime @default(now())
+
+  @@unique([crop, region, horizon])
+  @@index([crop, region])
+}

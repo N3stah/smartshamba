@@ -4,10 +4,11 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import LanguageSwitcher from '@/components/LanguageSwitcher';
+import AIChatWidget from '@/components/ai/AIChatWidget';
 import NotificationPermission from '@/components/NotificationPermission';
 import SmartShambaLogo from '@/components/SmartShambaLogo';
 import { useI18n } from '@/lib/i18n';
-import { LayoutDashboard, Megaphone, Settings, LogOut, Menu, X, ArrowLeftRight, AlertTriangle, Bell, Package } from 'lucide-react';
+import { LayoutDashboard, Megaphone, Settings, LogOut, Menu, X, ArrowLeftRight, AlertTriangle, Bell, Package, Brain } from 'lucide-react';
 
 export default function BuyerLayout({ children }: { children: React.ReactNode }) {
   const { t } = useI18n();
@@ -25,6 +26,7 @@ export default function BuyerLayout({ children }: { children: React.ReactNode })
     { href: '/buyer/disputes', label: 'My Disputes', icon: AlertTriangle },
     { href: '/buyer/notifications', label: 'Notifications', icon: Bell },
     { href: '/buyer/farmers', label: 'Available Produce', icon: Package },
+    { href: '/buyer/ai-procurement', label: 'AI Procurement', icon: Brain },
     { href: '/buyer/settings', label: 'Settings', icon: Settings },
   ];
 
@@ -69,6 +71,7 @@ export default function BuyerLayout({ children }: { children: React.ReactNode })
       </aside>
 
       <main className="flex-1 lg:ml-72 p-4 lg:p-8 pt-20 lg:pt-8 min-h-screen">{children}</main>
+      <AIChatWidget role="BUYER" />
     </div>
   );
 }

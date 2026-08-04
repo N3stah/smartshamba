@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { getDictionary } from '@/lib/i18n/server';
 import StatCard from '@/components/ui/StatCard';
+import MarketIntelligenceCard from '@/components/ai/MarketIntelligenceCard';
 
 interface Stats {
   totalFarmers: number;
@@ -50,6 +51,7 @@ export default async function AdminDashboard() {
       </div>
 
       {/* KPI Row 1 */}
+      <MarketIntelligenceCard role="FARMER" />
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
         <StatCard label={t.dashboard.registeredFarmers} value={stats.totalFarmers} />
         <StatCard label={t.dashboard.verifiedBuyers} value={stats.totalBuyers} />
