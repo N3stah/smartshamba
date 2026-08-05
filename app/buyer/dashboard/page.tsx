@@ -2,13 +2,14 @@ import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { prisma } from '@/lib/prisma';
 import MarketIntelligenceCard from '@/components/ai/MarketIntelligenceCard';
+import WeatherCard from '@/components/weather/WeatherCard';
 
 export default async function BuyerDashboard() {
   const cookieStore = await cookies();
   const phone = cookieStore.get('smartshamba_buyer')?.value;
   if (!phone) redirect('/buyer/login');
 
-  const buyer = await prisma.buyer.findFirst({ where: { phone } });
+  const buyer = await prisma.buyer.findFirst({ where: { phone }, include: { county: true } });
   if (!buyer) redirect('/buyer/login');
 
   const transactions = await prisma.transaction.findMany({
@@ -24,6 +25,7 @@ export default async function BuyerDashboard() {
       <p className="text-gray-500 text-sm mt-1">Manage your buying offers and transactions</p>
 
       <MarketIntelligenceCard role="BUYER" />
+      <WeatherCard county={buyer.county?.name ?? 'Trans Nzoia'} />
 
       <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-4">
         <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">

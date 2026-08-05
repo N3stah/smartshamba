@@ -124,7 +124,7 @@ export default function AIChatWidget({ role }: { role: 'FARMER' | 'BUYER' | 'ADM
               value={input}
               onChange={(e) => setInput(e.target.value)}
               placeholder="Ask about market prices..."
-              className="flex-1 border border-gray-300 rounded-full px-4 py-2 text-sm focus:outline-none focus:border-[#00703C] transition-colors"
+              className="flex-1 border border-gray-300 rounded-full px-4 py-2 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:border-[#00703C] transition-colors"
               disabled={loading}
             />
             <button 

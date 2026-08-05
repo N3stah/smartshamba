@@ -57,7 +57,7 @@ export default function PasswordSetter({ role, hasPassword }: { role: 'FARMER' |
             onChange={(e) => setPassword(e.target.value)}
             required
             minLength={6}
-            className="w-full border border-gray-300 rounded-lg px-4 py-2 pr-10 text-sm focus:ring-2 focus:ring-green-100 focus:border-green-600 text-gray-900"
+            className="w-full border border-gray-300 rounded-lg px-4 py-2 pr-10 text-sm text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-green-100 focus:border-green-600"
           />
           <button type="button" onClick={() => setShowPass(!showPass)} className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-500">
             {showPass ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
@@ -76,7 +76,7 @@ export default function PasswordSetter({ role, hasPassword }: { role: 'FARMER' |
             onChange={(e) => setConfirmPass(e.target.value)}
             required
             minLength={6}
-            className="w-full border border-gray-300 rounded-lg px-4 py-2 pr-10 text-sm focus:ring-2 focus:ring-green-100 focus:border-green-600 text-gray-900"
+            className="w-full border border-gray-300 rounded-lg px-4 py-2 pr-10 text-sm text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-green-100 focus:border-green-600"
           />
           <button type="button" onClick={() => setShowConfirm(!showConfirm)} className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-500">
             {showConfirm ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}

@@ -8,7 +8,7 @@ import AIChatWidget from '@/components/ai/AIChatWidget';
 import NotificationPermission from '@/components/NotificationPermission';
 import SmartShambaLogo from '@/components/SmartShambaLogo';
 import { useI18n } from '@/lib/i18n';
-import { LayoutDashboard, ArrowLeftRight, AlertTriangle, Bell, Building2, Tag, Settings, Megaphone, LogOut, Menu, X, BarChart2, Brain } from 'lucide-react';
+import { LayoutDashboard, ArrowLeftRight, AlertTriangle, Bell, Building2, Tag, Settings, Megaphone, LogOut, Menu, X, BarChart2, Brain, CloudRain } from 'lucide-react';
 
 export default function FarmerLayout({ children }: { children: React.ReactNode }) {
   const { t } = useI18n();
@@ -19,6 +19,7 @@ export default function FarmerLayout({ children }: { children: React.ReactNode }
     { href: '/dashboard', label: t.dashboard.title, icon: LayoutDashboard },
     { href: '/dashboard/analytics', label: 'Analytics', icon: BarChart2 },
     { href: '/dashboard/ai-market', label: 'AI Market', icon: Brain },
+    { href: '/dashboard/weather', label: 'Climate', icon: CloudRain },
     { href: '/dashboard/listings', label: 'Sell Produce', icon: Tag },
     { href: '/dashboard/demands', label: 'Active Demands', icon: Megaphone },
     { href: '/dashboard/transactions', label: 'My Transactions', icon: ArrowLeftRight },

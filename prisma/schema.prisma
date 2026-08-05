@@ -479,3 +479,42 @@ model MarketPrediction {
   @@unique([crop, region, horizon])
   @@index([crop, region])
 }
+
+
+// V2.0 Stage 2: Weather & Climate Intelligence
+model WeatherCache {
+  id        String   @id @default(cuid())
+  county    String   @unique
+  data      Json     // Stores the raw OpenWeather response
+  advisory  String   // AI-generated farming advisory
+  updatedAt DateTime @updatedAt
+}
+
+model WeatherAlert {
+  id        String   @id @default(cuid())
+  county    String
+  type      String   // e.g., "HEAVY_RAIN", "HEATWAVE"
+  severity  String   // "WARNING", "WATCH"
+  message   String
+  createdAt DateTime @default(now())
+
+  @@unique([county, type])
+  @@index([county, createdAt])
+}
+
+
+// V2.0 Stage 2: Weather History for Trend Analysis
+model WeatherHistory {
+  id        String   @id @default(cuid())
+  county    String
+  date      DateTime
+  temp      Float
+  humidity  Float
+  rainMm    Float   @default(0)
+  windSpeed Float
+  condition String
+  createdAt DateTime @default(now())
+
+  @@unique([county, date])
+  @@index([county, date])
+}
