@@ -134,9 +134,9 @@ export async function fetchAndCacheWeather(countyName: string) {
     });
 
     // --- Extreme Weather Alert Detection & SMS Notification ---
-    const maxRain = Math.max(...formattedData.forecast.map(f => f.rain));
-    const maxWind = Math.max(...formattedData.forecast.map(f => f.condition.toLowerCase().includes('wind') ? 30 : 10)); // simplified wind check
-    const minTemp = Math.min(...formattedData.forecast.map(f => f.temp));
+    const maxRain = Math.max(...formattedData.forecast.map((f: any) => f.rain));
+    const maxWind = Math.max(...formattedData.forecast.map((f: any) => f.condition.toLowerCase().includes('wind') ? 30 : 10)); // simplified wind check
+    const minTemp = Math.min(...formattedData.forecast.map((f: any) => f.temp));
 
     const checkAndNotify = async (type: string, condition: boolean, message: string) => {
       const alertExists = await prisma.weatherAlert.findUnique({ where: { county_type: { county: countyName, type } } });
