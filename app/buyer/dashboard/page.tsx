@@ -2,6 +2,7 @@ import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { prisma } from '@/lib/prisma';
 import MarketIntelligenceCard from '@/components/ai/MarketIntelligenceCard';
+import DailyBriefCard from '@/components/ai/DailyBriefCard';
 import WeatherCard from '@/components/weather/WeatherCard';
 
 export default async function BuyerDashboard() {
@@ -24,6 +25,7 @@ export default async function BuyerDashboard() {
       <h1 className="text-2xl font-bold text-gray-900">Welcome, {buyer.name}</h1>
       <p className="text-gray-500 text-sm mt-1">Manage your buying offers and transactions</p>
 
+      <DailyBriefCard role="BUYER" />
       <MarketIntelligenceCard role="BUYER" />
       <WeatherCard county={buyer.county?.name ?? 'Trans Nzoia'} />
 

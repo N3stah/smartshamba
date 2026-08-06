@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import { prisma } from '@/lib/prisma';
 import ChatWindow from '@/components/chat/ChatWindow';
+import ContractViewer from '@/components/contracts/ContractViewer';
 import StatusBadge from '@/components/ui/StatusBadge';
 import TransactionActions from '@/components/TransactionActions';
 import { ArrowLeft, Truck, MapPin, Calendar, FileText } from 'lucide-react';

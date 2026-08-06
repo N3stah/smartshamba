@@ -40,7 +40,20 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
         data: { status: 'CLOSED' },
       });
       
-      return newTx;
+      await tx.contract.create({
+            data: {
+              transactionId: newTx.id,
+              status: 'DRAFT',
+              terms: {
+                crop: demand.product,
+                quantityBags: newTx.quantityBags,
+                pricePerBag: 0, // Price negotiated later
+                totalValue: 0
+              }
+            }
+          });
+
+          return newTx;
     });
 
     // Notify the buyer

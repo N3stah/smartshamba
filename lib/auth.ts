@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from 'next/server';
 const ADMIN_COOKIE = 'smartshamba_admin';
 const FARMER_COOKIE = 'smartshamba_farmer';
 const BUYER_COOKIE = 'smartshamba_buyer';
+const TRANSPORT_COOKIE = 'smartshamba_transport';
 
 // Admin Auth
 export function requireAdminAuth(req: NextRequest): NextResponse | null {
@@ -65,4 +66,27 @@ export function setBuyerSessionCookie(response: NextResponse, phone: string): vo
 
 export function clearBuyerSessionCookie(response: NextResponse): void {
   response.cookies.set(BUYER_COOKIE, '', { maxAge: 0, path: '/' });
+}
+
+
+// Transport Provider Auth
+export function getTransportSession(req: NextRequest): string | null {
+  return req.cookies.get(TRANSPORT_COOKIE)?.value ?? null;
+}
+
+export function requireTransportAuth(req: NextRequest): NextResponse | null {
+  if (!getTransportSession(req)) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+  return null;
+}
+
+export function setTransportSessionCookie(response: NextResponse, phone: string): void {
+  response.cookies.set(TRANSPORT_COOKIE, phone, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'lax',
+    path: '/',
+    maxAge: 60 * 60 * 24 * 7, // 7 days
+  });
 }

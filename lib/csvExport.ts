@@ -52,6 +52,17 @@ export function formatFarmersForCSV(farmers: any[]) {
   }));
 }
 
+
+export function formatLedgerForCSV(entries: any[]) {
+  return entries.map(e => ({
+    Date: new Date(e.createdAt).toLocaleString('en-KE'),
+    Description: e.description,
+    Type: e.entryType,
+    Amount: e.amount,
+    Reference: e.reference ?? 'N/A'
+  }));
+}
+
 export function formatBuyersForCSV(buyers: any[]) {
   return buyers.map(b => ({
     ID: b.id,

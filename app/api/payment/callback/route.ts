@@ -4,6 +4,7 @@ import { prisma } from '@/lib/prisma';
 import { MpesaC2BPayload, verifyPaymentAmount, isSafaricomIP } from '@/lib/mpesa';
 import { sendNotification } from '@/lib/notifications';
 import { settlementTemplate } from '@/lib/notifications/templates';
+import { postLedgerEntry } from '@/lib/finance/ledger-service';
 import { checkRateLimit } from '@/lib/rateLimit';
 
 export async function POST(req: NextRequest) {
@@ -68,6 +69,40 @@ export async function POST(req: NextRequest) {
       data: { status: 'SETTLED', mpesaRef: TransID },
     });
     console.log(`[MPESA] Settled: ${BillRefNumber}, M-PESA: ${TransID}`);
+
+    // V2.0 Stage 5: Record Double-Entry for Buyer Payment (Debit Buyer, Credit Escrow)
+    await postLedgerEntry({
+      userId: transaction.buyerId,
+      userType: 'BUYER',
+      transactionId: transaction.id,
+      entryType: 'DEBIT',
+      amount: parseFloat(TransAmount),
+      description: `Payment for Transaction ${BillRefNumber.substring(0, 8)}`,
+      reference: TransID
+    });
+    await postLedgerEntry({
+      userId: 'escrow',
+      userType: 'ESCROW',
+      transactionId: transaction.id,
+      entryType: 'CREDIT',
+      amount: parseFloat(TransAmount),
+      description: `Escrow received for Transaction ${BillRefNumber.substring(0, 8)}`,
+      reference: TransID
+    });
+
+    // Generate Digital Receipt
+    const crypto = require('crypto');
+    const receiptHash = crypto.createHash('sha256').update(`${transaction.id}${TransID}${TransAmount}`).digest('hex');
+    await prisma.receipt.create({
+      data: {
+        transactionId: transaction.id,
+        userId: transaction.buyerId,
+        userType: 'BUYER',
+        amount: parseFloat(TransAmount),
+        mpesaRef: TransID,
+        data: { crop: 'Maize', bags: transaction.quantityBags, reference: transaction.reference, hash: receiptHash }
+      }
+    }).catch(e => console.error('[Receipt] Creation failed:', e));
 
     if (transaction.farmer?.phone) {
       const body = settlementTemplate({

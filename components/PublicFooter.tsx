@@ -12,6 +12,7 @@ export default function PublicFooter() {
           <h4 className="text-white font-semibold mb-4 text-sm uppercase tracking-wider">Portals</h4>
           <ul className="space-y-3 text-sm">
             <li><Link href="/dashboard/login" className="hover:text-white transition-colors">Farmer Login</Link></li>
+            <li><Link href="/transport/login" className="hover:text-white transition-colors">Transport Portal</Link></li>
             <li><Link href="/buyer/login" className="hover:text-white transition-colors">Buyer Portal</Link></li>
           </ul>
         </div>

@@ -18,6 +18,7 @@ model County {
   farmerGroups FarmerGroup[]
   createdAt    DateTime      @default(now())
   advisories             Advisory[]
+  transportProviders TransportProvider[]
 }
 
 model Ward {
@@ -96,6 +97,7 @@ model Transaction {
   produceListingId String?
   buyerDemandId    String?
   conversation    Conversation?
+  transportBooking TransportBooking?
   b2cPayout       B2CPayout?
   createdAt    DateTime @default(now())
   mpesaRef     String?
@@ -117,10 +119,12 @@ model Transaction {
   ratings Rating[]
   dispute Dispute?
   qualityAssessment      QualityAssessment?
+  ledgerEntries         LedgerEntry[]
   @@index([createdAt])
   @@index([buyerId])
   @@index([farmerId])
   @@index([reference])
+  contract          Contract?
 }
 
 model FarmerGroup {
@@ -188,6 +192,7 @@ model GroupTransaction {
 
   group FarmerGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
   buyer Buyer       @relation(fields: [buyerId], references: [id])
+  transportBooking TransportBooking?
 
   @@index([groupId])
   @@index([buyerId])
@@ -517,4 +522,186 @@ model WeatherHistory {
 
   @@unique([county, date])
   @@index([county, date])
+}
+
+
+// V2.0 Stage 3: AI Copilot Memory
+model AIConversation {
+  id        String    @id @default(cuid())
+  userId    String
+  role      String   // "FARMER", "BUYER", "ADMIN"
+  title     String   @default("New Conversation")
+  messages  AIMessage[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  @@index([userId])
+}
+
+model AIMessage {
+  id              String   @id @default(cuid())
+  conversationId  String
+  conversation    AIConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  role            String   // "user", "ai"
+  content         String
+  feedback        String? // "POSITIVE", "NEGATIVE"
+  createdAt       DateTime @default(now())
+
+  @@index([conversationId])
+}
+
+
+// V2.0 Stage 4: Transport Marketplace
+model TransportProvider {
+  id          String   @id @default(cuid())
+  name        String
+  phone       String   @unique
+  password      String?
+  vehicleType String   // e.g., "Pickup", "3-Ton Truck", "Motorcycle"
+  capacityKg  Int
+  ratePerKm   Float    // Cost per km in KSh
+  active      Boolean  @default(true)
+  verified    Boolean  @default(false)
+  location    String   // Base location/town
+  countyId    String?
+  county      County?  @relation(fields: [countyId], references: [id])
+  bookings     TransportBooking[]
+  createdAt   DateTime @default(now())
+
+  @@index([countyId])
+}
+
+model TransportBooking {
+  id              String   @id @default(cuid())
+  transactionId   String?  @unique
+  transaction     Transaction? @relation(fields: [transactionId], references: [id])
+  groupTransactionId String?  @unique
+  groupTransaction GroupTransaction? @relation(fields: [groupTransactionId], references: [id])
+  providerId      String
+  provider        TransportProvider @relation(fields: [providerId], references: [id])
+  status          String   @default("PENDING") // PENDING, ACCEPTED, LOADED, IN_TRANSIT, DELIVERED, CANCELLED
+  cost            Float
+  distanceKm      Float
+  pickupLocation  String
+  dropoffLocation String
+  bookedById      String
+  bookedByType    String   // "FARMER", "BUYER", "ADMIN"
+  driverName      String?
+  driverPhone     String?
+  vehicleReg      String?
+  podPhotoUrl     String? // Proof of Delivery URL
+  podSignature    String? // Base64 signature or name
+  deliveredAt     DateTime?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  events          DeliveryEvent[]
+
+  @@index([providerId])
+  @@index([status])
+  @@index([groupTransactionId])
+}
+
+model DeliveryEvent {
+  id              String   @id @default(cuid())
+  bookingId       String
+  booking         TransportBooking @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  status          String
+  latitude        Float?
+  longitude       Float?
+  note            String?
+  createdAt       DateTime @default(now())
+
+  @@index([bookingId])
+}
+
+
+// V2.0 Stage 5: Digital Wallet & Immutable Ledger (Double-Entry)
+model LedgerEntry {
+  id            String   @id @default(cuid())
+  userId        String
+  userType      String   // "FARMER", "BUYER", "TRANSPORT", "PLATFORM"
+  transactionId String?  // Link to marketplace transaction if applicable
+  transaction   Transaction? @relation(fields: [transactionId], references: [id])
+  entryType     String   // "DEBIT" (Outflow) or "CREDIT" (Inflow)
+  amount        Float    // Always positive
+  description   String
+  reference     String?  // M-PESA Ref or Internal Ref
+  createdAt     DateTime @default(now())
+
+  @@index([userId, userType])
+  @@index([transactionId])
+}
+
+
+// V2.0 Stage 5: Withdrawal System
+model WithdrawalRequest {
+  id          String   @id @default(cuid())
+  userId      String
+  userType    String   // "FARMER", "BUYER", "TRANSPORT"
+  amount      Float
+  status      String   @default("PENDING") // PENDING, APPROVED, REJECTED, COMPLETED
+  mpesaRef    String?  // M-PESA B2C transaction ID
+  createdAt   DateTime @default(now())
+  processedAt DateTime?
+
+  @@index([userId, status])
+}
+
+
+// V2.0 Stage 5: Digital Receipts
+model Receipt {
+  id            String   @id @default(cuid())
+  transactionId String
+  userId        String
+  userType      String   // "FARMER", "BUYER"
+  amount        Float
+  mpesaRef      String?
+  data          Json     // Store snapshot of transaction details
+  createdAt     DateTime @default(now())
+
+  @@index([transactionId])
+  @@index([userId])
+}
+
+
+// V2.0 Stage 6: Digital Contracts
+model Contract {
+  id              String   @id @default(cuid())
+  transactionId   String   @unique
+  transaction     Transaction @relation(fields: [transactionId], references: [id])
+  status          String   @default("DRAFT") // DRAFT, EXECUTED, VOIDED
+  verificationId  String   @unique @default(uuid())
+  
+  farmerSigned    Boolean  @default(false)
+  farmerSignedAt  DateTime?
+  farmerSignature String?  // Name typed by farmer
+  
+  buyerSigned     Boolean  @default(false)
+  buyerSignedAt   DateTime?
+  buyerSignature  String?  // Name typed by buyer
+  
+  terms           Json     // Snapshot of transaction details
+  events          ContractEvent[]
+  paymentTerms    String   @default("ON_DELIVERY") // ON_DELIVERY, ESCROW
+  transportTerms  String?  // FARMER_PAYS, BUYER_PAYS, SPLIT
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([status])
+}
+
+
+// V2.0 Stage 6: Contract Timeline & Audit
+model ContractEvent {
+  id          String   @id @default(cuid())
+  contractId  String
+  contract    Contract @relation(fields: [contractId], references: [id], onDelete: Cascade)
+  eventType   String   // CREATED, SIGNED, AMENDED, TRANSPORT_STARTED, SETTLED, DISPUTED
+  actorId     String
+  metadata    Json?
+  createdAt   DateTime @default(now())
+
+  @@index([contractId])
 }

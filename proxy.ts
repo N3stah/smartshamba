@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from 'next/server';
 const ADMIN_COOKIE = 'smartshamba_admin';
 const FARMER_COOKIE = 'smartshamba_farmer';
 const BUYER_COOKIE = 'smartshamba_buyer';
+const TRANSPORT_COOKIE = 'smartshamba_transport';
 
 // ─── Tiered Rate Limiting Logic ───────────────────────────────────────────
 const rateLimitMap = new Map<string, { count: number; resetAt: number }>();
@@ -81,6 +82,15 @@ export function proxy(req: NextRequest) {
     }
   }
 
+  // Protect transport provider routes
+  if (pathname.startsWith('/transport/dashboard')) {
+    const cookie = req.cookies.get(TRANSPORT_COOKIE);
+    if (!cookie?.value) {
+      const loginUrl = new URL('/transport/login', req.url);
+      return NextResponse.redirect(loginUrl);
+    }
+  }
+
   // Protect buyer dashboard routes
   if (pathname.startsWith('/buyer/dashboard') || pathname.startsWith('/buyer/transactions') || pathname.startsWith('/buyer/demands') || pathname.startsWith('/buyer/settings') || pathname.startsWith('/buyer/disputes') || pathname.startsWith('/buyer/notifications')) {
     const cookie = req.cookies.get(BUYER_COOKIE);
@@ -102,5 +112,5 @@ export function proxy(req: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/admin/:path*', '/dashboard/:path*', '/buyer/:path*', '/api/:path*'],
+  matcher: ['/admin/:path*', '/dashboard/:path*', '/buyer/:path*', '/transport/:path*', '/api/:path*'],
 };

@@ -8,7 +8,7 @@ import AIChatWidget from '@/components/ai/AIChatWidget';
 import NotificationPermission from '@/components/NotificationPermission';
 import SmartShambaLogo from '@/components/SmartShambaLogo';
 import { useI18n } from '@/lib/i18n';
-import { LayoutDashboard, Megaphone, Settings, LogOut, Menu, X, ArrowLeftRight, AlertTriangle, Bell, Package, Brain, CloudRain } from 'lucide-react';
+import { LayoutDashboard, Megaphone, Settings, LogOut, Menu, X, ArrowLeftRight, AlertTriangle, Bell, Package, Brain, CloudRain, Sparkles, Wallet } from 'lucide-react';
 
 export default function BuyerLayout({ children }: { children: React.ReactNode }) {
   const { t } = useI18n();
@@ -28,6 +28,8 @@ export default function BuyerLayout({ children }: { children: React.ReactNode })
     { href: '/buyer/farmers', label: 'Available Produce', icon: Package },
     { href: '/buyer/ai-procurement', label: 'AI Procurement', icon: Brain },
     { href: '/buyer/weather', label: 'Climate Risk', icon: CloudRain },
+    { href: '/buyer/assistant', label: 'AI Assistant', icon: Sparkles },
+    { href: '/buyer/wallet', label: 'Wallet', icon: Wallet },
     { href: '/buyer/settings', label: 'Settings', icon: Settings },
   ];
 

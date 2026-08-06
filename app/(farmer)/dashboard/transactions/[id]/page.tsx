@@ -4,6 +4,8 @@ import { prisma } from '@/lib/prisma';
 import ChatWindow from '@/components/chat/ChatWindow';
 import StatusBadge from '@/components/ui/StatusBadge';
 import TransactionActions from '@/components/TransactionActions';
+import TransportBooking from '@/components/transport/TransportBooking';
+import ContractViewer from '@/components/contracts/ContractViewer';
 import { Truck, MapPin, Calendar, FileText } from 'lucide-react';
 
 export default async function FarmerTransactionDetail({ params }: { params: Promise<{ id: string }> }) {
