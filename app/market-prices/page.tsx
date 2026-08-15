@@ -3,8 +3,6 @@ import PublicHeader from '@/components/PublicHeader';
 import PublicFooter from '@/components/PublicFooter';
 import { TrendingUp, BarChart3 } from 'lucide-react';
 
-export const dynamic = 'force-dynamic';
-
 export default async function MarketPricesPage() {
   const buyers = await prisma.buyer.findMany({ 
     where: { active: true, pricePerBag: { gt: 0 } }, 

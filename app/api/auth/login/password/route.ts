@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { setFarmerSessionCookie, setBuyerSessionCookie, setTransportSessionCookie } from '@/lib/auth';
+import { setFarmerSessionCookie, setBuyerSessionCookie } from '@/lib/auth';
 import * as Sentry from '@sentry/nextjs';
 import bcrypt from 'bcryptjs';
 
@@ -11,17 +11,7 @@ export async function POST(req: NextRequest) {
 
     const normalized = phone.trim().replace(/\s/g, '');
     
-    if (role === 'TRANSPORT') {
-      const provider = await prisma.transportProvider.findUnique({ where: { phone: normalized } });
-      if (!provider || !provider.password) return NextResponse.json({ error: 'Invalid credentials or password not set' }, { status: 401 });
-      
-      const valid = await bcrypt.compare(password, provider.password);
-      if (!valid) return NextResponse.json({ error: 'Invalid credentials' }, { status: 401 });
-      
-      const res = NextResponse.json({ success: true });
-      setTransportSessionCookie(res, normalized);
-      return res;
-    } else if (role === 'BUYER') {
+    if (role === 'BUYER') {
       const buyer = await prisma.buyer.findFirst({ where: { phone: normalized } });
       if (!buyer || !buyer.password) return NextResponse.json({ error: 'Invalid credentials or password not set' }, { status: 401 });
       

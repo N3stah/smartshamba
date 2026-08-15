@@ -52,17 +52,6 @@ export function formatFarmersForCSV(farmers: any[]) {
   }));
 }
 
-
-export function formatLedgerForCSV(entries: any[]) {
-  return entries.map(e => ({
-    Date: new Date(e.createdAt).toLocaleString('en-KE'),
-    Description: e.description,
-    Type: e.entryType,
-    Amount: e.amount,
-    Reference: e.reference ?? 'N/A'
-  }));
-}
-
 export function formatBuyersForCSV(buyers: any[]) {
   return buyers.map(b => ({
     ID: b.id,
@@ -74,5 +63,18 @@ export function formatBuyersForCSV(buyers: any[]) {
     Verified: b.verified,
     Active: b.active,
     Joined: new Date(b.createdAt).toLocaleString('en-KE'),
+  }));
+}
+
+export function formatLedgerForCSV(entries: any[]) {
+  return entries.map(e => ({
+    date: e.createdAt ? new Date(e.createdAt).toISOString() : '',
+    type: e.type ?? '',
+    amount: e.amount ?? '',
+    currency: e.currency ?? 'KES',
+    description: e.description ?? '',
+    reference: e.reference ?? '',
+    status: e.status ?? '',
+    balance: e.balanceAfter ?? '',
   }));
 }

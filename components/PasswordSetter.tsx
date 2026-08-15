@@ -2,12 +2,7 @@
 import { useState } from 'react';
 import { Loader2, Eye, EyeOff } from 'lucide-react';
 
-interface Props {
-  role: 'FARMER' | 'BUYER' | 'ADMIN' | 'TRANSPORT';
-  hasPassword: boolean;
-}
-
-export default function PasswordSetter({ role, hasPassword }: Props) {
+export default function PasswordSetter({ role, hasPassword }: { role: 'FARMER' | 'BUYER' | 'TRANSPORT'; hasPassword: boolean }) {
   const [password, setPassword] = useState('');
   const [confirmPass, setConfirmPass] = useState('');
   const [showPass, setShowPass] = useState(false);
@@ -32,29 +27,21 @@ export default function PasswordSetter({ role, hasPassword }: Props) {
       return;
     }
     
-    const endpoint = role === 'FARMER' ? '/api/farmers/me/password' : role === 'BUYER' ? '/api/buyers/me/password' : '/api/transport/me/password';
-    try {
-      const res = await fetch(endpoint, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ password }),
-      });
-      const data = await res.json();
-      
-      if (!res.ok) {
-        // Handle both string and object error formats
-        const errMsg = typeof data.error === 'string' ? data.error : data.error?.message || 'Failed to set password';
-        throw new Error(errMsg);
-      }
-      
-      setMessage('Password updated successfully!');
-      setPassword('');
+    const endpoint = role === 'FARMER' ? '/api/farmers/me/password' : '/api/buyers/me/password';
+    const res = await fetch(endpoint, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ password }),
+    });
+    const data = await res.json();
+    
+    if (!res.ok) setError(data.error || 'Failed to set password');
+    else { 
+      setMessage('Password updated successfully!'); 
+      setPassword(''); 
       setConfirmPass('');
-    } catch (err: any) {
-      setError(err.message || 'Network error. Please try again.');
-    } finally {
-      setLoading(false);
     }
+    setLoading(false);
   };
 
   return (
@@ -70,7 +57,7 @@ export default function PasswordSetter({ role, hasPassword }: Props) {
             onChange={(e) => setPassword(e.target.value)}
             required
             minLength={6}
-            className="w-full border border-gray-300 rounded-lg px-4 py-2 pr-10 text-sm text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-green-100 focus:border-green-600"
+            className="w-full border border-gray-300 rounded-lg px-4 py-2 pr-10 text-sm focus:ring-2 focus:ring-green-100 focus:border-green-600 text-gray-900"
           />
           <button type="button" onClick={() => setShowPass(!showPass)} className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-500">
             {showPass ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
@@ -89,7 +76,7 @@ export default function PasswordSetter({ role, hasPassword }: Props) {
             onChange={(e) => setConfirmPass(e.target.value)}
             required
             minLength={6}
-            className="w-full border border-gray-300 rounded-lg px-4 py-2 pr-10 text-sm text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-green-100 focus:border-green-600"
+            className="w-full border border-gray-300 rounded-lg px-4 py-2 pr-10 text-sm focus:ring-2 focus:ring-green-100 focus:border-green-600 text-gray-900"
           />
           <button type="button" onClick={() => setShowConfirm(!showConfirm)} className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-500">
             {showConfirm ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
@@ -100,7 +87,7 @@ export default function PasswordSetter({ role, hasPassword }: Props) {
       {error && <p className="text-red-500 text-sm">{error}</p>}
       {message && <p className="text-green-600 text-sm">{message}</p>}
       
-      <button type="submit" disabled={loading || !password || !confirmPass} className="bg-[#00703C] text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-green-800 disabled:opacity-50 flex items-center gap-2">
+      <button type="submit" disabled={loading || !password || !confirmPass} className="bg-green-700 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-green-600 disabled:opacity-50 flex items-center gap-2">
         {loading && <Loader2 className="w-4 h-4 animate-spin" />}
         {hasPassword ? 'Update Password' : 'Set Password'}
       </button>

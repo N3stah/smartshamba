@@ -4,11 +4,10 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import LanguageSwitcher from '@/components/LanguageSwitcher';
-import AIChatWidget from '@/components/ai/AIChatWidget';
 import NotificationPermission from '@/components/NotificationPermission';
 import SmartShambaLogo from '@/components/SmartShambaLogo';
 import { useI18n } from '@/lib/i18n';
-import { LayoutDashboard, ArrowLeftRight, AlertTriangle, Bell, Building2, Tag, Settings, Megaphone, LogOut, Menu, X, BarChart2, Brain, CloudRain, Sparkles, Wallet } from 'lucide-react';
+import { LayoutDashboard, ArrowLeftRight, AlertTriangle, Bell, Building2, Tag, Settings, Megaphone, LogOut, Menu, X, BarChart2 } from 'lucide-react';
 
 export default function FarmerLayout({ children }: { children: React.ReactNode }) {
   const { t } = useI18n();
@@ -18,10 +17,6 @@ export default function FarmerLayout({ children }: { children: React.ReactNode }
   const navItems = [
     { href: '/dashboard', label: t.dashboard.title, icon: LayoutDashboard },
     { href: '/dashboard/analytics', label: 'Analytics', icon: BarChart2 },
-    { href: '/dashboard/ai-market', label: 'AI Market', icon: Brain },
-    { href: '/dashboard/weather', label: 'Climate', icon: CloudRain },
-    { href: '/dashboard/assistant', label: 'AI Assistant', icon: Sparkles },
-    { href: '/dashboard/wallet', label: 'My Wallet', icon: Wallet },
     { href: '/dashboard/listings', label: 'Sell Produce', icon: Tag },
     { href: '/dashboard/demands', label: 'Active Demands', icon: Megaphone },
     { href: '/dashboard/transactions', label: 'My Transactions', icon: ArrowLeftRight },
@@ -79,7 +74,6 @@ export default function FarmerLayout({ children }: { children: React.ReactNode }
       </aside>
 
       <main className="flex-1 lg:ml-72 p-4 lg:p-8 pt-20 lg:pt-8 min-h-screen">{children}</main>
-      <AIChatWidget role="FARMER" />
     </div>
   );
 }

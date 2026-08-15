@@ -98,8 +98,7 @@ export default function LandingPage() {
           </div>
 
           <div className="hidden md:flex items-center gap-3">
-            <Link href="/transport/login" className="px-4 py-2 text-sm font-semibold text-gray-600 hover:text-[#00703C] transition-colors hidden md:block">Transport Portal</Link>
-          <Link href="/buyer/login" className="px-4 py-2 text-sm font-semibold text-[#00703C] border border-[#00703C] rounded-lg hover:bg-green-50 transition-colors">
+            <Link href="/buyer/login" className="px-4 py-2 text-sm font-semibold text-[#00703C] border border-[#00703C] rounded-lg hover:bg-green-50 transition-colors">
               Buyer Portal
             </Link>
             <Link href="/dashboard/login?from=%2Fdashboard" className="px-4 py-2 text-sm font-semibold text-white bg-[#00703C] rounded-lg hover:bg-green-800 transition-colors">
@@ -120,8 +119,7 @@ export default function LandingPage() {
             <Link href="/group-selling" onClick={() => setIsOpen(false)} className="block text-gray-600 hover:text-[#00703C]">Group Selling</Link>
             <Link href="/about" onClick={() => setIsOpen(false)} className="block text-gray-600 hover:text-[#00703C]">About Us</Link>
             <div className="flex flex-col gap-2 pt-4 border-t border-gray-100">
-              <Link href="/transport/login" className="w-full text-center px-4 py-2 text-sm font-semibold text-gray-600 border border-gray-200 rounded-lg">Transport Portal</Link>
-            <Link href="/buyer/login" className="w-full text-center px-4 py-2 text-sm font-semibold text-[#00703C] border border-[#00703C] rounded-lg">Buyer Portal</Link>
+              <Link href="/buyer/login" className="w-full text-center px-4 py-2 text-sm font-semibold text-[#00703C] border border-[#00703C] rounded-lg">Buyer Portal</Link>
               <Link href="/dashboard/login?from=%2Fdashboard" className="w-full text-center px-4 py-2 text-sm font-semibold text-white bg-[#00703C] rounded-lg">Farmer Portal</Link>
             </div>
           </div>

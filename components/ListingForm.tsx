@@ -28,18 +28,18 @@ export default function ListingForm() {
     <form onSubmit={handleSubmit} className="space-y-4">
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-1">Product</label>
-        <select value={product} onChange={(e) => setProduct(e.target.value)} className="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm text-gray-900 placeholder-gray-400">
+        <select value={product} onChange={(e) => setProduct(e.target.value)} className="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm">
           <option>Maize</option>
           <option>Beans</option>
         </select>
       </div>
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-1">Quantity (Bags)</label>
-        <input type="number" value={quantity} onChange={(e) => setQuantity(e.target.value)} required className="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm text-gray-900 placeholder-gray-400" />
+        <input type="number" value={quantity} onChange={(e) => setQuantity(e.target.value)} required className="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm" />
       </div>
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-1">Price per Bag (KSh)</label>
-        <input type="number" value={price} onChange={(e) => setPrice(e.target.value)} required className="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm text-gray-900 placeholder-gray-400" />
+        <input type="number" value={price} onChange={(e) => setPrice(e.target.value)} required className="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm" />
       </div>
       {error && <p className="text-red-500 text-sm">{error}</p>}
       {success && <p className="text-green-600 text-sm">{success}</p>}

@@ -135,7 +135,7 @@ function LoginForm() {
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Password</label>
                   <div className="relative">
-                    <input type={showPass ? 'text' : 'password'} value={password} onChange={(e) => setPassword(e.target.value)} placeholder="********" required className="w-full border border-gray-300 rounded-lg px-4 py-3 pr-10 text-sm text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-green-100 focus:border-green-600" />
+                    <input type={showPass ? 'text' : 'password'} value={password} onChange={(e) => setPassword(e.target.value)} placeholder="********" required className="w-full border border-gray-300 rounded-lg px-4 py-3 pr-10 text-sm focus:ring-2 focus:ring-green-100 focus:border-green-600 text-gray-900" />
                     <button type="button" onClick={() => setShowPass(!showPass)} className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-500">
                       {showPass ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                     </button>
@@ -175,7 +175,7 @@ function LoginForm() {
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">New Password</label>
                     <div className="relative">
-                      <input type={showPass ? 'text' : 'password'} value={newPassword} onChange={(e) => setNewPassword(e.target.value)} placeholder="********" required minLength={6} className="w-full border border-gray-300 rounded-lg px-4 py-3 pr-10 text-sm text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-green-100 focus:border-green-600" />
+                      <input type={showPass ? 'text' : 'password'} value={newPassword} onChange={(e) => setNewPassword(e.target.value)} placeholder="********" required minLength={6} className="w-full border border-gray-300 rounded-lg px-4 py-3 pr-10 text-sm focus:ring-2 focus:ring-green-100 focus:border-green-600 text-gray-900" />
                       <button type="button" onClick={() => setShowPass(!showPass)} className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-500">
                         {showPass ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                       </button>

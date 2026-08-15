@@ -5,9 +5,8 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import LanguageSwitcher from '@/components/LanguageSwitcher';
-import AIChatWidget from '@/components/ai/AIChatWidget';
 import { useI18n } from '@/lib/i18n';
-import { LayoutDashboard, ArrowLeftRight, Building2, Users, Bell, Megaphone, ShieldCheck, LogOut, Menu, X, BarChart2, Package, Brain, CloudRain, Sparkles, Truck, Wallet, FileText } from 'lucide-react';
+import { LayoutDashboard, ArrowLeftRight, Building2, Users, Bell, Megaphone, ShieldCheck, LogOut, Menu, X, BarChart2, Package } from 'lucide-react';
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const { t } = useI18n();
@@ -17,13 +16,6 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const navItems = [
     { href: '/admin', label: t.dashboard.title, icon: LayoutDashboard },
     { href: '/admin/analytics', label: 'Analytics', icon: BarChart2 },
-    { href: '/admin/ai-dashboard', label: 'AI Dashboard', icon: Brain },
-    { href: '/admin/weather-dashboard', label: 'Climate Ops', icon: CloudRain },
-    { href: '/admin/logistics', label: 'Logistics', icon: Truck },
-    { href: '/admin/transport-providers', label: 'Providers', icon: Truck },
-    { href: '/admin/finance', label: 'Finance', icon: Wallet },
-    { href: '/admin/contract-analytics', label: 'Contract Analytics', icon: FileText },
-    { href: '/admin/assistant', label: 'AI Assistant', icon: Sparkles },
     { href: '/admin/transactions', label: 'Transactions', icon: ArrowLeftRight },
     { href: '/admin/listings', label: 'Listings', icon: Package },
     { href: '/admin/demands', label: 'Demands', icon: Megaphone },
@@ -109,7 +101,6 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       <main className="flex-1 lg:ml-72 p-4 lg:p-8 pt-20 lg:pt-8 min-h-screen">
         {children}
       </main>
-      <AIChatWidget role="ADMIN" />
     </div>
   );
 }
