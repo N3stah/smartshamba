@@ -8,7 +8,7 @@ import * as Sentry from '@sentry/nextjs';
 export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params;
-    const contract = await (prisma as any).contract.findUnique({
+    const contract = await prisma.contract.findUnique({
       where: { transactionId: id }
     });
 

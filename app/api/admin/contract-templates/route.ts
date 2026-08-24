@@ -8,7 +8,7 @@ export async function GET(req: NextRequest) {
     const authError = requireAdminAuth(req);
     if (authError) return authError;
 
-    const templates = await (prisma as any).contractTemplate.findMany({
+    const templates = await prisma.contractTemplate.findMany({
       orderBy: { createdAt: 'desc' }
     });
     return NextResponse.json(templates);
@@ -30,8 +30,8 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
     }
 
-    const template = await (prisma as any).contractTemplate.create({
-      data: { name, category, clauses }
+    const template = await prisma.contractTemplate.create({
+      data: { name, content: JSON.stringify(clauses || category) }
     });
 
     return NextResponse.json(template, { status: 201 });

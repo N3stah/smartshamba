@@ -3,7 +3,7 @@ import QRCode from 'qrcode';
 import { prisma } from '@/lib/prisma';
 
 export async function generateContractPdf(contractId: string): Promise<Buffer> {
-  const contract = await (prisma as any).contract.findUnique({
+  const contract = await prisma.contract.findUnique({
     where: { id: contractId },
     include: { transaction: { include: { farmer: true, buyer: true } } }
   });

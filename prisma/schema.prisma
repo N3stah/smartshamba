@@ -34,6 +34,7 @@ model Ward {
 }
 
 model Farmer {
+  contractsAsSeller Contract[] @relation("ContractSeller")
   wallet Wallet? @relation("FarmerWallet")
   aiInsights AIInsight[] @relation("FarmerAIInsights")
   language        String   @default("en") // i18n: "en" | "sw"
@@ -65,6 +66,7 @@ model Farmer {
 }
 
 model Buyer {
+  contractsAsBuyer Contract[] @relation("ContractBuyer")
   wallet Wallet? @relation("BuyerWallet")
   aiInsights AIInsight[] @relation("BuyerAIInsights")
   phone           String? @unique // Added for USSD/OTP login
@@ -94,6 +96,8 @@ model Buyer {
 }
 
 model Transaction {
+  negotiationOffers NegotiationOffer[]
+  contract Contract?
   ledgerEntries LedgerEntry[]
   id           String   @id @default(cuid())
   farmerId     String
@@ -604,6 +608,9 @@ model LedgerEntry {
 
   wallet      Wallet      @relation(fields: [walletId], references: [id])
   transaction Transaction? @relation(fields: [relatedTransactionId], references: [id])
+
+  @@index([walletId])
+  @@index([relatedTransactionId])
 }
 
 enum WithdrawalStatus {
@@ -624,4 +631,83 @@ model WithdrawalRequest {
   createdAt  DateTime         @default(now())
 
   wallet Wallet @relation(fields: [walletId], references: [id])
+
+  @@index([walletId])
+}
+
+// --- V2-4: Digital Contracts + Negotiation ---
+model ContractTemplate {
+  contracts Contract[]
+  id        String   @id @default(cuid())
+  name      String
+  content   String   @db.Text
+  version   Int      @default(1)
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+}
+
+enum NegotiationActor {
+  SELLER
+  BUYER
+}
+
+enum OfferStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+  COUNTERED
+}
+
+model NegotiationOffer {
+  id           String          @id @default(cuid())
+  transactionId String
+  actor        NegotiationActor
+  pricePerUnit Float
+  quantity     Int
+  terms        String?         @db.Text
+  status       OfferStatus     @default(PENDING)
+  createdAt    DateTime        @default(now())
+
+  transaction Transaction @relation(fields: [transactionId], references: [id])
+}
+
+enum ContractStatus {
+  DRAFT
+  PENDING_SIGNATURE
+  SIGNED
+  FULFILLED
+  DISPUTED
+  CANCELLED
+  EXECUTED
+  VOIDED
+}
+
+model Contract {
+  id               String         @id @default(cuid())
+  transactionId    String         @unique
+  templateId       String?
+  sellerId         String
+  buyerId          String
+  quantity         Int
+  pricePerUnit     Float
+  totalValue       Float
+  terms            Json?
+  paymentTerms     String?        @db.Text
+  transportTerms   String?        @db.Text
+  status           ContractStatus @default(DRAFT)
+  verificationId   String         @unique @default(cuid())
+  farmerSigned     Boolean        @default(false)
+  buyerSigned      Boolean        @default(false)
+  farmerSignedAt   DateTime?
+  buyerSignedAt    DateTime?
+  farmerSignature  String?
+  buyerSignature   String?
+  pdfUrl           String?
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+
+  transaction Transaction       @relation(fields: [transactionId], references: [id])
+  seller      Farmer            @relation("ContractSeller", fields: [sellerId], references: [id])
+  buyer       Buyer             @relation("ContractBuyer", fields: [buyerId], references: [id])
+  template    ContractTemplate? @relation(fields: [templateId], references: [id])
 }

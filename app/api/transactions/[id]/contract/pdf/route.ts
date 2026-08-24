@@ -17,7 +17,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const contract = await (prisma as any).contract.findUnique({ where: { transactionId: id } });
+    const contract = await prisma.contract.findUnique({ where: { transactionId: id } });
     if (!contract) return NextResponse.json({ error: 'Contract not found' }, { status: 404 });
 
     const pdfBuffer = await generateContractPdf(contract.id);

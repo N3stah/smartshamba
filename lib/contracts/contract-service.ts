@@ -7,14 +7,19 @@ import * as Sentry from '@sentry/nextjs';
  */
 export async function getOrCreateContract(transactionId: string, txData: any) {
   try {
-    let contract = await (prisma as any).contract.findUnique({
+    let contract = await prisma.contract.findUnique({
       where: { transactionId }
     });
 
     if (!contract) {
-      contract = await (prisma as any).contract.create({
+      contract = await prisma.contract.create({
         data: {
           transactionId,
+          sellerId: txData.farmerId,
+          buyerId: txData.buyerId,
+          quantity: txData.quantityBags,
+          pricePerUnit: txData.pricePerBag,
+          totalValue: txData.totalValue,
           status: 'DRAFT',
           terms: {
             crop: 'Maize',
@@ -24,7 +29,7 @@ export async function getOrCreateContract(transactionId: string, txData: any) {
             farmerName: txData.farmer?.name ?? 'Unknown Farmer',
             buyerName: txData.buyer?.name ?? 'Unknown Buyer',
             date: new Date().toISOString()
-          }
+          } as any
         }
       });
       console.log(`[CONTRACT] Created draft contract for tx ${transactionId}`);
@@ -34,6 +39,7 @@ export async function getOrCreateContract(transactionId: string, txData: any) {
   } catch (error) {
     console.error('[CONTRACT] Error:', error);
     Sentry.captureException(error);
+    await Sentry.flush(2000);
     throw error;
   }
 }
@@ -48,13 +54,13 @@ export async function signContract(
   actorId: string
 ) {
   try {
-    const contract = await (prisma as any).contract.findUnique({
+    const contract = await prisma.contract.findUnique({
       where: { transactionId }
     });
 
     if (!contract) throw new Error('Contract not found');
-    if (contract.status === 'EXECUTED') throw new Error('Contract already executed');
-    if (contract.status === 'VOIDED' || contract.status === 'DISPUTED') throw new Error('Contract is voided or disputed');
+    if (contract.status === 'EXECUTED' || contract.status === 'SIGNED') throw new Error('Contract already executed/signed');
+    if (contract.status === 'VOIDED' || contract.status === 'DISPUTED' || contract.status === 'CANCELLED') throw new Error('Contract is voided, disputed, or cancelled');
 
     const updateData: any = {};
     if (userType === 'FARMER') {
@@ -72,14 +78,15 @@ export async function signContract(
     const willExecute = (userType === 'FARMER' && contract.buyerSigned) || (userType === 'BUYER' && contract.farmerSigned);
     if (willExecute) {
       updateData.status = 'EXECUTED';
+    } else {
+      updateData.status = 'PENDING_SIGNATURE';
     }
 
-    const updated = await (prisma as any).contract.update({
+    const updated = await prisma.contract.update({
       where: { transactionId },
       data: updateData
     });
 
-    // DCMS Integration: Record Audit Log
     await recordAuditLog({
       action: willExecute ? 'CONTRACT_EXECUTED' : 'CONTRACT_SIGNED',
       actorType: 'SYSTEM',
@@ -94,6 +101,7 @@ export async function signContract(
   } catch (error) {
     console.error('[CONTRACT] Sign error:', error);
     Sentry.captureException(error);
+    await Sentry.flush(2000);
     throw error;
   }
 }
@@ -103,10 +111,10 @@ export async function signContract(
  */
 export async function updateContractTerms(transactionId: string, updates: any) {
   try {
-    const contract = await (prisma as any).contract.findUnique({ where: { transactionId } });
+    const contract = await prisma.contract.findUnique({ where: { transactionId } });
     if (!contract) return;
 
-    await (prisma as any).contract.update({
+    await prisma.contract.update({
       where: { transactionId },
       data: updates
     });

@@ -6,7 +6,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
     const { id } = await params;
     
     // Find by verificationId (UUID). Casting to any to bypass potential stale Prisma client cache.
-    const contract = await ((prisma as any).contract.findUnique as any)({
+    const contract = await (prisma.contract.findUnique as any)({
       where: { verificationId: id },
       select: {
         id: true,

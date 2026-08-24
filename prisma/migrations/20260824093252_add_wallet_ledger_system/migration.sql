@@ -60,13 +60,10 @@ CREATE UNIQUE INDEX "Wallet_farmerId_key" ON "Wallet"("farmerId");
 CREATE UNIQUE INDEX "Wallet_buyerId_key" ON "Wallet"("buyerId");
 
 -- CreateIndex
-CREATE INDEX "LedgerEntry_walletId_idx" ON "LedgerEntry"("walletId");
 
 -- CreateIndex
-CREATE INDEX "LedgerEntry_relatedTransactionId_idx" ON "LedgerEntry"("relatedTransactionId");
 
 -- CreateIndex
-CREATE INDEX "WithdrawalRequest_walletId_idx" ON "WithdrawalRequest"("walletId");
 
 -- AddForeignKey
 ALTER TABLE "Wallet" ADD CONSTRAINT "Wallet_farmerId_fkey" FOREIGN KEY ("farmerId") REFERENCES "Farmer"("id") ON DELETE SET NULL ON UPDATE CASCADE;
