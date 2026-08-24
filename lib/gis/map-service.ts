@@ -1,5 +1,3 @@
-// @ts-nocheck
-// TODO: V2 - Re-enable type checking after Stage 6/7 schema is built
 import { prisma } from '@/lib/prisma';
 import { getBoundingBox, maskCoordinates } from './gis-service';
 
@@ -12,7 +10,7 @@ export async function getMapDataForAdmin() {
   const [farmers, buyers, warehouses] = await Promise.all([
     prisma.farmer.findMany({ where: { latitude: { not: null } }, select: { id: true, name: true, latitude: true, longitude: true } }),
     prisma.buyer.findMany({ where: { latitude: { not: null } }, select: { id: true, name: true, latitude: true, longitude: true } }),
-    (prisma as any).warehouse.findMany({ select: { id: true, name: true, latitude: true, longitude: true } })
+    prisma.warehouse.findMany({ select: { id: true, name: true, latitude: true, longitude: true } })
   ]);
   
   // Admins see exact coordinates

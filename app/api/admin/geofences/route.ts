@@ -8,7 +8,7 @@ export async function GET(req: NextRequest) {
     const authError = requireAdminAuth(req);
     if (authError) return authError;
 
-    const geofences = await (prisma as any).geofence.findMany({ orderBy: { createdAt: 'desc' } });
+    const geofences = await prisma.geofence.findMany({ orderBy: { createdAt: 'desc' } });
     return NextResponse.json(geofences);
   } catch (error) {
     Sentry.captureException(error);
@@ -21,13 +21,13 @@ export async function POST(req: NextRequest) {
     const authError = requireAdminAuth(req);
     if (authError) return authError;
 
-    const { name, type, polygon } = await req.json();
-    if (!name || !type || !polygon) {
+    const { name, type, geometry } = await req.json();
+    if (!name || !type || !geometry) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
     }
 
-    const geofence = await (prisma as any).geofence.create({
-      data: { name, type, polygon }
+    const geofence = await prisma.geofence.create({
+      data: { name, type, geometry }
     });
 
     return NextResponse.json(geofence, { status: 201 });

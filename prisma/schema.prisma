@@ -35,6 +35,8 @@ model Ward {
 }
 
 model Farmer {
+  latitude Float?
+  longitude Float?
   isFrozen Boolean @default(false)
   frozenReason String?
   frozenAt DateTime?
@@ -71,6 +73,8 @@ model Farmer {
 }
 
 model Buyer {
+  latitude Float?
+  longitude Float?
   isFrozen Boolean @default(false)
   frozenReason String?
   frozenAt DateTime?
@@ -822,4 +826,34 @@ model TrustEvent {
   description String?      @db.Text
   relatedId   String?
   createdAt    DateTime     @default(now())
+}
+
+// --- V2-7: GIS + Geofencing ---
+enum GeofenceType {
+  OPERATIONAL
+  RESTRICTED
+  WEATHER
+}
+
+model Geofence {
+  id        String       @id @default(cuid())
+  name      String
+  county    String?
+  type      GeofenceType
+  geometry  Json
+  isActive  Boolean      @default(true)
+  createdAt DateTime     @default(now())
+}
+
+model Warehouse {
+  id          String   @id @default(cuid())
+  name        String
+  county      String?
+  location    String?
+  latitude    Float?
+  longitude   Float?
+  capacityBags Int?
+  pricePerBag Float?
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
 }
