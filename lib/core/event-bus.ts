@@ -11,7 +11,7 @@ export class EventBus {
   async emit(eventType: string, aggregateId: string, payload: any, tx?: any) {
     const client = tx || prisma;
     try {
-      await client.eventOutbox.create({
+      await prisma.eventOutbox.create({
         data: {
           eventType,
           aggregateId,

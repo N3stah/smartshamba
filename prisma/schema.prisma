@@ -857,3 +857,25 @@ model Warehouse {
   isActive    Boolean  @default(true)
   createdAt   DateTime @default(now())
 }
+
+// --- V2-8: Event-Driven Architecture ---
+enum EventOutboxStatus {
+  PENDING
+  PROCESSING
+  PROCESSED
+  FAILED
+}
+
+model EventOutbox {
+  id          String           @id @default(cuid())
+  eventType   String
+  aggregateId String
+  payload     Json
+  status      EventOutboxStatus @default(PENDING)
+  attempts    Int              @default(0)
+  lastError   String?          @db.Text
+  processedAt DateTime?
+  createdAt   DateTime         @default(now())
+
+  @@index([status, createdAt])
+}
