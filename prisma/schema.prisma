@@ -35,6 +35,9 @@ model Ward {
 }
 
 model Farmer {
+  isFrozen Boolean @default(false)
+  frozenReason String?
+  frozenAt DateTime?
   transportBookings TransportBooking[]
   contractsAsSeller Contract[] @relation("ContractSeller")
   wallet Wallet? @relation("FarmerWallet")
@@ -68,6 +71,9 @@ model Farmer {
 }
 
 model Buyer {
+  isFrozen Boolean @default(false)
+  frozenReason String?
+  frozenAt DateTime?
   contractsAsBuyer Contract[] @relation("ContractBuyer")
   wallet Wallet? @relation("BuyerWallet")
   aiInsights AIInsight[] @relation("BuyerAIInsights")
@@ -784,4 +790,36 @@ model DeliveryEvent {
   createdAt DateTime @default(now())
 
   booking TransportBooking @relation(fields: [bookingId], references: [id])
+}
+
+// --- V2-6: Trust / Reputation Engine ---
+enum TrustUserType {
+  FARMER
+  BUYER
+  TRANSPORT
+  GROUP
+}
+
+model TrustScore {
+  id            String        @id @default(cuid())
+  userId        String
+  userType      TrustUserType
+  score         Float
+  level         String
+  breakdown     Json
+  computedAt    DateTime      @default(now())
+  nextComputeAt DateTime?
+
+  @@unique([userId, userType])
+}
+
+model TrustEvent {
+  id          String       @id @default(cuid())
+  userId      String
+  userType    TrustUserType
+  eventType   String
+  impact      Float
+  description String?      @db.Text
+  relatedId   String?
+  createdAt    DateTime     @default(now())
 }

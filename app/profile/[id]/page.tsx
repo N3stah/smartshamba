@@ -42,7 +42,7 @@ export default async function PublicProfilePage({ params }: { params: Promise<{ 
   }
 
   // Fetch Trust Score separately
-  const trustScore = await (prisma as any).trustScore.findUnique({
+  const trustScore = await prisma.trustScore.findUnique({
     where: { userId_userType: { userId: user.id, userType } }
   });
 

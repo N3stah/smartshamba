@@ -1,5 +1,3 @@
-// @ts-nocheck
-// TODO: V2 - Re-enable type checking after Stage 6/7 schema is built
 import { prisma } from '@/lib/prisma';
 import * as Sentry from '@sentry/nextjs';
 
@@ -102,9 +100,9 @@ export async function calculateAndSaveTrustScore(userId: string, userType: 'FARM
       if (!provider) return null;
 
       breakdown.verification = provider.verified ? 10 : 0;
-      const completedJobs = provider.bookings.filter(b => b.status === 'DELIVERED');
+      const completedJobs = provider.bookings.filter((b: any) => b.status === 'DELIVERED');
       let txScore = 0;
-      completedJobs.forEach(job => { txScore += 4 * getTimeWeight(job.updatedAt); });
+      completedJobs.forEach((job: any) => { txScore += 4 * getTimeWeight(job.updatedAt); });
       breakdown.transaction_volume = Math.min(txScore, 20);
       breakdown.rating_quality = 0; 
       breakdown.dispute_health = 15; 
@@ -145,8 +143,8 @@ export async function calculateAndSaveTrustScore(userId: string, userType: 'FARM
 
     const level = getLevel(totalScore);
 
-    const trustScore = await (prisma as any).trustScore.upsert({
-      where: { userId_userType: { userId, userType } },
+    const trustScore = await prisma.trustScore.upsert({
+      where: { userId_userType: { userId, userType: userType as any } },
       update: { score: totalScore, level, breakdown: breakdown as any },
       create: { userId, userType, score: totalScore, level, breakdown: breakdown as any }
     });
@@ -160,5 +158,5 @@ export async function calculateAndSaveTrustScore(userId: string, userType: 'FARM
 }
 
 export async function getTrustScore(userId: string, userType: string) {
-  return (prisma as any).trustScore.findUnique({ where: { userId_userType: { userId, userType } } });
+  return prisma.trustScore.findUnique({ where: { userId_userType: { userId, userType: userType as any } } });
 }

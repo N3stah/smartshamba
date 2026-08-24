@@ -1,5 +1,3 @@
-// @ts-nocheck
-// TODO: V2 - Re-enable type checking after Stage 6/7 schema is built
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import * as Sentry from '@sentry/nextjs';
@@ -14,7 +12,7 @@ export async function GET(req: NextRequest) {
     console.log('[CRON] Running Trust & Risk Auto-Freeze check...');
 
     // 1. Find all TrustScore records below 20
-    const lowTrustRecords = await (prisma as any).trustScore.findMany({
+    const lowTrustRecords = await prisma.trustScore.findMany({
       where: { score: { lt: 20 } },
       select: { userId: true, userType: true }
     });

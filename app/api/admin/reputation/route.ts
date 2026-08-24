@@ -1,64 +1,48 @@
-// @ts-nocheck
-// TODO: V2 - Re-enable type checking after this module schema is built
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { requireAdminAuth } from '@/lib/auth';
+import * as Sentry from '@sentry/nextjs';
 
 export async function GET(req: NextRequest) {
   try {
-    const authError = requireAdminAuth(req);
-    if (authError) return authError;
+    await requireAdminAuth(req);
+    
+    const topFarmers = await prisma.trustScore.findMany({
+      where: { userType: 'FARMER' },
+      orderBy: { score: 'desc' },
+      take: 10
+    });
 
-    const [topFarmers, topBuyers, topProviders, lowScoreUsers] = await Promise.all([
-      (prisma as any).trustScore.findMany({
-        where: { userType: 'FARMER', score: { gte: 75 } },
-        orderBy: { score: 'desc' },
-        take: 10,
-        include: { 
-          // We can't directly include Farmer due to polymorphic relation, 
-          // but we can fetch names separately if needed
-        }
-      }),
-      (prisma as any).trustScore.findMany({
-        where: { userType: 'BUYER', score: { gte: 75 } },
-        orderBy: { score: 'desc' },
-        take: 10
-      }),
-      (prisma as any).trustScore.findMany({
-        where: { userType: 'TRANSPORT', score: { gte: 75 } },
-        orderBy: { score: 'desc' },
-        take: 10
-      }),
-      (prisma as any).trustScore.findMany({
-        where: { score: { lt: 40 } },
-        orderBy: { score: 'asc' },
-        take: 10
-      })
-    ]);
+    const topBuyers = await prisma.trustScore.findMany({
+      where: { userType: 'BUYER' },
+      orderBy: { score: 'desc' },
+      take: 10
+    });
 
-    // Fetch names for top farmers
     const farmerIds = topFarmers.map(t => t.userId);
+    const buyerIds = topBuyers.map(t => t.userId);
+
     const farmers = await prisma.farmer.findMany({
       where: { id: { in: farmerIds } },
-      select: { id: true, name: true }
+      select: { id: true, name: true, location: true }
     });
-    const farmerMap = new Map(farmers.map(f => [f.id, f.name]));
 
-    const buyerIds = topBuyers.map(t => t.userId);
     const buyers = await prisma.buyer.findMany({
       where: { id: { in: buyerIds } },
-      select: { id: true, name: true }
+      select: { id: true, name: true, location: true }
     });
-    const buyerMap = new Map(buyers.map(b => [b.id, b.name]));
+
+    const farmerMap = new Map(farmers.map(f => [f.id, f]));
+    const buyerMap = new Map(buyers.map(b => [b.id, b]));
 
     return NextResponse.json({
-      topFarmers: topFarmers.map(t => ({ ...t, name: farmerMap.get(t.userId) || 'Unknown' })),
-      topBuyers: topBuyers.map(t => ({ ...t, name: buyerMap.get(t.userId) || 'Unknown' })),
-      topProviders: topProviders, // Names not critical for MVP
-      suspiciousAccounts: lowScoreUsers
+      topFarmers: topFarmers.map(t => ({ ...t, name: farmerMap.get(t.userId)?.name || 'Unknown', location: farmerMap.get(t.userId)?.location })),
+      topBuyers: topBuyers.map(t => ({ ...t, name: buyerMap.get(t.userId)?.name || 'Unknown', location: buyerMap.get(t.userId)?.location }))
     });
   } catch (error) {
     console.error('[API] Admin reputation error:', error);
+    Sentry.captureException(error);
+    await Sentry.flush(2000);
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
 }
