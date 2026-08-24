@@ -1,5 +1,3 @@
-// @ts-nocheck
-// TODO: V2 - Re-enable type checking after this module schema is built
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { getFarmerSession, getBuyerSession, requireAdminAuth } from '@/lib/auth';
@@ -19,7 +17,7 @@ export async function POST(req: NextRequest) {
 
     await prisma.message.update({
       where: { id: messageId },
-      data: { feedback }
+      data: { feedback } as any
     });
 
     return NextResponse.json({ success: true });

@@ -1,5 +1,3 @@
-// @ts-nocheck
-// TODO: V2 - Re-enable type checking after this module schema is built
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { getFarmerSession, getBuyerSession, requireAdminAuth } from '@/lib/auth';
@@ -39,14 +37,14 @@ export async function POST(req: NextRequest) {
     let convId = conversationId;
     if (!convId) {
       const conv = await prisma.conversation.create({
-        data: { userId, role, title: message.substring(0, 30) }
+        data: { userId, role, title: message.substring(0, 30) } as any
       });
       convId = conv.id;
     }
 
     // 2. Save User Message
     await prisma.message.create({
-      data: { conversationId: convId, role: 'user', content: message }
+      data: { conversationId: convId, role: 'user', content: message } as any
     });
 
     // 3. Fetch History
@@ -54,7 +52,7 @@ export async function POST(req: NextRequest) {
       where: { conversationId: convId },
       orderBy: { createdAt: 'desc' },
       take: 10,
-      select: { role: true, content: true }
+      select: { role: true, content: true } as any
     });
 
     // 4. Stream AI Response
@@ -96,7 +94,7 @@ export async function POST(req: NextRequest) {
 
           // Save the complete AI text to DB when stream finishes
           await prisma.message.create({
-            data: { conversationId: convId!, role: 'ai', content: fullAiText }
+            data: { conversationId: convId!, role: 'ai', content: fullAiText } as any
           }).catch(dbErr => console.error('[AI] Failed to save AI message:', dbErr));
         }
       }
