@@ -21,7 +21,7 @@ export default async function FarmerWeatherPage() {
   let weather = null;
   let advisory = {};
   try {
-    weather = await (prisma as any).weatherCache.findUnique({ where: { county: countyName } });
+    weather = await prisma.weatherData.findUnique({ where: { county: countyName } });
     if (weather?.advisory) {
       advisory = JSON.parse(weather.advisory);
     }

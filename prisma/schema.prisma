@@ -514,3 +514,45 @@ model AIInsight {
   farmer Farmer? @relation("FarmerAIInsights", fields: [userId], references: [id], map: "AIInsight_farmerId_fkey")
   buyer Buyer? @relation("BuyerAIInsights", fields: [userId], references: [id], map: "AIInsight_buyerId_fkey")
 }
+
+// --- V2-2: Weather Intelligence ---
+model WeatherData {
+  id        String   @id @default(cuid())
+  county    String   @unique
+  data      Json?
+  advisory  String?  @db.Text
+  cachedAt  DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+enum WeatherSeverity {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+  WARNING
+}
+
+model WeatherAlert {
+  id        String          @id @default(cuid())
+  county    String
+  type      String
+  severity  WeatherSeverity
+  message   String          @db.Text
+  createdAt DateTime         @default(now())
+
+  @@unique([county, type])
+}
+
+model WeatherHistory {
+  id        String   @id @default(cuid())
+  county    String
+  date      DateTime
+  temp      Float?
+  humidity  Float?
+  rainMm    Float?
+  windSpeed Float?
+  condition String?
+
+  @@unique([county, date])
+}

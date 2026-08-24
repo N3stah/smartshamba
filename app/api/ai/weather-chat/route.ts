@@ -10,7 +10,7 @@ export async function POST(req: NextRequest) {
     const { message, county } = await req.json();
     if (!message || !county) return NextResponse.json({ error: 'Missing data' }, { status: 400 });
 
-    const weather = await (prisma as any).weatherCache.findUnique({ where: { county } });
+    const weather = await prisma.weatherData.findUnique({ where: { county } });
     if (!weather) return NextResponse.json({ error: 'Weather data not found' }, { status: 404 });
 
     const prompt = `You are a precision agriculture assistant. Based STRICTLY on this JSON weather data for ${county}: ${JSON.stringify(weather.data)}

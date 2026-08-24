@@ -16,7 +16,7 @@ export default async function AdminWeatherDashboard() {
   let activeAlerts: any[] = [];
   try {
     [weatherData, activeAlerts] = await Promise.all([
-      (prisma as any).weatherCache.findMany(),
+      prisma.weatherData.findMany(),
       (prisma as any).weatherAlert.findMany({ orderBy: { createdAt: 'desc' } })
     ]);
   } catch (e) {

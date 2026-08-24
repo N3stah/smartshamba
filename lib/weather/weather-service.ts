@@ -127,30 +127,29 @@ export async function fetchAndCacheWeather(countyName: string) {
       }
     }
 
-    const cached = await (prisma as any).weatherCache.upsert({
+    const cached = await prisma.weatherData.upsert({
       where: { county: countyName },
-      update: { data: formattedData, advisory: JSON.stringify(aiAdvisory), updatedAt: new Date() },
-      create: { county: countyName, data: formattedData, advisory: JSON.stringify(aiAdvisory) }
+      update: { data: formattedData as any, advisory: JSON.stringify(aiAdvisory), updatedAt: new Date() },
+      create: { county: countyName, data: formattedData as any, advisory: JSON.stringify(aiAdvisory) }
     });
 
     // --- Extreme Weather Alert Detection & SMS Notification ---
     const maxRain = Math.max(...formattedData.forecast.map((f: any) => f.rain));
-    const maxWind = Math.max(...formattedData.forecast.map((f: any) => f.condition.toLowerCase().includes('wind') ? 30 : 10)); // simplified wind check
+    const maxWind = Math.max(...formattedData.forecast.map((f: any) => f.condition.toLowerCase().includes('wind') ? 30 : 10));
     const minTemp = Math.min(...formattedData.forecast.map((f: any) => f.temp));
 
     const checkAndNotify = async (type: string, condition: boolean, message: string) => {
-      const alertExists = await (prisma as any).weatherAlert.findUnique({ where: { county_type: { county: countyName, type } } });
+      const alertExists = await prisma.weatherAlert.findUnique({ where: { county_type: { county: countyName, type } } });
       if (condition) {
         if (!alertExists) {
-          await (prisma as any).weatherAlert.create({ data: { county: countyName, type, severity: 'WARNING', message } });
-          // Send SMS to farmers and buyers in this county\n          const farmers = await prisma.farmer.findMany({ where: { county: { name: countyName } }, select: { phone: true, id: true } });\n          const buyers = await prisma.buyer.findMany({ where: { county: { name: countyName } }, select: { phone: true, id: true } });\n          const allUsers = [...farmers, ...buyers];\n          for (const u of allUsers) {\n            await sendNotification({ type: 'HARVEST_ADVISORY', recipientPhone: u.phone, body: `SmartShamba Alert: ${message}`, farmerId: u.id }).catch(()=>{});\n          }
+          await prisma.weatherAlert.create({ data: { county: countyName, type, severity: 'WARNING', message } });
           const farmers = await prisma.farmer.findMany({ where: { county: { name: countyName } }, select: { phone: true, id: true } });
           for (const f of farmers) {
             await sendNotification({ type: 'HARVEST_ADVISORY', recipientPhone: f.phone, body: `SmartShamba Alert: ${message}`, farmerId: f.id }).catch(()=>{});
           }
         }
       } else {
-        if (alertExists) await (prisma as any).weatherAlert.delete({ where: { id: alertExists.id } }).catch(()=>{});
+        if (alertExists) await prisma.weatherAlert.delete({ where: { id: alertExists.id } }).catch(()=>{});
       }
     };
 
@@ -158,14 +157,38 @@ export async function fetchAndCacheWeather(countyName: string) {
     await checkAndNotify('STRONG_WIND', formattedData.current.windSpeed > 30, `Strong winds (>30km/h) expected in ${countyName}. Secure loose structures and delay spraying.`);
     await checkAndNotify('COLD_FROST', minTemp < 10, `Cold conditions (<10°C) expected in ${countyName}. Protect young seedlings from frost.`);
 
-    // Store Weather History for trend analysis\n    const today = new Date();\n    today.setHours(0, 0, 0, 0);\n    await prisma.weatherHistory.upsert({\n      where: { county_date: { county: countyName, date: today } },\n      update: {\n        temp: formattedData.current.temp,\n        humidity: formattedData.current.humidity,\n        rainMm: formattedData.current.rainProbability > 50 ? 10 : 0, // Estimate\n        windSpeed: formattedData.current.windSpeed,\n        condition: formattedData.current.condition,\n      },\n      create: {\n        county: countyName,\n        date: today,\n        temp: formattedData.current.temp,\n        humidity: formattedData.current.humidity,\n        rainMm: formattedData.current.rainProbability > 50 ? 10 : 0,\n        windSpeed: formattedData.current.windSpeed,\n        condition: formattedData.current.condition,\n      }\n    }).catch(() => {}); // Non-blocking\n\n    return cached;
+    // Store Weather History for trend analysis
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    await prisma.weatherHistory.upsert({
+      where: { county_date: { county: countyName, date: today } },
+      update: {
+        temp: formattedData.current.temp,
+        humidity: formattedData.current.humidity,
+        rainMm: formattedData.current.rainProbability > 50 ? 10 : 0,
+        windSpeed: formattedData.current.windSpeed,
+        condition: formattedData.current.condition,
+      },
+      create: {
+        county: countyName,
+        date: today,
+        temp: formattedData.current.temp,
+        humidity: formattedData.current.humidity,
+        rainMm: formattedData.current.rainProbability > 50 ? 10 : 0,
+        windSpeed: formattedData.current.windSpeed,
+        condition: formattedData.current.condition,
+      }
+    }).catch(() => {});
+
+    return cached;
   } catch (error) {
     console.error('[Weather] Fetch failed:', error);
     Sentry.captureException(error);
+    await Sentry.flush(2000);
     return null;
   }
 }
 
 export async function getCachedWeather(countyName: string) {
-  return (prisma as any).weatherCache.findUnique({ where: { county: countyName } });
+  return prisma.weatherData.findUnique({ where: { county: countyName } });
 }
