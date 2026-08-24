@@ -1,5 +1,3 @@
-// @ts-nocheck
-// TODO: V2 - Re-enable type checking after this module schema is built
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { getFarmerSession } from '@/lib/auth';
@@ -17,8 +15,8 @@ export async function GET(req: NextRequest) {
 
     const [balance, entries] = await Promise.all([
       getWalletBalance(farmer.id, 'FARMER'),
-      (prisma as any).ledgerEntry.findMany({
-        where: { userId: farmer.id, userType: 'FARMER' },
+      prisma.ledgerEntry.findMany({
+        where: { walletId: farmer.id },
         orderBy: { createdAt: 'desc' },
         take: 50
       })
@@ -70,13 +68,13 @@ export async function GET(req: NextRequest) {
       doc.fillColor('#666').text(new Date(e.createdAt).toLocaleDateString('en-KE'), 50, y, { width: 100 });
       doc.fillColor('#000').text(e.description.substring(0, 30) + '...', 150, y, { width: 200 });
       
-      if (e.entryType === 'DEBIT') {
+      if (e.type === 'DEBIT') {
         doc.text(e.amount.toLocaleString(), 350, y, { width: 80, align: 'right' });
       } else {
         doc.text('-', 350, y, { width: 80, align: 'right' });
       }
       
-      if (e.entryType === 'CREDIT') {
+      if (e.type === 'CREDIT') {
         doc.text(e.amount.toLocaleString(), 430, y, { width: 80, align: 'right' });
       } else {
         doc.text('-', 430, y, { width: 80, align: 'right' });

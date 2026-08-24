@@ -1,31 +1,78 @@
-// @ts-nocheck
-// TODO: V2 - Re-enable type checking after this module schema is built
 import { prisma } from '@/lib/prisma';
 import * as Sentry from '@sentry/nextjs';
 
 /**
- * Posts a double-entry to the immutable ledger.
+ * Gets or creates a wallet for a user or system account.
+ */
+export async function getOrCreateWalletId(userId: string | null, userType: string): Promise<string> {
+  try {
+    if (userType === 'FARMER' && userId) {
+      const wallet = await prisma.wallet.upsert({
+        where: { farmerId: userId },
+        update: {},
+        create: { farmerId: userId, type: 'USER' },
+      });
+      return wallet.id;
+    } else if (userType === 'BUYER' && userId) {
+      const wallet = await prisma.wallet.upsert({
+        where: { buyerId: userId },
+        update: {},
+        create: { buyerId: userId, type: 'USER' },
+      });
+      return wallet.id;
+    } else if (userType === 'ESCROW') {
+      let wallet = await prisma.wallet.findFirst({ where: { type: 'ESCROW' } });
+      if (!wallet) wallet = await prisma.wallet.create({ data: { type: 'ESCROW' } });
+      return wallet.id;
+    } else if (userType === 'PLATFORM') {
+      let wallet = await prisma.wallet.findFirst({ where: { type: 'PLATFORM' } });
+      if (!wallet) wallet = await prisma.wallet.create({ data: { type: 'PLATFORM' } });
+      return wallet.id;
+    }
+    throw new Error('Invalid user type for wallet');
+  } catch (error) {
+    Sentry.captureException(error);
+    throw error;
+  }
+}
+
+/**
+ * Posts a double-entry to the immutable ledger and updates the wallet balance in a single transaction.
  */
 export async function postLedgerEntry(params: {
-  userId: string;
-  userType: string; // "FARMER", "BUYER", "TRANSPORT", "PLATFORM", "ESCROW"
+  walletId: string;
   transactionId?: string;
-  entryType: 'DEBIT' | 'CREDIT';
+  type: 'CREDIT' | 'DEBIT';
   amount: number;
   description: string;
   reference?: string;
 }) {
   try {
-    const entry = await (prisma as any).ledgerEntry.create({
-      data: {
-        userId: params.userId,
-        userType: params.userType,
-        transactionId: params.transactionId ?? null,
-        entryType: params.entryType,
-        amount: Math.abs(params.amount),
-        description: params.description,
-        reference: params.reference ?? null,
-      }
+    const entry = await prisma.$transaction(async (tx) => {
+      const wallet = await tx.wallet.findUniqueOrThrow({ where: { id: params.walletId } });
+      const amount = Math.abs(params.amount);
+      const balanceAfter = params.type === 'CREDIT' ? wallet.balance + amount : wallet.balance - amount;
+      
+      if (balanceAfter < 0) throw new Error('Insufficient balance for debit');
+      
+      const newEntry = await tx.ledgerEntry.create({
+        data: {
+          walletId: params.walletId,
+          type: params.type,
+          amount: amount,
+          description: params.description,
+          reference: params.reference ?? null,
+          balanceAfter: balanceAfter,
+          relatedTransactionId: params.transactionId ?? null,
+        }
+      });
+      
+      await tx.wallet.update({
+        where: { id: params.walletId },
+        data: { balance: balanceAfter }
+      });
+      
+      return newEntry;
     });
     return entry;
   } catch (error) {
@@ -37,20 +84,12 @@ export async function postLedgerEntry(params: {
 }
 
 /**
- * Calculates the current wallet balance for a user.
- * Balance = Sum(CREDITS) - Sum(DEBITS)
+ * Gets the current wallet balance for a user.
  */
 export async function getWalletBalance(userId: string, userType: string): Promise<number> {
-  const entries = await (prisma as any).ledgerEntry.findMany({
-    where: { userId, userType },
-    select: { entryType: true, amount: true }
-  });
-
-  const balance = entries.reduce((sum, entry) => {
-    return entry.entryType === 'CREDIT' ? sum + entry.amount : sum - entry.amount;
-  }, 0);
-
-  return Math.round(balance * 100) / 100;
+  const walletId = await getOrCreateWalletId(userId, userType);
+  const wallet = await prisma.wallet.findUnique({ where: { id: walletId } });
+  return wallet ? Math.round(wallet.balance * 100) / 100 : 0;
 }
 
 /**
@@ -62,12 +101,15 @@ export async function processTransactionSettlement(transactionId: string, totalV
   const platformFee = Math.round((totalValue * PLATFORM_FEE_RATE) * 100) / 100;
   const farmerPayout = Math.round((totalValue - platformFee) * 100) / 100;
 
+  const escrowWalletId = await getOrCreateWalletId(null, 'ESCROW');
+  const farmerWalletId = await getOrCreateWalletId(farmerId, 'FARMER');
+  const platformWalletId = await getOrCreateWalletId(null, 'PLATFORM');
+
   // 1. Debit Escrow Wallet
   await postLedgerEntry({
-    userId: 'escrow',
-    userType: 'ESCROW',
+    walletId: escrowWalletId,
     transactionId,
-    entryType: 'DEBIT',
+    type: 'DEBIT',
     amount: totalValue,
     description: `Escrow release for Transaction ${transactionId.substring(0, 8)}`,
     reference: `RELEASE-${transactionId.substring(0, 8)}`
@@ -75,10 +117,9 @@ export async function processTransactionSettlement(transactionId: string, totalV
 
   // 2. Credit Farmer's wallet
   await postLedgerEntry({
-    userId: farmerId,
-    userType: 'FARMER',
+    walletId: farmerWalletId,
     transactionId,
-    entryType: 'CREDIT',
+    type: 'CREDIT',
     amount: farmerPayout,
     description: `Sale proceeds for Transaction ${transactionId.substring(0, 8)}`,
     reference: `SETTLE-${transactionId.substring(0, 8)}`
@@ -87,10 +128,9 @@ export async function processTransactionSettlement(transactionId: string, totalV
   // 3. Credit Platform Revenue wallet
   if (platformFee > 0) {
     await postLedgerEntry({
-      userId: 'revenue',
-      userType: 'PLATFORM',
+      walletId: platformWalletId,
       transactionId,
-      entryType: 'CREDIT',
+      type: 'CREDIT',
       amount: platformFee,
       description: `Platform fee (2%) for Transaction ${transactionId.substring(0, 8)}`,
       reference: `FEE-${transactionId.substring(0, 8)}`
@@ -100,14 +140,14 @@ export async function processTransactionSettlement(transactionId: string, totalV
 
 /**
  * Processes the financial settlement for a Group Transaction.
- * Calculates proportional payouts for each member based on pledged bags.
  */
 export async function processGroupSettlement(groupTxId: string, totalValue: number, groupMembers: any[], transportCost: number = 0) {
   const PLATFORM_FEE_RATE = 0.02;
   const totalBags = groupMembers.reduce((sum, m) => sum + m.bagsPledged, 0);
-  
-  // Net value after transport cost
   const netValue = totalValue - transportCost;
+  
+  const escrowWalletId = await getOrCreateWalletId(null, 'ESCROW');
+  const platformWalletId = await getOrCreateWalletId(null, 'PLATFORM');
   
   for (const member of groupMembers) {
     if (member.bagsPledged === 0) continue;
@@ -117,24 +157,22 @@ export async function processGroupSettlement(groupTxId: string, totalValue: numb
     const platformFee = Math.round((grossShare * PLATFORM_FEE_RATE) * 100) / 100;
     const farmerPayout = Math.round((grossShare - platformFee) * 100) / 100;
     
-    // Credit Farmer
+    const farmerWalletId = await getOrCreateWalletId(member.farmerId, 'FARMER');
+    
     await postLedgerEntry({
-      userId: member.farmerId,
-      userType: 'FARMER',
+      walletId: farmerWalletId,
       transactionId: groupTxId,
-      entryType: 'CREDIT',
+      type: 'CREDIT',
       amount: farmerPayout,
       description: `Group sale proceeds (${member.bagsPledged} bags) for Tx ${groupTxId.substring(0, 8)}`,
       reference: `GRP-SETTLE-${groupTxId.substring(0, 8)}`
     });
     
-    // Credit Platform Revenue
     if (platformFee > 0) {
       await postLedgerEntry({
-        userId: 'revenue',
-        userType: 'PLATFORM',
+        walletId: platformWalletId,
         transactionId: groupTxId,
-        entryType: 'CREDIT',
+        type: 'CREDIT',
         amount: platformFee,
         description: `Platform fee (2%) for Group Tx ${groupTxId.substring(0, 8)}`,
         reference: `GRP-FEE-${groupTxId.substring(0, 8)}`
@@ -142,12 +180,10 @@ export async function processGroupSettlement(groupTxId: string, totalValue: numb
     }
   }
   
-  // Debit Escrow for the full amount
   await postLedgerEntry({
-    userId: 'escrow',
-    userType: 'ESCROW',
+    walletId: escrowWalletId,
     transactionId: groupTxId,
-    entryType: 'DEBIT',
+    type: 'DEBIT',
     amount: totalValue,
     description: `Escrow release for Group Transaction ${groupTxId.substring(0, 8)}`,
     reference: `GRP-RELEASE-${groupTxId.substring(0, 8)}`

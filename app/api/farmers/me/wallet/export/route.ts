@@ -11,8 +11,8 @@ export async function GET(req: NextRequest) {
     const farmer = await prisma.farmer.findUnique({ where: { phone } });
     if (!farmer) return NextResponse.json({ error: 'Farmer not found' }, { status: 404 });
 
-    const entries = await (prisma as any).ledgerEntry.findMany({
-      where: { userId: farmer.id, userType: 'FARMER' },
+    const entries = await prisma.ledgerEntry.findMany({
+      where: { walletId: farmer.id },
       orderBy: { createdAt: 'desc' }
     });
 

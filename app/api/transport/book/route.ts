@@ -83,19 +83,17 @@ export async function POST(req: NextRequest) {
 
     // V2.0 Stage 5: Record Double-Entry for Transport Payment
     await postLedgerEntry({
-      userId: bookedById,
-      userType: bookedByType,
+      walletId: bookedById,
       transactionId: transaction.id,
-      entryType: 'DEBIT',
+      type: 'DEBIT',
       amount: cost,
       description: `Transport cost for Booking ${booking.id.substring(0, 8)}`,
       reference: `TRNSPT-${booking.id.substring(0, 8)}`
     });
     await postLedgerEntry({
-      userId: provider.id,
-      userType: 'TRANSPORT',
+      walletId: provider.id,
       transactionId: transaction.id,
-      entryType: 'CREDIT',
+      type: 'CREDIT',
       amount: cost,
       description: `Transport earnings for Booking ${booking.id.substring(0, 8)}`,
       reference: `TRNSPT-${booking.id.substring(0, 8)}`

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { requireAdminAuth } from '@/lib/auth';
+import { getOrCreateWalletId } from '@/lib/finance/ledger-service';
 import { postLedgerEntry } from '@/lib/finance/ledger-service';
 import * as Sentry from '@sentry/nextjs';
 
@@ -42,19 +43,18 @@ export async function PATCH(req: NextRequest) {
 
       // 2. Debit Farmer Wallet (Double-Entry)
       await postLedgerEntry({
-        userId: request.userId,
-        userType: request.userType,
-        entryType: 'DEBIT',
+        walletId: request.walletId,
+        type: 'DEBIT',
         amount: request.amount,
         description: `Withdrawal to M-PESA (Ref: ${mpesaRef})`,
         reference: `WDL-${id.substring(0, 8)}`
       });
 
       // 3. Credit Platform Cash Out Wallet
+      const cashoutWalletId = await getOrCreateWalletId(null, 'PLATFORM');
       await postLedgerEntry({
-        userId: 'cashout',
-        userType: 'PLATFORM',
-        entryType: 'CREDIT',
+        walletId: cashoutWalletId,
+        type: 'CREDIT',
         amount: request.amount,
         description: `M-PESA B2C Payout to ${request.userId} (Ref: ${mpesaRef})`,
         reference: `B2C-${id.substring(0, 8)}`

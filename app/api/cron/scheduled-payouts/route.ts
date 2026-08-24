@@ -33,9 +33,8 @@ export async function GET(req: NextRequest) {
         });
 
         await postLedgerEntry({
-          userId: req.userId,
-          userType: req.userType,
-          entryType: 'DEBIT',
+          walletId: req.walletId,
+          type: 'DEBIT',
           amount: req.amount,
           reference: `WDL-${updatedReq.mpesaRef}`,
           description: 'Automated Withdrawal Payout'

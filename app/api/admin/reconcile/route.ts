@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { requireAdminAuth } from '@/lib/auth';
+import { getOrCreateWalletId } from '@/lib/finance/ledger-service';
 import { processTransactionSettlement, postLedgerEntry } from '@/lib/finance/ledger-service';
 import * as Sentry from '@sentry/nextjs';
 
@@ -24,19 +25,18 @@ export async function POST(req: NextRequest) {
 
     // 1. Record Buyer Payment (Debit Buyer, Credit Escrow)
     await postLedgerEntry({
-      userId: transaction.buyerId,
-      userType: 'BUYER',
+      walletId: transaction.buyerId,
       transactionId: transaction.id,
-      entryType: 'DEBIT',
+      type: 'DEBIT',
       amount: transaction.totalValue,
       description: `Offline payment matched for Tx ${transaction.reference.substring(0, 8)}`,
       reference: mpesaRef
     });
+    const buyerWalletId = await getOrCreateWalletId(transaction.buyerId, 'BUYER');
     await postLedgerEntry({
-      userId: 'escrow',
-      userType: 'ESCROW',
+      walletId: buyerWalletId,
       transactionId: transaction.id,
-      entryType: 'CREDIT',
+      type: 'CREDIT',
       amount: transaction.totalValue,
       description: `Escrow received (Offline) for Tx ${transaction.reference.substring(0, 8)}`,
       reference: mpesaRef
@@ -57,8 +57,7 @@ export async function POST(req: NextRequest) {
     await (prisma as any).receipt.create({
       data: {
         transactionId: transaction.id,
-        userId: transaction.buyerId,
-        userType: 'BUYER',
+        walletId: transaction.buyerId,
         amount: transaction.totalValue,
         mpesaRef,
         data: { crop: 'Maize', bags: transaction.quantityBags, reference: transaction.reference, hash: receiptHash }

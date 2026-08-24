@@ -34,6 +34,7 @@ model Ward {
 }
 
 model Farmer {
+  wallet Wallet? @relation("FarmerWallet")
   aiInsights AIInsight[] @relation("FarmerAIInsights")
   language        String   @default("en") // i18n: "en" | "sw"
   id          String   @id @default(cuid())
@@ -64,6 +65,7 @@ model Farmer {
 }
 
 model Buyer {
+  wallet Wallet? @relation("BuyerWallet")
   aiInsights AIInsight[] @relation("BuyerAIInsights")
   phone           String? @unique // Added for USSD/OTP login
   password    String?
@@ -92,6 +94,7 @@ model Buyer {
 }
 
 model Transaction {
+  ledgerEntries LedgerEntry[]
   id           String   @id @default(cuid())
   farmerId     String
   buyerId      String
@@ -555,4 +558,70 @@ model WeatherHistory {
   condition String?
 
   @@unique([county, date])
+}
+
+// --- V2-3: Digital Wallet + Ledger ---
+enum WalletType {
+  USER
+  ESCROW
+  PLATFORM
+}
+
+model Wallet {
+  id            String      @id @default(cuid())
+  type          WalletType  @default(USER)
+  farmerId      String?     @unique
+  buyerId       String?     @unique
+  balance       Float       @default(0)
+  currency      String      @default("KES")
+  lockedBalance Float       @default(0)
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  farmer      Farmer?           @relation("FarmerWallet", fields: [farmerId], references: [id])
+  buyer       Buyer?            @relation("BuyerWallet", fields: [buyerId], references: [id])
+  entries     LedgerEntry[]
+  withdrawals WithdrawalRequest[]
+}
+
+enum LedgerEntryType {
+  CREDIT
+  DEBIT
+}
+
+model LedgerEntry {
+  id                   String          @id @default(cuid())
+  walletId             String
+  type                 LedgerEntryType
+  amount               Float
+  currency             String          @default("KES")
+  description          String
+  reference            String?
+  balanceAfter         Float
+  relatedTransactionId String?
+  relatedContractId    String?
+  createdAt            DateTime        @default(now())
+
+  wallet      Wallet      @relation(fields: [walletId], references: [id])
+  transaction Transaction? @relation(fields: [relatedTransactionId], references: [id])
+}
+
+enum WithdrawalStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+}
+
+model WithdrawalRequest {
+  id         String           @id @default(cuid())
+  walletId   String
+  amount     Float
+  mpesaPhone String
+  status     WithdrawalStatus @default(PENDING)
+  mpesaRef   String?
+  processedAt DateTime?
+  createdAt  DateTime         @default(now())
+
+  wallet Wallet @relation(fields: [walletId], references: [id])
 }
