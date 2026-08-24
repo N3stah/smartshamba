@@ -8,15 +8,15 @@ export async function GET(req: NextRequest) {
     const phone = getTransportSession(req);
     if (!phone) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-    const provider = await (prisma as any).transportProvider.findUnique({ where: { phone } });
+    const provider = await prisma.transportProvider.findUnique({ where: { phone } });
     if (!provider) return NextResponse.json({ error: 'Provider not found' }, { status: 404 });
 
     // Fetch stats
     const [totalDeliveries, activeDeliveries, totalEarnings, completedBookings] = await Promise.all([
-      (prisma as any).transportBooking.count({ where: { providerId: provider.id } }),
-      (prisma as any).transportBooking.count({ where: { providerId: provider.id, status: { in: ['PENDING', 'ACCEPTED', 'LOADED', 'IN_TRANSIT'] } } }),
-      (prisma as any).transportBooking.aggregate({ _sum: { cost: true }, where: { providerId: provider.id, status: 'DELIVERED' } }),
-      (prisma as any).transportBooking.count({ where: { providerId: provider.id, status: 'DELIVERED' } })
+      prisma.transportBooking.count({ where: { providerId: provider.id } }),
+      prisma.transportBooking.count({ where: { providerId: provider.id, status: { in: ['PENDING', 'ACCEPTED', 'LOADED', 'IN_TRANSIT'] } } }),
+      prisma.transportBooking.aggregate({ _sum: { cost: true }, where: { providerId: provider.id, status: 'DELIVERED' } }),
+      prisma.transportBooking.count({ where: { providerId: provider.id, status: 'DELIVERED' } })
     ]);
 
     return NextResponse.json({

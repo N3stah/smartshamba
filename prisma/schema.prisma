@@ -9,6 +9,7 @@ datasource db {
 }
 
 model County {
+  transportProviders TransportProvider[]
   id           String        @id @default(cuid())
   code         String        @unique
   name         String        @unique
@@ -34,6 +35,7 @@ model Ward {
 }
 
 model Farmer {
+  transportBookings TransportBooking[]
   contractsAsSeller Contract[] @relation("ContractSeller")
   wallet Wallet? @relation("FarmerWallet")
   aiInsights AIInsight[] @relation("FarmerAIInsights")
@@ -96,6 +98,7 @@ model Buyer {
 }
 
 model Transaction {
+  transportBooking TransportBooking?
   negotiationOffers NegotiationOffer[]
   contract Contract?
   ledgerEntries LedgerEntry[]
@@ -180,6 +183,7 @@ model GroupMember {
 }
 
 model GroupTransaction {
+  transportBookings TransportBooking[] @relation("TransportBookings")
   id String @id @default(cuid())
 
   groupId String
@@ -710,4 +714,74 @@ model Contract {
   seller      Farmer            @relation("ContractSeller", fields: [sellerId], references: [id])
   buyer       Buyer             @relation("ContractBuyer", fields: [buyerId], references: [id])
   template    ContractTemplate? @relation(fields: [templateId], references: [id])
+}
+
+// --- V2-5: Transport Marketplace ---
+model TransportProvider {
+  id            String   @id @default(cuid())
+  name          String
+  phone         String   @unique
+  passwordHash  String?
+  vehicleType   String
+  capacityBags  Int
+  licensePlate  String?
+  countyId      String?
+  isVerified    Boolean  @default(false)
+  active        Boolean  @default(true)
+  ratePerKm     Float?
+  createdAt     DateTime @default(now())
+
+  county   County?           @relation(fields: [countyId], references: [id])
+  bookings TransportBooking[]
+}
+
+enum TransportBookingStatus {
+  PENDING
+  ACCEPTED
+  LOADED
+  IN_TRANSIT
+  DELIVERED
+  CANCELLED
+}
+
+enum BookedByType {
+  FARMER
+  BUYER
+}
+
+model TransportBooking {
+  id             String                 @id @default(cuid())
+  transactionId  String? @unique
+  groupTransactionId String?
+  providerId     String
+  farmerId       String
+  pickupLocation String
+  dropoffLocation String
+  distanceKm     Float
+  cost           Float
+  bookedById     String
+  bookedByType   BookedByType
+  status         TransportBookingStatus @default(PENDING)
+  isHalted       Boolean                @default(false)
+  haltReason     String?
+  bookedAt       DateTime               @default(now())
+  completedAt    DateTime?
+  createdAt      DateTime               @default(now())
+
+  transaction      Transaction?       @relation(fields: [transactionId], references: [id])
+  groupTransaction GroupTransaction? @relation("TransportBookings", fields: [groupTransactionId], references: [id])
+  provider         TransportProvider @relation(fields: [providerId], references: [id])
+  farmer           Farmer            @relation(fields: [farmerId], references: [id])
+  events           DeliveryEvent[]
+}
+
+model DeliveryEvent {
+  id        String   @id @default(cuid())
+  bookingId String
+  eventType String
+  notes     String?
+  location  String?
+  createdAt DateTime @default(now())
+
+  booking TransportBooking @relation(fields: [bookingId], references: [id])
 }

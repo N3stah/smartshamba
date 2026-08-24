@@ -34,14 +34,14 @@ export async function POST(req: NextRequest) {
     }
 
     // Check if transport is already booked
-    const existingBooking = await (prisma as any).transportBooking.findUnique({
+    const existingBooking = await prisma.transportBooking.findUnique({
       where: { transactionId }
     });
     if (existingBooking) {
       return NextResponse.json({ error: 'Transport already booked for this transaction' }, { status: 400 });
     }
 
-    const provider = await (prisma as any).transportProvider.findUnique({
+    const provider = await prisma.transportProvider.findUnique({
       where: { id: providerId }
     });
     if (!provider || !provider.active) {
@@ -52,11 +52,11 @@ export async function POST(req: NextRequest) {
     const farmerCounty = transaction.farmer.county?.name || 'Nairobi';
     const buyerCounty = transaction.buyer.county?.name || 'Nairobi';
     const distance = calculateDistance(farmerCounty, buyerCounty);
-    const cost = estimateCost(distance, transaction.quantityBags, provider.ratePerKm);
+    const cost = estimateCost(distance, transaction.quantityBags, provider.ratePerKm ?? 0);
 
     // Determine who is booking
     let bookedById = '';
-    let bookedByType = '';
+    let bookedByType: 'FARMER' | 'BUYER' = 'FARMER';
     if (farmerPhone) {
       const farmer = await prisma.farmer.findUnique({ where: { phone: farmerPhone } });
       bookedById = farmer?.id || '';
@@ -67,10 +67,11 @@ export async function POST(req: NextRequest) {
       bookedByType = 'BUYER';
     }
 
-    const booking = await (prisma as any).transportBooking.create({
+    const booking = await prisma.transportBooking.create({
       data: {
         transactionId,
         providerId,
+        farmerId: transaction.farmerId,
         cost,
         distanceKm: distance,
         pickupLocation: `${farmerCounty} County`,
@@ -106,6 +107,7 @@ export async function POST(req: NextRequest) {
   } catch (error) {
     console.error('[API] Transport booking error:', error);
     Sentry.captureException(error);
+    await Sentry.flush(2000);
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
 }

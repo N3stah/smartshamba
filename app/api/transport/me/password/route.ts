@@ -20,9 +20,9 @@ export async function PUT(req: NextRequest) {
     
     const hashed = await bcrypt.hash(password, 10);
     
-    await (prisma as any).transportProvider.update({ 
+    await prisma.transportProvider.update({ 
       where: { phone }, 
-      data: { password: hashed } 
+      data: { passwordHash: hashed } 
     });
     
     return NextResponse.json({ success: true });
