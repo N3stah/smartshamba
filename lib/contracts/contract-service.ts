@@ -7,12 +7,12 @@ import * as Sentry from '@sentry/nextjs';
  */
 export async function getOrCreateContract(transactionId: string, txData: any) {
   try {
-    let contract = await prisma.contract.findUnique({
+    let contract = await (prisma as any).contract.findUnique({
       where: { transactionId }
     });
 
     if (!contract) {
-      contract = await prisma.contract.create({
+      contract = await (prisma as any).contract.create({
         data: {
           transactionId,
           status: 'DRAFT',
@@ -48,7 +48,7 @@ export async function signContract(
   actorId: string
 ) {
   try {
-    const contract = await prisma.contract.findUnique({
+    const contract = await (prisma as any).contract.findUnique({
       where: { transactionId }
     });
 
@@ -74,7 +74,7 @@ export async function signContract(
       updateData.status = 'EXECUTED';
     }
 
-    const updated = await prisma.contract.update({
+    const updated = await (prisma as any).contract.update({
       where: { transactionId },
       data: updateData
     });
@@ -103,10 +103,10 @@ export async function signContract(
  */
 export async function updateContractTerms(transactionId: string, updates: any) {
   try {
-    const contract = await prisma.contract.findUnique({ where: { transactionId } });
+    const contract = await (prisma as any).contract.findUnique({ where: { transactionId } });
     if (!contract) return;
 
-    await prisma.contract.update({
+    await (prisma as any).contract.update({
       where: { transactionId },
       data: updates
     });

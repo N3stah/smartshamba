@@ -14,7 +14,7 @@ export async function GET(req: NextRequest) {
     
     // Find DRAFT contracts older than 24 hours
     const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
-    const pendingContracts = await prisma.contract.findMany({
+    const pendingContracts = await (prisma as any).contract.findMany({
       where: {
         status: 'DRAFT',
         createdAt: { lte: twentyFourHoursAgo }

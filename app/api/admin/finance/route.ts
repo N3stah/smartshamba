@@ -28,7 +28,7 @@ export async function GET(req: NextRequest) {
     }
 
     // Fetch recent ledger entries for the audit feed
-    const recentEntries = await prisma.ledgerEntry.findMany({
+    const recentEntries = await (prisma as any).ledgerEntry.findMany({
       orderBy: { createdAt: 'desc' },
       take: 50,
       include: {

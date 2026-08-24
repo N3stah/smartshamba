@@ -8,10 +8,10 @@ export async function GET(req: NextRequest) {
     const phone = getTransportSession(req);
     if (!phone) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-    const provider = await prisma.transportProvider.findUnique({ where: { phone } });
+    const provider = await (prisma as any).transportProvider.findUnique({ where: { phone } });
     if (!provider) return NextResponse.json({ error: 'Provider not found' }, { status: 404 });
 
-    const bookings = await prisma.transportBooking.findMany({
+    const bookings = await (prisma as any).transportBooking.findMany({
       where: { providerId: provider.id, status: { in: ['PENDING', 'ACCEPTED', 'LOADED', 'IN_TRANSIT'] } },
       include: {
         transaction: { include: { farmer: true, buyer: true } },

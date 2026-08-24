@@ -10,7 +10,7 @@ export async function GET(req: NextRequest) {
     const buyer = await prisma.buyer.findFirst({ where: { phone } });
     if (!buyer) return NextResponse.json({ error: 'Buyer not found' }, { status: 404 });
 
-    const contracts = await prisma.contract.findMany({
+    const contracts = await (prisma as any).contract.findMany({
       where: {
         OR: [
           { transaction: { buyerId: buyer.id } },

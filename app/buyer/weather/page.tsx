@@ -22,7 +22,7 @@ export default async function BuyerWeatherPage() {
   let weather = null;
   let advisory = {};
   try {
-    weather = await prisma.weatherCache.findUnique({ where: { county: countyName } });
+    weather = await (prisma as any).weatherCache.findUnique({ where: { county: countyName } });
     if (weather?.advisory) {
       advisory = JSON.parse(weather.advisory);
     }

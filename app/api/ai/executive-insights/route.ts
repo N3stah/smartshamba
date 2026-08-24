@@ -17,7 +17,7 @@ export async function GET(req: NextRequest) {
       prisma.transaction.count(),
       prisma.transaction.count({ where: { status: 'SETTLED' } }),
       prisma.transaction.count({ where: { status: 'DISPUTED' } }),
-      prisma.ledgerEntry.aggregate({ _sum: { amount: true }, where: { userId: 'revenue', userType: 'PLATFORM', entryType: 'CREDIT' } })
+      (prisma as any).ledgerEntry.aggregate({ _sum: { amount: true }, where: { userId: 'revenue', userType: 'PLATFORM', entryType: 'CREDIT' } })
     ]);
 
     const successRate = totalTx > 0 ? (settledTx / totalTx) * 100 : 0;

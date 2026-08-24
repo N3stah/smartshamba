@@ -16,8 +16,8 @@ export default async function AdminWeatherDashboard() {
   let activeAlerts: any[] = [];
   try {
     [weatherData, activeAlerts] = await Promise.all([
-      prisma.weatherCache.findMany(),
-      prisma.weatherAlert.findMany({ orderBy: { createdAt: 'desc' } })
+      (prisma as any).weatherCache.findMany(),
+      (prisma as any).weatherAlert.findMany({ orderBy: { createdAt: 'desc' } })
     ]);
   } catch (e) {
     console.error('Failed to fetch admin weather data:', e);

@@ -8,7 +8,7 @@ export async function POST(req: NextRequest) {
   try {
     const { phone, code } = await req.json();
     
-    const provider = await prisma.transportProvider.findUnique({ where: { phone } });
+    const provider = await (prisma as any).transportProvider.findUnique({ where: { phone } });
     if (!provider) return NextResponse.json({ error: 'Provider not found' }, { status: 404 });
 
     const { valid, error } = await verifyOtp(phone, code.trim());

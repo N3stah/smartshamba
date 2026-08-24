@@ -6,7 +6,7 @@ import * as Sentry from '@sentry/nextjs';
 export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params;
-    const offers = await prisma.negotiationOffer.findMany({
+    const offers = await (prisma as any).negotiationOffer.findMany({
       where: { transactionId: id },
       orderBy: { createdAt: 'asc' }
     });
@@ -27,7 +27,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
     const { pricePerUnit, quantity, terms } = body;
 
     // Create the new offer
-    const newOffer = await prisma.negotiationOffer.create({
+    const newOffer = await (prisma as any).negotiationOffer.create({
       data: {
         transactionId: id,
         actor: session.role === 'farmer' ? 'SELLER' : 'BUYER', // Map role to actor
@@ -38,7 +38,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
     });
 
     // Reject all previous pending offers automatically
-    await prisma.negotiationOffer.updateMany({
+    await (prisma as any).negotiationOffer.updateMany({
       where: { 
         transactionId: id, 
         id: { not: newOffer.id },

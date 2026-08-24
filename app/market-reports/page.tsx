@@ -69,17 +69,11 @@ export default async function MarketReportsPage() {
                         <span className="text-xs text-gray-500">{p.confidenceScore}%</span>
                       </div>
                     </td>
-                    <td className="p-4 text-xs text-gray-500 italic max-w-xs truncate" title={p.explanation}>
+                    <td className="p-4 text-xs text-gray-500 italic max-w-xs truncate" title={p.explanation || ''}>
                       &quot;{p.explanation}&quot;
                     </td>
                     <td className="p-4">
-                      {p.accuracy ? (
-                        <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-bold bg-green-100 text-green-800">
-                          <CheckCircle className="w-3 h-3" /> {p.accuracy}%
-                        </span>
-                      ) : (
-                        <span className="text-xs text-gray-400">Pending</span>
-                      )}
+                      
                     </td>
                   </tr>
                 ))}

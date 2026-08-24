@@ -21,7 +21,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  const pendingEvents = await prisma.eventOutbox.findMany({
+  const pendingEvents = await (prisma as any).eventOutbox.findMany({
     where: { status: 'PENDING', attempts: { lt: 5 } },
     take: 50,
     orderBy: { createdAt: 'asc' }
@@ -32,13 +32,13 @@ export async function GET(req: NextRequest) {
       const typedEvent = event as unknown as OutboxEvent;
       await routeEvent(typedEvent);
       
-      await prisma.eventOutbox.update({
+      await (prisma as any).eventOutbox.update({
         where: { id: event.id },
         data: { status: 'PROCESSED', processedAt: new Date() }
       });
     } catch (error: unknown) {
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-      await prisma.eventOutbox.update({
+      await (prisma as any).eventOutbox.update({
         where: { id: event.id },
         data: { attempts: { increment: 1 }, lastError: errorMessage }
       });
@@ -59,7 +59,7 @@ async function routeEvent(event: OutboxEvent) {
       
     case 'DisputeResolved':
       if (event.payload.adverseOutcome && event.payload.atFaultUserId) {
-        await prisma.trustScore.updateMany({
+        await (prisma as any).trustScore.updateMany({
           where: { userId: event.payload.atFaultUserId },
           data: { score: { decrement: 15 } }
         });
@@ -69,12 +69,12 @@ async function routeEvent(event: OutboxEvent) {
     case 'PaymentReceived':
       if (event.payload.userId && event.payload.userType && event.payload.amount) {
         // Use findFirst because reference might not be uniquely constrained in the schema
-        const existing = await prisma.ledgerEntry.findFirst({
+        const existing = await (prisma as any).ledgerEntry.findFirst({
           where: { reference: `MPESA-${event.aggregateId}` }
         });
         
         if (!existing) {
-          await prisma.ledgerEntry.create({
+          await (prisma as any).ledgerEntry.create({
             data: {
               userId: event.payload.userId,
               userType: event.payload.userType,

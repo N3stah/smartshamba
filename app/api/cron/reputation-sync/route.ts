@@ -27,7 +27,7 @@ export async function GET(req: NextRequest) {
       const score = Math.min(100, Math.round(successRate));
       const level = score > 80 ? 'PLATINUM' : score > 60 ? 'GOLD' : score > 40 ? 'SILVER' : 'BRONZE';
 
-      await prisma.trustScore.upsert({
+      await (prisma as any).trustScore.upsert({
         where: { userId_userType: { userId: farmer.id, userType: 'FARMER' } },
         update: { score, level },
         create: { 
@@ -51,7 +51,7 @@ export async function GET(req: NextRequest) {
       const score = Math.min(100, Math.round(successRate));
       const level = score > 80 ? 'PLATINUM' : score > 60 ? 'GOLD' : score > 40 ? 'SILVER' : 'BRONZE';
 
-      await prisma.trustScore.upsert({
+      await (prisma as any).trustScore.upsert({
         where: { userId_userType: { userId: buyer.id, userType: 'BUYER' } },
         update: { score, level },
         create: { 

@@ -9,7 +9,7 @@ export async function GET(req: NextRequest) {
     const authError = requireAdminAuth(req);
     if (authError) return authError;
 
-    const requests = await prisma.withdrawalRequest.findMany({
+    const requests = await (prisma as any).withdrawalRequest.findMany({
       where: { status: 'PENDING' },
       orderBy: { createdAt: 'asc' }
     });
@@ -27,7 +27,7 @@ export async function PATCH(req: NextRequest) {
     if (authError) return authError;
 
     const { id, action, mpesaRef } = await req.json();
-    const request = await prisma.withdrawalRequest.findUnique({ where: { id } });
+    const request = await (prisma as any).withdrawalRequest.findUnique({ where: { id } });
 
     if (!request || request.status !== 'PENDING') {
       return NextResponse.json({ error: 'Request not found or already processed' }, { status: 400 });
@@ -35,7 +35,7 @@ export async function PATCH(req: NextRequest) {
 
     if (action === 'APPROVE') {
       // 1. Update Request Status
-      await prisma.withdrawalRequest.update({
+      await (prisma as any).withdrawalRequest.update({
         where: { id },
         data: { status: 'COMPLETED', processedAt: new Date(), mpesaRef }
       });
@@ -61,7 +61,7 @@ export async function PATCH(req: NextRequest) {
       });
 
     } else if (action === 'REJECT') {
-      await prisma.withdrawalRequest.update({
+      await (prisma as any).withdrawalRequest.update({
         where: { id },
         data: { status: 'REJECTED', processedAt: new Date() }
       });

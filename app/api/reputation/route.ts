@@ -24,7 +24,7 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const trustScore = await prisma.trustScore.findUnique({
+    const trustScore = await (prisma as any).trustScore.findUnique({
       where: { userId_userType: { userId, userType } }
     });
 

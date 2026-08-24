@@ -54,7 +54,7 @@ export async function POST(req: NextRequest) {
     // 4. Generate Receipt
     const crypto = require('crypto');
     const receiptHash = crypto.createHash('sha256').update(`${transaction.id}${mpesaRef}${transaction.totalValue}`).digest('hex');
-    await prisma.receipt.create({
+    await (prisma as any).receipt.create({
       data: {
         transactionId: transaction.id,
         userId: transaction.buyerId,

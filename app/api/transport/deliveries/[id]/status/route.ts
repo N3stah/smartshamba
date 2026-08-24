@@ -12,7 +12,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
     const { id } = await params;
     const { status, lat, lng, note, podSignature } = await req.json();
 
-    const booking = await prisma.transportBooking.findUnique({
+    const booking = await (prisma as any).transportBooking.findUnique({
       where: { id },
       include: { provider: true, transaction: { include: { farmer: true, buyer: true } } }
     });
@@ -22,7 +22,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
     }
 
     // Update booking status
-    const updatedBooking = await prisma.transportBooking.update({
+    const updatedBooking = await (prisma as any).transportBooking.update({
       where: { id },
       data: { 
         status,
@@ -31,7 +31,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
     });
 
     // Create timeline event
-    await prisma.deliveryEvent.create({
+    await (prisma as any).deliveryEvent.create({
       data: {
         bookingId: id,
         status,

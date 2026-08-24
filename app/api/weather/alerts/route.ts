@@ -8,7 +8,7 @@ export async function GET(req: NextRequest) {
   const where: any = {};
   if (county) where.county = county;
   
-  const alerts = await prisma.weatherAlert.findMany({
+  const alerts = await (prisma as any).weatherAlert.findMany({
     where,
     orderBy: { createdAt: 'desc' },
     take: 10

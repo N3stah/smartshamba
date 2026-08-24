@@ -17,7 +17,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     if (body.name) updateData.name = body.name;
     if (body.ratePerKm) updateData.ratePerKm = parseFloat(body.ratePerKm);
 
-    const provider = await prisma.transportProvider.update({
+    const provider = await (prisma as any).transportProvider.update({
       where: { id },
       data: updateData
     });

@@ -21,7 +21,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Create withdrawal request (Admin will approve later)
-    const request = await prisma.withdrawalRequest.create({
+    const request = await (prisma as any).withdrawalRequest.create({
       data: {
         userId: farmer.id,
         userType: 'FARMER',

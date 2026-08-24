@@ -34,14 +34,14 @@ export async function POST(req: NextRequest) {
     }
 
     // Check if transport is already booked
-    const existingBooking = await prisma.transportBooking.findUnique({
+    const existingBooking = await (prisma as any).transportBooking.findUnique({
       where: { transactionId }
     });
     if (existingBooking) {
       return NextResponse.json({ error: 'Transport already booked for this transaction' }, { status: 400 });
     }
 
-    const provider = await prisma.transportProvider.findUnique({
+    const provider = await (prisma as any).transportProvider.findUnique({
       where: { id: providerId }
     });
     if (!provider || !provider.active) {
@@ -67,7 +67,7 @@ export async function POST(req: NextRequest) {
       bookedByType = 'BUYER';
     }
 
-    const booking = await prisma.transportBooking.create({
+    const booking = await (prisma as any).transportBooking.create({
       data: {
         transactionId,
         providerId,

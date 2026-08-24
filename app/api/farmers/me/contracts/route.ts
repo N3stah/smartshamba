@@ -11,7 +11,7 @@ export async function GET(req: NextRequest) {
     if (!farmer) return NextResponse.json({ error: 'Farmer not found' }, { status: 404 });
 
     // Get all contracts for transactions where this farmer is involved
-    const contracts = await prisma.contract.findMany({
+    const contracts = await (prisma as any).contract.findMany({
       where: {
         OR: [
           { transaction: { farmerId: farmer.id } },

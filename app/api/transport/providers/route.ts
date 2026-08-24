@@ -14,7 +14,7 @@ export async function GET(req: NextRequest) {
     const where: any = { active: true };
     if (county) where.county = { name: county };
     
-    const providers = await prisma.transportProvider.findMany({
+    const providers = await (prisma as any).transportProvider.findMany({
       where,
       include: { county: { select: { name: true } } },
       orderBy: { ratePerKm: 'asc' }
@@ -47,7 +47,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
     }
 
-    const provider = await prisma.transportProvider.create({
+    const provider = await (prisma as any).transportProvider.create({
       data: { name, phone, vehicleType, capacityKg, ratePerKm, location, countyId }
     });
 

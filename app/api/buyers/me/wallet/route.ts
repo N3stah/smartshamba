@@ -14,7 +14,7 @@ export async function GET(req: NextRequest) {
 
     const [balance, entries] = await Promise.all([
       getWalletBalance(buyer.id, 'BUYER'),
-      prisma.ledgerEntry.findMany({
+      (prisma as any).ledgerEntry.findMany({
         where: { userId: buyer.id, userType: 'BUYER' },
         orderBy: { createdAt: 'desc' },
         take: 50

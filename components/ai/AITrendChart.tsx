@@ -9,7 +9,7 @@ interface Prediction {
   predictedPrice: number;
   confidenceScore: number;
   recommendation: string;
-  explanation: string;
+  explanation: string | null;
 }
 
 export default function AITrendChart({ predictions }: { predictions: Prediction[] }) {

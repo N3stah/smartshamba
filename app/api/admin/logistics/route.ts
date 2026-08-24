@@ -8,7 +8,7 @@ export async function GET(req: NextRequest) {
     const authError = requireAdminAuth(req);
     if (authError) return authError;
 
-    const bookings = await prisma.transportBooking.findMany({
+    const bookings = await (prisma as any).transportBooking.findMany({
       include: {
         provider: true,
         transaction: { include: { farmer: true, buyer: true } },

@@ -102,7 +102,7 @@ export default async function AdminAIDashboardPage() {
                         <span className="text-xs text-gray-500">{p.confidenceScore}%</span>
                       </div>
                     </td>
-                    <td className="p-4 text-xs text-gray-500 italic max-w-xs truncate" title={p.explanation}>
+                    <td className="p-4 text-xs text-gray-500 italic max-w-xs truncate" title={p.explanation || ''}>
                       "{p.explanation}"
                     </td>
                   </tr>

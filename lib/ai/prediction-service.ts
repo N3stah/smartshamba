@@ -22,8 +22,6 @@ async function collectMarketData(crop: string) {
     where: {
       status: 'SETTLED',
       createdAt: { gte: thirtyDaysAgo },
-      // In a real scenario, you'd filter by crop via a relation. 
-      // For now, we aggregate all recent settled transactions.
     },
     select: { pricePerBag: true, quantityBags: true, createdAt: true }
   });
@@ -31,7 +29,6 @@ async function collectMarketData(crop: string) {
   const activeListings = await prisma.produceListing.count({ where: { status: 'ACTIVE', product: crop } });
   const activeDemands = await prisma.buyerDemand.count({ where: { status: 'ACTIVE', product: crop } });
 
-  // Aggregate daily averages
   const dailyData = transactions.reduce((acc: any, tx) => {
     const date = new Date(tx.createdAt).toISOString().split('T')[0];
     if (!acc[date]) acc[date] = { date, totalValue: 0, totalBags: 0 };
@@ -48,14 +45,11 @@ async function collectMarketData(crop: string) {
 
   const currentAvgPrice = historicalSummary.length > 0 
     ? historicalSummary[historicalSummary.length - 1].avgPrice 
-    : 4000; // Fallback baseline
+    : 4000; 
 
   return { historicalSummary, currentAvgPrice, activeListings, activeDemands };
 }
 
-/**
- * Calls the configured AI provider (Gemini or NVIDIA) to get a structured prediction.
- */
 async function callAIProvider(prompt: string): Promise<string | null> {
   try {
     if (AI_PROVIDER === 'gemini' && GEMINI_API_KEY) {
@@ -79,7 +73,7 @@ async function callAIProvider(prompt: string): Promise<string | null> {
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          model: "z-ai/glm-5.2", // Using GLM-5.2 as provided
+          model: "z-ai/glm-5.2",
           messages: [{ role: "user", content: prompt }],
           temperature: 0.7,
           max_tokens: 1000
@@ -122,9 +116,13 @@ export async function generateAndCachePrediction(crop: string, horizon: string) 
   if (!aiResponse) return;
 
   try {
-    // Clean up potential markdown formatting
     const cleanJson = aiResponse.replace(/```json/g, '').replace(/```/g, '').trim();
     const parsed: PredictionResult = JSON.parse(cleanJson);
+
+    // Uppercase and validate recommendation against enum
+    const rec = (parsed.recommendation || 'WAIT').toUpperCase();
+    const validRecs = ['SELL', 'WAIT', 'BUY', 'HOLD'];
+    const recommendation = validRecs.includes(rec) ? rec : 'WAIT';
 
     await prisma.marketPrediction.upsert({
       where: { crop_region_horizon: { crop, region: 'National', horizon } },
@@ -132,7 +130,7 @@ export async function generateAndCachePrediction(crop: string, horizon: string) 
         currentPrice: currentAvgPrice,
         predictedPrice: parsed.predictedPrice,
         confidenceScore: parsed.confidenceScore,
-        recommendation: parsed.recommendation,
+        recommendation: recommendation as any,
         explanation: parsed.explanation,
         generatedAt: new Date()
       },
@@ -143,12 +141,13 @@ export async function generateAndCachePrediction(crop: string, horizon: string) 
         currentPrice: currentAvgPrice,
         predictedPrice: parsed.predictedPrice,
         confidenceScore: parsed.confidenceScore,
-        recommendation: parsed.recommendation,
+        recommendation: recommendation as any,
         explanation: parsed.explanation
       }
     });
     console.log(`[AI] Successfully cached prediction for ${crop} (${horizon})`);
   } catch (error) {
     console.error(`[AI] Failed to parse AI response for ${crop}:`, aiResponse);
+    Sentry.captureException(error);
   }
 }

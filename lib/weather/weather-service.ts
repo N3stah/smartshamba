@@ -127,7 +127,7 @@ export async function fetchAndCacheWeather(countyName: string) {
       }
     }
 
-    const cached = await prisma.weatherCache.upsert({
+    const cached = await (prisma as any).weatherCache.upsert({
       where: { county: countyName },
       update: { data: formattedData, advisory: JSON.stringify(aiAdvisory), updatedAt: new Date() },
       create: { county: countyName, data: formattedData, advisory: JSON.stringify(aiAdvisory) }
@@ -139,10 +139,10 @@ export async function fetchAndCacheWeather(countyName: string) {
     const minTemp = Math.min(...formattedData.forecast.map((f: any) => f.temp));
 
     const checkAndNotify = async (type: string, condition: boolean, message: string) => {
-      const alertExists = await prisma.weatherAlert.findUnique({ where: { county_type: { county: countyName, type } } });
+      const alertExists = await (prisma as any).weatherAlert.findUnique({ where: { county_type: { county: countyName, type } } });
       if (condition) {
         if (!alertExists) {
-          await prisma.weatherAlert.create({ data: { county: countyName, type, severity: 'WARNING', message } });
+          await (prisma as any).weatherAlert.create({ data: { county: countyName, type, severity: 'WARNING', message } });
           // Send SMS to farmers and buyers in this county\n          const farmers = await prisma.farmer.findMany({ where: { county: { name: countyName } }, select: { phone: true, id: true } });\n          const buyers = await prisma.buyer.findMany({ where: { county: { name: countyName } }, select: { phone: true, id: true } });\n          const allUsers = [...farmers, ...buyers];\n          for (const u of allUsers) {\n            await sendNotification({ type: 'HARVEST_ADVISORY', recipientPhone: u.phone, body: `SmartShamba Alert: ${message}`, farmerId: u.id }).catch(()=>{});\n          }
           const farmers = await prisma.farmer.findMany({ where: { county: { name: countyName } }, select: { phone: true, id: true } });
           for (const f of farmers) {
@@ -150,7 +150,7 @@ export async function fetchAndCacheWeather(countyName: string) {
           }
         }
       } else {
-        if (alertExists) await prisma.weatherAlert.delete({ where: { id: alertExists.id } }).catch(()=>{});
+        if (alertExists) await (prisma as any).weatherAlert.delete({ where: { id: alertExists.id } }).catch(()=>{});
       }
     };
 
@@ -167,5 +167,5 @@ export async function fetchAndCacheWeather(countyName: string) {
 }
 
 export async function getCachedWeather(countyName: string) {
-  return prisma.weatherCache.findUnique({ where: { county: countyName } });
+  return (prisma as any).weatherCache.findUnique({ where: { county: countyName } });
 }

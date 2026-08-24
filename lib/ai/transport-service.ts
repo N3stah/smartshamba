@@ -52,7 +52,7 @@ export async function generateTransportRecommendation(
 ) {
   try {
     // Fetch weather for pickup county to check for logistics risks
-    const weatherDoc = await prisma.weatherCache.findUnique({ where: { county: pickupCounty } });
+    const weatherDoc = await (prisma as any).weatherCache.findUnique({ where: { county: pickupCounty } });
     let weatherContext = 'Weather: Clear';
     if (weatherDoc && weatherDoc.data) {
       const data = weatherDoc.data as any;

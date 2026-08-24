@@ -34,6 +34,7 @@ model Ward {
 }
 
 model Farmer {
+  aiInsights AIInsight[] @relation("FarmerAIInsights")
   language        String   @default("en") // i18n: "en" | "sw"
   id          String   @id @default(cuid())
   nationalId  String?  // KYC-lite: 8-digit Kenya National ID
@@ -63,6 +64,7 @@ model Farmer {
 }
 
 model Buyer {
+  aiInsights AIInsight[] @relation("BuyerAIInsights")
   phone           String? @unique // Added for USSD/OTP login
   password    String?
   language        String   @default("en") // i18n: "en" | "sw"
@@ -460,4 +462,55 @@ model PushSubscription {
   endpoint  String   @unique
   keys      Json
   createdAt DateTime @default(now())
+}
+
+// --- V2-1: AI Market Intelligence ---
+enum AIRecommendation {
+  SELL
+  WAIT
+  BUY
+  HOLD
+}
+
+model MarketPrediction {
+  id              String   @id @default(cuid())
+  crop            String
+  region          String
+  horizon         String
+  currentPrice    Float
+  predictedPrice  Float
+  confidenceScore Int
+  recommendation  AIRecommendation
+  explanation     String?  @db.Text
+  generatedAt     DateTime @default(now())
+
+  @@unique([crop, region, horizon])
+}
+
+enum AIUserType {
+  FARMER
+  BUYER
+  ADMIN
+  TRANSPORT
+}
+
+enum AIInsightType {
+  PRICE_PREDICTION
+  DEMAND_FORECAST
+  MARKET_ALERT
+}
+
+model AIInsight {
+  id        String       @id @default(cuid())
+  userId    String
+  userType  AIUserType
+  type      AIInsightType
+  title     String
+  body      String       @db.Text
+  data      Json?
+  read      Boolean      @default(false)
+  createdAt DateTime     @default(now())
+
+  farmer Farmer? @relation("FarmerAIInsights", fields: [userId], references: [id], map: "AIInsight_farmerId_fkey")
+  buyer Buyer? @relation("BuyerAIInsights", fields: [userId], references: [id], map: "AIInsight_buyerId_fkey")
 }

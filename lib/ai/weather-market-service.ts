@@ -51,7 +51,7 @@ async function callAIProvider(prompt: string): Promise<string | null> {
 export async function generateProcurementIntelligence(county: string) {
   try {
     // 1. Fetch Weather Data
-    const weatherDoc = await prisma.weatherCache.findUnique({ where: { county } });
+    const weatherDoc = await (prisma as any).weatherCache.findUnique({ where: { county } });
     if (!weatherDoc || !weatherDoc.data) return null;
     const weather = weatherDoc as any;
     if (!weather) return null;

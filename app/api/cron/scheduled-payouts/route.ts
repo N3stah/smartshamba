@@ -12,7 +12,7 @@ export async function GET(req: NextRequest) {
 
     console.log('[CRON] Processing scheduled payouts...');
 
-    const pendingRequests = await prisma.withdrawalRequest.findMany({
+    const pendingRequests = await (prisma as any).withdrawalRequest.findMany({
       where: { 
         status: 'PENDING',
         createdAt: { lte: new Date(Date.now() - 60 * 60 * 1000) }
@@ -23,7 +23,7 @@ export async function GET(req: NextRequest) {
 
     for (const req of pendingRequests) {
       try {
-        const updatedReq = await prisma.withdrawalRequest.update({
+        const updatedReq = await (prisma as any).withdrawalRequest.update({
           where: { id: req.id },
           data: { 
             status: 'COMPLETED', 
