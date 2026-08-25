@@ -1,4 +1,6 @@
 import { prisma } from '@/lib/prisma';
+import type { TrustUserType } from '@prisma/client';
+import type { Prisma } from '@prisma/client';
 import * as Sentry from '@sentry/nextjs';
 
 interface ScoreBreakdown {
@@ -35,14 +37,13 @@ export async function calculateAndSaveTrustScore(userId: string, userType: 'FARM
 
     if (userType === 'FARMER' || userType === 'BUYER') {
       const model = userType === 'FARMER' ? prisma.farmer : prisma.buyer;
-      // @ts-ignore
+      // @ts-expect-error
       const user = await model.findFirst({
         where: { id: userId },
         include: {
           transactions: { select: { id: true, status: true, createdAt: true, updatedAt: true } },
           ratings: { select: { score: true, createdAt: true } },
           disputes: { select: { id: true, status: true, createdAt: true } },
-          // @ts-ignore
           ProduceListing: userType === 'FARMER' ? { where: { status: 'ACTIVE' }, select: { id: true } } : false,
           BuyerDemand: userType === 'BUYER' ? { where: { status: 'ACTIVE' }, select: { id: true } } : false,
         }
@@ -50,7 +51,7 @@ export async function calculateAndSaveTrustScore(userId: string, userType: 'FARM
 
       if (!user) return null;
 
-      breakdown.verification = (user as any).verified ? 10 : 0;
+      breakdown.verification = (user as { verified?: boolean }).verified ? 10 : 0;
 
       const completedTx = user.transactions.filter((t: { status: string; updatedAt: Date }) => t.status === 'SETTLED' || t.status === 'CLOSED');
       let txScore = 0;
@@ -81,28 +82,28 @@ export async function calculateAndSaveTrustScore(userId: string, userType: 'FARM
         const successRate = totalTx > 0 ? settledTx / totalTx : 1;
         breakdown.delivery_reliability = Math.round(Math.max(0, successRate) * 15);
         breakdown.payment_reliability = 0;
-        breakdown.platform_activity = (user as any).ProduceListing?.length > 0 ? 5 : 0;
+        breakdown.platform_activity = (user as { ProduceListing?: { id: string }[] })?.ProduceListing?.length ?? 0 > 0 ? 5 : 0;
       } else {
         breakdown.delivery_reliability = 0;
         const settledTx = user.transactions.filter((t: { status: string; updatedAt: Date }) => t.status === 'SETTLED').length;
         const totalTx = user.transactions.length;
         const paymentRate = totalTx > 0 ? settledTx / totalTx : 1;
         breakdown.payment_reliability = Math.round(paymentRate * 15);
-        breakdown.platform_activity = (user as any).BuyerDemand?.length > 0 ? 5 : 0;
+        breakdown.platform_activity = (user as { BuyerDemand?: { id: string }[] })?.BuyerDemand?.length ?? 0 > 0 ? 5 : 0;
       }
       breakdown.platform_activity += completedTx.length > 0 ? 5 : 0;
 
     } else if (userType === 'TRANSPORT') {
-      const provider = await (prisma as any).transportProvider.findUnique({
+      const provider = await prisma.transportProvider.findUnique({
         where: { id: userId },
-        include: { bookings: { select: { id: true, status: true, updatedAt: true } } }
+        include: { bookings: { select: { id: true, status: true, createdAt: true } } }
       });
       if (!provider) return null;
 
-      breakdown.verification = provider.verified ? 10 : 0;
-      const completedJobs = provider.bookings.filter((b: any) => b.status === 'DELIVERED');
+      breakdown.verification = provider.isVerified ? 10 : 0;
+      const completedJobs = provider.bookings.filter((b: { id: string; status: string; createdAt: Date }) => b.status === 'DELIVERED');
       let txScore = 0;
-      completedJobs.forEach((job: any) => { txScore += 4 * getTimeWeight(job.updatedAt); });
+      completedJobs.forEach((job: { id: string; status: string; createdAt: Date }) => { txScore += 4 * getTimeWeight(job.createdAt); });
       breakdown.transaction_volume = Math.min(txScore, 20);
       breakdown.rating_quality = 0; 
       breakdown.dispute_health = 15; 
@@ -122,7 +123,7 @@ export async function calculateAndSaveTrustScore(userId: string, userType: 'FARM
       if (!group) return null;
 
       // Group score is average of member scores + group tx success rate
-      const memberScores = group.members.map((_m: { farmer: { id: string } }) => 0);
+      const memberScores = group.members.map((_: { farmer: { id: string } }) => 0);
       const avgScore = memberScores.length > 0 ? memberScores.reduce((a, b) => a + b, 0) / memberScores.length : 0;
       
       // Map to breakdown roughly
@@ -144,9 +145,9 @@ export async function calculateAndSaveTrustScore(userId: string, userType: 'FARM
     const level = getLevel(totalScore);
 
     const trustScore = await prisma.trustScore.upsert({
-      where: { userId_userType: { userId, userType: userType as any } },
-      update: { score: totalScore, level, breakdown: breakdown as any },
-      create: { userId, userType, score: totalScore, level, breakdown: breakdown as any }
+      where: { userId_userType: { userId, userType: userType as TrustUserType } },
+      update: { score: totalScore, level, breakdown: breakdown as unknown as Prisma.InputJsonValue },
+      create: { userId, userType, score: totalScore, level, breakdown: breakdown as unknown as Prisma.InputJsonValue }
     });
 
     return trustScore;
@@ -158,5 +159,5 @@ export async function calculateAndSaveTrustScore(userId: string, userType: 'FARM
 }
 
 export async function getTrustScore(userId: string, userType: string) {
-  return prisma.trustScore.findUnique({ where: { userId_userType: { userId, userType: userType as any } } });
+  return prisma.trustScore.findUnique({ where: { userId_userType: { userId, userType: userType as TrustUserType } } });
 }
