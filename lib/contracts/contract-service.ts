@@ -5,7 +5,16 @@ import * as Sentry from '@sentry/nextjs';
 /**
  * Generates or retrieves a contract for a transaction.
  */
-export async function getOrCreateContract(transactionId: string, txData: any) {
+interface TxData {
+  farmerId: string;
+  buyerId: string;
+  quantityBags: number;
+  pricePerBag: number;
+  totalValue: number;
+  farmer?: { name?: string };
+  buyer?: { name?: string };
+}
+export async function getOrCreateContract(transactionId: string, txData: TxData) {
   try {
     let contract = await prisma.contract.findUnique({
       where: { transactionId }
@@ -29,7 +38,7 @@ export async function getOrCreateContract(transactionId: string, txData: any) {
             farmerName: txData.farmer?.name ?? 'Unknown Farmer',
             buyerName: txData.buyer?.name ?? 'Unknown Buyer',
             date: new Date().toISOString()
-          } as any
+          } as unknown as import("@prisma/client").Prisma.InputJsonValue
         }
       });
       console.log(`[CONTRACT] Created draft contract for tx ${transactionId}`);
@@ -62,7 +71,7 @@ export async function signContract(
     if (contract.status === 'EXECUTED' || contract.status === 'SIGNED') throw new Error('Contract already executed/signed');
     if (contract.status === 'VOIDED' || contract.status === 'DISPUTED' || contract.status === 'CANCELLED') throw new Error('Contract is voided, disputed, or cancelled');
 
-    const updateData: any = {};
+    const updateData: Record<string, unknown> = {};
     if (userType === 'FARMER') {
       if (contract.farmerSigned) throw new Error('Farmer has already signed');
       updateData.farmerSigned = true;
@@ -109,7 +118,7 @@ export async function signContract(
 /**
  * Updates contract terms dynamically (e.g., when transport is booked).
  */
-export async function updateContractTerms(transactionId: string, updates: any) {
+export async function updateContractTerms(transactionId: string, updates: Record<string, unknown>) {
   try {
     const contract = await prisma.contract.findUnique({ where: { transactionId } });
     if (!contract) return;

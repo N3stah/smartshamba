@@ -20,7 +20,7 @@ async function callAIProvider(prompt: string): Promise<string | null> {
         const data = await res.json();
         return data.candidates?.[0]?.content?.parts?.[0]?.text || null;
       }
-    } catch (e) {}
+    } catch { /* ignore */ }
   }
   
   if (NVIDIA_API_KEY) {
@@ -39,7 +39,7 @@ async function callAIProvider(prompt: string): Promise<string | null> {
         const data = await res.json();
         return data.choices?.[0]?.message?.content || null;
       }
-    } catch (e) { return null; }
+    } catch { return null; }
   }
   return null;
 }
@@ -48,14 +48,14 @@ export async function generateTransportRecommendation(
   bags: number, 
   pickupCounty: string, 
   dropoffCounty: string, 
-  providers: any[]
+  providers: { name: string; vehicleType: string; capacityKg: number; ratePerKm: number }[]
 ) {
   try {
     // Fetch weather for pickup county to check for logistics risks
     const weatherDoc = await prisma.weatherData.findUnique({ where: { county: pickupCounty } });
     let weatherContext = 'Weather: Clear';
     if (weatherDoc && weatherDoc.data) {
-      const data = weatherDoc.data as any;
+      const data = weatherDoc.data as { current: { rainProbability: number; condition: string } };
       weatherContext = `Weather: ${data.current.rainProbability}% rain, ${data.current.condition}.`;
     }
 

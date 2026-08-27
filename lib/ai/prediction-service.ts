@@ -1,4 +1,5 @@
 import { prisma } from '@/lib/prisma';
+import type { AIRecommendation } from '@prisma/client';
 import * as Sentry from '@sentry/nextjs';
 
 const AI_PROVIDER = process.env.AI_PROVIDER || 'gemini';
@@ -29,7 +30,7 @@ async function collectMarketData(crop: string) {
   const activeListings = await prisma.produceListing.count({ where: { status: 'ACTIVE', product: crop } });
   const activeDemands = await prisma.buyerDemand.count({ where: { status: 'ACTIVE', product: crop } });
 
-  const dailyData = transactions.reduce((acc: any, tx) => {
+  const dailyData = transactions.reduce((acc: Record<string, { date: string; totalValue: number; totalBags: number }>, tx) => {
     const date = new Date(tx.createdAt).toISOString().split('T')[0];
     if (!acc[date]) acc[date] = { date, totalValue: 0, totalBags: 0 };
     acc[date].totalValue += tx.pricePerBag * tx.quantityBags;
@@ -37,7 +38,7 @@ async function collectMarketData(crop: string) {
     return acc;
   }, {});
 
-  const historicalSummary = Object.values(dailyData).map((d: any) => ({
+  const historicalSummary = Object.values(dailyData).map((d: { date: string; totalValue: number; totalBags: number }) => ({
     date: d.date,
     avgPrice: d.totalBags > 0 ? Math.round(d.totalValue / d.totalBags) : 0,
     volume: d.totalBags
@@ -130,7 +131,7 @@ export async function generateAndCachePrediction(crop: string, horizon: string) 
         currentPrice: currentAvgPrice,
         predictedPrice: parsed.predictedPrice,
         confidenceScore: parsed.confidenceScore,
-        recommendation: recommendation as any,
+        recommendation: recommendation as AIRecommendation,
         explanation: parsed.explanation,
         generatedAt: new Date()
       },
@@ -141,7 +142,7 @@ export async function generateAndCachePrediction(crop: string, horizon: string) 
         currentPrice: currentAvgPrice,
         predictedPrice: parsed.predictedPrice,
         confidenceScore: parsed.confidenceScore,
-        recommendation: recommendation as any,
+        recommendation: recommendation as AIRecommendation,
         explanation: parsed.explanation
       }
     });

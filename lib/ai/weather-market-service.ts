@@ -20,7 +20,7 @@ async function callAIProvider(prompt: string): Promise<string | null> {
         const data = await res.json();
         return data.candidates?.[0]?.content?.parts?.[0]?.text || null;
       }
-    } catch (e) {}
+    } catch { /* ignore */ }
   }
   
   if (NVIDIA_API_KEY) {
@@ -39,7 +39,7 @@ async function callAIProvider(prompt: string): Promise<string | null> {
         const data = await res.json();
         return data.choices?.[0]?.message?.content || null;
       }
-    } catch (e) { return null; }
+    } catch { return null; }
   }
   return null;
 }
@@ -53,8 +53,8 @@ export async function generateProcurementIntelligence(county: string) {
     // 1. Fetch Weather Data
     const weatherDoc = await prisma.weatherData.findUnique({ where: { county } });
     if (!weatherDoc || !weatherDoc.data) return null;
-    const weather = weatherDoc as any;
-    if (!weather) return null;
+    const weatherData = weatherDoc.data as { current: { temp: number; rainProbability: number; humidity: number; windSpeed: number; condition: string } };
+    const weatherAdvisory = (weatherDoc as unknown as { advisory?: string }).advisory ?? '';
 
     // 2. Fetch Market Predictions
     const predictions = await prisma.marketPrediction.findMany({
@@ -78,14 +78,14 @@ export async function generateProcurementIntelligence(county: string) {
       `${p.crop} ${p.horizon}: KSh ${p.predictedPrice} (Rec: ${p.recommendation})`
     ).join('; ');
 
-    const weatherContext = `Temp: ${weather.data.current.temp}°C, Rain: ${weather.data.current.rainProbability}%, Humidity: ${weather.data.current.humidity}%, Wind: ${weather.data.current.windSpeed}km/h`;
+    const weatherContext = `Temp: ${weatherData.current.temp}°C, Rain: ${weatherData.current.rainProbability}%, Humidity: ${weatherData.current.humidity}%, Wind: ${weatherData.current.windSpeed}km/h`;
 
     // 5. AI Integration Prompt
     const prompt = `You are an expert agricultural supply chain analyst in Kenya.
     Analyze the following integrated data for ${county} County:
     
     WEATHER: ${weatherContext}
-    WEATHER ADVISORY: ${weather.advisory}
+    WEATHER ADVISORY: ${weatherAdvisory}
     MARKET PREDICTIONS: ${marketContext}
     ACTIVE SUPPLY (Listings): ${activeListings}
     ACTIVE DEMAND: ${activeDemands}

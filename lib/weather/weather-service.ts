@@ -39,7 +39,7 @@ async function callAIProvider(prompt: string): Promise<string | null> {
         const data = await res.json();
         return data.candidates?.[0]?.content?.parts?.[0]?.text || null;
       }
-    } catch (e) {}
+    } catch { /* ignore */ }
   }
   
   if (NVIDIA_API_KEY) {
@@ -58,7 +58,7 @@ async function callAIProvider(prompt: string): Promise<string | null> {
         const data = await res.json();
         return data.choices?.[0]?.message?.content || null;
       }
-    } catch (e) { return null; }
+    } catch { return null; }
   }
   return null;
 }
@@ -97,7 +97,7 @@ export async function fetchAndCacheWeather(countyName: string) {
         sunrise: currentData.sys.sunrise,
         sunset: currentData.sys.sunset,
       },
-      forecast: forecastData.list.slice(0, 40).map((item: any) => ({
+      forecast: forecastData.list.slice(0, 40).map((item: { dt: number; main: { temp: number }; pop: number; weather: { main: string }[] }) => ({
         time: item.dt,
         temp: Math.round(item.main.temp),
         rain: Math.round(item.pop * 100),
@@ -122,21 +122,21 @@ export async function fetchAndCacheWeather(countyName: string) {
       try {
         const cleanJson = aiResponse.replace(/```json/g, '').replace(/```/g, '').trim();
         aiAdvisory = JSON.parse(cleanJson);
-      } catch (e) {
+      } catch {
         aiAdvisory.agronomy = aiResponse;
       }
     }
 
     const cached = await prisma.weatherData.upsert({
       where: { county: countyName },
-      update: { data: formattedData as any, advisory: JSON.stringify(aiAdvisory), updatedAt: new Date() },
-      create: { county: countyName, data: formattedData as any, advisory: JSON.stringify(aiAdvisory) }
+      update: { data: formattedData as unknown as import("@prisma/client").Prisma.InputJsonValue, advisory: JSON.stringify(aiAdvisory), updatedAt: new Date() },
+      create: { county: countyName, data: formattedData as unknown as import("@prisma/client").Prisma.InputJsonValue, advisory: JSON.stringify(aiAdvisory) }
     });
 
     // --- Extreme Weather Alert Detection & SMS Notification ---
-    const maxRain = Math.max(...formattedData.forecast.map((f: any) => f.rain));
-    const maxWind = Math.max(...formattedData.forecast.map((f: any) => f.condition.toLowerCase().includes('wind') ? 30 : 10));
-    const minTemp = Math.min(...formattedData.forecast.map((f: any) => f.temp));
+    const maxRain = Math.max(...formattedData.forecast.map((f: { time: number; temp: number; rain: number; condition: string }) => f.rain));
+    const _maxWind = Math.max(...formattedData.forecast.map((f: { time: number; temp: number; rain: number; condition: string }) => f.condition.toLowerCase().includes('wind') ? 30 : 10));
+    const minTemp = Math.min(...formattedData.forecast.map((f: { time: number; temp: number; rain: number; condition: string }) => f.temp));
 
     const checkAndNotify = async (type: string, condition: boolean, message: string) => {
       const alertExists = await prisma.weatherAlert.findUnique({ where: { county_type: { county: countyName, type } } });

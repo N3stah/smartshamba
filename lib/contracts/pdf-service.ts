@@ -10,7 +10,16 @@ export async function generateContractPdf(contractId: string): Promise<Buffer> {
 
   if (!contract) throw new Error('Contract not found');
 
-  const terms = contract.terms as any;
+  interface ContractTerms {
+  crop?: string;
+  quantityBags?: number;
+  pricePerBag?: number;
+  totalValue?: number;
+  farmerName?: string;
+  buyerName?: string;
+  date?: string;
+}
+const terms = (contract.terms ?? {}) as ContractTerms;
   const verificationUrl = `${process.env.NEXT_PUBLIC_APP_URL}/contracts/verify/${contract.verificationId}`;
   
   // Generate QR Code Data URL
