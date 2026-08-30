@@ -1,3 +1,4 @@
+import { Prisma } from '@prisma/client';
 import { prisma } from '@/lib/prisma';
 import * as Sentry from '@sentry/nextjs';
 
@@ -8,14 +9,13 @@ import * as Sentry from '@sentry/nextjs';
  * A cron job then reliably publishes them.
  */
 export class EventBus {
-  async emit(eventType: string, aggregateId: string, payload: any, tx?: any) {
-    const client = tx || prisma;
+  async emit(eventType: string, aggregateId: string, payload: Record<string, unknown>, _tx?: unknown) {
     try {
       await prisma.eventOutbox.create({
         data: {
           eventType,
           aggregateId,
-          payload,
+          payload: payload as Prisma.InputJsonValue,
           status: 'PENDING'
         }
       });

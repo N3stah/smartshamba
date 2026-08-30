@@ -25,7 +25,7 @@ function getDatabaseUrl(): string {
       }
     }
     return url.toString();
-  } catch (e) {
+  } catch {
     console.error("[DB] Failed to parse DATABASE_URL, using raw value.");
     return baseUrl;
   }
@@ -71,13 +71,14 @@ export async function withDatabaseRetry<T>(
 ): Promise<T> {
   try {
     return await operation();
-  } catch (error: any) {
-    if (retries > 0 && RETRIABLE_ERROR_CODES.includes(error.code)) {
+  } catch (error: unknown) {
+    const code = (error as { code?: string })?.code;
+    if (retries > 0 && code && RETRIABLE_ERROR_CODES.includes(code)) {
       // Calculate exponential backoff with jitter
       const jitter = Math.random() * 200;
       const delay = baseDelay * Math.pow(2, 3 - retries) + jitter;
       
-      console.warn(`[DB] Transient error (${error.code}). Retrying in ${Math.round(delay)}ms... (${retries} attempts left)`);
+      console.warn(`[DB] Transient error (${code}). Retrying in ${Math.round(delay)}ms... (${retries} attempts left)`);
       await new Promise((resolve) => setTimeout(resolve, delay));
       
       return withDatabaseRetry(operation, retries - 1, baseDelay);

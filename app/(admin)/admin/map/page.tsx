@@ -7,19 +7,23 @@ import dynamic from 'next/dynamic';
 const MapView = dynamic(() => import('@/components/gis/MapView'), { ssr: false });
 
 export default function AdminMapPage() {
-  const [mapData, setMapData] = useState<any>(null);
-  const [analytics, setAnalytics] = useState<any>(null);
+interface MapMarker {
+  id: string;
+  name?: string | null;
+  latitude?: number | null;
+  longitude?: number | null;
+  [key: string]: unknown;
+}
+  const [mapData, setMapData] = useState<{ farmers?: MapMarker[]; buyers?: MapMarker[]; warehouses?: MapMarker[] } | null>(null);
   const [loading, setLoading] = useState(true);
-  const [showHeatmap, setShowHeatmap] = useState<'NONE' | 'SUPPLY' | 'DEMAND'>('SUPPLY');
 
   useEffect(() => {
     Promise.all([
       fetch('/api/admin/map-data').then(r => r.json()),
       fetch('/api/admin/gis-analytics').then(r => r.json())
     ])
-      .then(([md, an]) => {
+      .then(([md]) => {
         setMapData(md);
-        setAnalytics(an);
       })
       .catch(console.error)
       .finally(() => setLoading(false));
@@ -28,9 +32,9 @@ export default function AdminMapPage() {
   if (loading) return <div className="flex justify-center p-8"><Loader2 className="w-6 h-6 animate-spin text-[#00703C]" /></div>;
 
   const markers = [
-    ...(mapData?.farmers || []).map((f: any) => ({ ...f, type: 'FARMER', description: 'Farmer' })),
-    ...(mapData?.buyers || []).map((b: any) => ({ ...b, type: 'BUYER', description: 'Buyer' })),
-    ...(mapData?.warehouses || []).map((w: any) => ({ ...w, type: 'WAREHOUSE', description: 'Warehouse' }))
+    ...(mapData?.farmers || []).map((f: MapMarker) => ({ ...f, type: 'FARMER', description: 'Farmer' })),
+    ...(mapData?.buyers || []).map((b: MapMarker) => ({ ...b, type: 'BUYER', description: 'Buyer' })),
+    ...(mapData?.warehouses || []).map((w: MapMarker) => ({ ...w, type: 'WAREHOUSE', description: 'Warehouse' }))
   ];
 
   return (
@@ -50,7 +54,8 @@ export default function AdminMapPage() {
         </Link>
       </div>
 
-      <MapView markers={markers} center={[0.1769, 37.9083]} zoom={6} />
+      {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+  <MapView markers={markers as any} center={[0.1769, 37.9083]} zoom={6} />
       
       <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
         <div className="grid grid-cols-3 gap-4 text-center">

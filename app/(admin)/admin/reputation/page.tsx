@@ -3,8 +3,31 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { ArrowLeft, Shield, AlertTriangle, Loader2, Trophy, Activity } from 'lucide-react';
 
+interface ScoreBreakdown {
+  verification?: number;
+  transaction_volume?: number;
+  rating_quality?: number;
+  dispute_health?: number;
+  delivery_reliability?: number;
+  payment_reliability?: number;
+  platform_activity?: number;
+}
+interface TrustEntry {
+  id: string;
+  userId: string;
+  name?: string;
+  score: number;
+  level: string;
+  breakdown: ScoreBreakdown;
+  userType: string;
+}
+interface ReputationData {
+  topFarmers: TrustEntry[];
+  topBuyers: TrustEntry[];
+  suspiciousAccounts: TrustEntry[];
+}
 export default function AdminReputationPage() {
-  const [data, setData] = useState<any>(null);
+  const [data, setData] = useState<ReputationData | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -18,7 +41,7 @@ export default function AdminReputationPage() {
   if (loading) return <div className="flex justify-center p-8"><Loader2 className="w-6 h-6 animate-spin text-[#00703C]" /></div>;
   if (!data) return <div className="bg-white p-8 text-center text-gray-500 rounded-xl border">Failed to load reputation data.</div>;
 
-  const renderBreakdown = (breakdown: any) => (
+  const renderBreakdown = (breakdown: ScoreBreakdown) => (
     <div className="mt-2 text-xs text-gray-500 space-y-1">
       <p>Verification: {breakdown?.verification || 0}/10 | Vol: {breakdown?.transaction_volume || 0}/20 | Rating: {breakdown?.rating_quality || 0}/20</p>
       <p>Disputes: {breakdown?.dispute_health || 0}/15 | Delivery: {breakdown?.delivery_reliability || 0}/15</p>
@@ -55,7 +78,7 @@ export default function AdminReputationPage() {
             <h2 className="font-semibold text-green-900 flex items-center gap-2"><Trophy className="w-4 h-4" /> Top Rated Farmers</h2>
           </div>
           <div className="divide-y divide-gray-100">
-            {data.topFarmers.map((f: any) => (
+            {data.topFarmers.map((f: TrustEntry) => (
               <div key={f.id} className="p-4">
                 <div className="flex items-center justify-between">
                   <span className="font-medium text-gray-900">{f.name}</span>
@@ -74,7 +97,7 @@ export default function AdminReputationPage() {
             <h2 className="font-semibold text-blue-900 flex items-center gap-2"><Trophy className="w-4 h-4" /> Top Rated Buyers</h2>
           </div>
           <div className="divide-y divide-gray-100">
-            {data.topBuyers.map((b: any) => (
+            {data.topBuyers.map((b: TrustEntry) => (
               <div key={b.id} className="p-4">
                 <div className="flex items-center justify-between">
                   <span className="font-medium text-gray-900">{b.name}</span>
@@ -94,7 +117,7 @@ export default function AdminReputationPage() {
           <h2 className="font-semibold text-red-900 flex items-center gap-2"><AlertTriangle className="w-4 h-4" /> Suspicious Accounts (Score &lt; 40)</h2>
         </div>
         <div className="divide-y divide-gray-100">
-          {data.suspiciousAccounts.map((s: any) => (
+          {data.suspiciousAccounts.map((s: TrustEntry) => (
             <div key={s.id} className="p-4 flex items-center justify-between">
               <div>
                 <p className="font-mono text-xs text-gray-500">{s.userId.substring(0, 12)}...</p>

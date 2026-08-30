@@ -141,7 +141,7 @@ export async function processTransactionSettlement(transactionId: string, totalV
 /**
  * Processes the financial settlement for a Group Transaction.
  */
-export async function processGroupSettlement(groupTxId: string, totalValue: number, groupMembers: any[], transportCost: number = 0) {
+export async function processGroupSettlement(groupTxId: string, totalValue: number, groupMembers: { farmerId: string; bagsPledged: number }[], transportCost: number = 0) {
   const PLATFORM_FEE_RATE = 0.02;
   const totalBags = groupMembers.reduce((sum, m) => sum + m.bagsPledged, 0);
   const netValue = totalValue - transportCost;

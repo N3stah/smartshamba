@@ -20,7 +20,7 @@ async function callAIProvider(prompt: string): Promise<string | null> {
         const data = await res.json();
         return data.candidates?.[0]?.content?.parts?.[0]?.text || null;
       }
-    } catch (e) {}
+    } catch { /* ignore */ }
   }
   
   if (NVIDIA_API_KEY) {
@@ -39,14 +39,14 @@ async function callAIProvider(prompt: string): Promise<string | null> {
         const data = await res.json();
         return data.choices?.[0]?.message?.content || null;
       }
-    } catch (e) { return null; }
+    } catch { return null; }
   }
   return null;
 }
 
 export async function generateDailyBrief(role: 'FARMER' | 'BUYER' | 'ADMIN', phone: string) {
   let context = "";
-  let roleStr = role.charAt(0) + role.slice(1).toLowerCase(); // Farmer, Buyer, Admin
+  const roleStr = role.charAt(0) + role.slice(1).toLowerCase(); // Farmer, Buyer, Admin
 
   try {
     if (role === 'FARMER') {

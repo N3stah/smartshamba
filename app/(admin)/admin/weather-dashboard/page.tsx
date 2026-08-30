@@ -7,20 +7,26 @@ import RefreshWeatherButton from '@/components/admin/RefreshWeatherButton';
 
 export const dynamic = 'force-dynamic';
 
+interface WeatherCurrent {
+  temp: number;
+  rainProbability: number;
+  wind: number;
+  humidity: number;
+}
 export default async function AdminWeatherDashboard() {
   const cookieStore = await cookies();
   const isAdmin = cookieStore.get('smartshamba_admin')?.value === process.env.ADMIN_API_KEY;
   if (!isAdmin) redirect('/admin/login');
 
-  let weatherData: any[] = [];
-  let activeAlerts: any[] = [];
+  let weatherData: Awaited<ReturnType<typeof prisma.weatherData.findMany>> = [];
+  let activeAlerts: Awaited<ReturnType<typeof prisma.weatherAlert.findMany>> = [];
   try {
     [weatherData, activeAlerts] = await Promise.all([
       prisma.weatherData.findMany(),
-      (prisma as any).weatherAlert.findMany({ orderBy: { createdAt: 'desc' } })
+prisma.weatherAlert.findMany({ orderBy: { createdAt: 'desc' } })
     ]);
-  } catch (e) {
-    console.error('Failed to fetch admin weather data:', e);
+  } catch (err) {
+    console.error('Failed to fetch admin weather data:', err);
   }
 
   return (
@@ -79,14 +85,14 @@ export default async function AdminWeatherDashboard() {
             <div key={w.id} className="border border-gray-100 rounded-lg p-4 bg-gray-50">
               <h3 className="font-bold text-gray-900 text-sm mb-2">{w.county} County</h3>
               <div className="flex justify-between text-xs text-gray-600 mb-1">
-                <span>Temp: {w.data.current.temp}°C</span>
-                <span>Rain: {w.data.current.rainProbability}%</span>
+                <span>Temp: {(w.data as unknown as { current: WeatherCurrent }).current.temp}°C</span>
+                <span>Rain: {(w.data as unknown as { current: WeatherCurrent }).current.rainProbability}%</span>
               </div>
               <div className="flex justify-between text-xs text-gray-600 mb-2">
-                <span>Wind: {w.data.current.wind} km/h</span>
-                <span>Humidity: {w.data.current.humidity}%</span>
+                <span>Wind: {(w.data as unknown as { current: WeatherCurrent }).current.wind} km/h</span>
+                <span>Humidity: {(w.data as unknown as { current: WeatherCurrent }).current.humidity}%</span>
               </div>
-              <p className="text-xs text-gray-500 italic mt-2 pt-2 border-t border-gray-200">"{w.advisory}"</p>
+              <p className="text-xs text-gray-500 italic mt-2 pt-2 border-t border-gray-200">&ldquo;{w.advisory}&rdquo;</p>
             </div>
           ))}
           {weatherData.length === 0 && <p className="text-gray-400 text-sm col-span-full text-center py-4">No weather data cached yet. Run cron job.</p>}

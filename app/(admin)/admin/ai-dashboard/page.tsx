@@ -57,7 +57,7 @@ export default async function AdminAIDashboardPage() {
               </span>
             </div>
             <div className="mt-auto pt-4 border-t border-gray-100">
-              <p className="text-xs text-gray-500 italic">"{p.explanation}"</p>
+              <p className="text-xs text-gray-500 italic">&ldquo;{p.explanation}&rdquo;</p>
             </div>
           </div>
         ))}
@@ -103,7 +103,7 @@ export default async function AdminAIDashboardPage() {
                       </div>
                     </td>
                     <td className="p-4 text-xs text-gray-500 italic max-w-xs truncate" title={p.explanation || ''}>
-                      "{p.explanation}"
+                      &ldquo;{p.explanation}&rdquo;
                     </td>
                   </tr>
                 ))

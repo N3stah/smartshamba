@@ -4,7 +4,7 @@ export type LogPrefix =
   | '[DISPUTE]' | '[SYNC]' | '[DB]' | '[API]';
 
 export const logger = {
-  log: (prefix: LogPrefix, ...args: any[]) => console.log(prefix, ...args),
-  error: (prefix: LogPrefix, ...args: any[]) => console.error(prefix, ...args),
-  warn: (prefix: LogPrefix, ...args: any[]) => console.warn(prefix, ...args),
+  log: (prefix: LogPrefix, ...args: unknown[]) => console.log(prefix, ...args),
+  error: (prefix: LogPrefix, ...args: unknown[]) => console.error(prefix, ...args),
+  warn: (prefix: LogPrefix, ...args: unknown[]) => console.warn(prefix, ...args),
 };

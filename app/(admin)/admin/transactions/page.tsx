@@ -164,7 +164,9 @@ export default function TransactionsPage() {
     setLoading(false);
   }, []);
 
-  useEffect(() => { fetchTransactions(); }, [fetchTransactions]);
+  useEffect(() => {
+    void fetchTransactions();
+  }, [fetchTransactions]);
 
   const filtered = useMemo(() => {
     return transactions
