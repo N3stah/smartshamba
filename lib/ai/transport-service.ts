@@ -48,7 +48,7 @@ export async function generateTransportRecommendation(
   bags: number, 
   pickupCounty: string, 
   dropoffCounty: string, 
-  providers: { name: string; vehicleType: string; capacityKg: number; ratePerKm: number }[]
+  providers: { name: string; vehicleType: string; capacityBags: number; ratePerKm: number | null }[]
 ) {
   try {
     // Fetch weather for pickup county to check for logistics risks
@@ -66,7 +66,7 @@ export async function generateTransportRecommendation(
     - Dropoff: ${dropoffCounty}
     - ${weatherContext}
     
-    Available Providers: ${JSON.stringify(providers.map(p => ({ name: p.name, vehicle: p.vehicleType, capacity: p.capacityKg, rate: p.ratePerKm })))}
+    Available Providers: ${JSON.stringify(providers.map(p => ({ name: p.name, vehicle: p.vehicleType, capacity: p.capacityBags, rate: p.ratePerKm })))}
     
     Select the BEST provider based on capacity (must fit the bags), cost-effectiveness, and weather suitability.
     Return a JSON object with these exact keys:
