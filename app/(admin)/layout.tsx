@@ -21,9 +21,23 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     { href: '/admin/demands', label: 'Demands', icon: Megaphone },
     { href: '/admin/buyers', label: 'Buyers', icon: Building2 },
     { href: '/admin/farmers', label: 'Farmers', icon: Users },
+    { href: '/admin/groups', label: 'Groups', icon: Users },
+    { href: '/admin/disputes', label: 'Disputes', icon: ShieldCheck },
     { href: '/admin/notifications', label: 'Notifications', icon: Bell },
     { href: '/admin/advisories', label: 'Advisories', icon: Megaphone },
     { href: '/admin/audit-logs', label: 'Audit Logs', icon: ShieldCheck },
+    { href: '/admin/ai-dashboard', label: 'AI Intelligence', icon: BarChart2 },
+    { href: '/admin/weather-dashboard', label: 'Weather', icon: Bell },
+    { href: '/admin/logistics', label: 'Logistics', icon: ArrowLeftRight },
+    { href: '/admin/transport-providers', label: 'Transport', icon: Building2 },
+    { href: '/admin/reputation', label: 'Reputation', icon: ShieldCheck },
+    { href: '/admin/map', label: 'GIS Map', icon: LayoutDashboard },
+    { href: '/admin/geofences', label: 'Geofences', icon: Package },
+    { href: '/admin/finance', label: 'Finance', icon: BarChart2 },
+    { href: '/admin/contract-analytics', label: 'Contracts', icon: Package },
+    { href: '/admin/contract-templates', label: 'Contract Templates', icon: Package },
+    { href: '/admin/executive', label: 'Executive BI', icon: BarChart2 },
+    { href: '/admin/reports', label: 'Reports', icon: Package },
   ];
 
   return (
