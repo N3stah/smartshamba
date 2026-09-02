@@ -5,8 +5,14 @@ const apiKey   = process.env.AT_API_KEY   ?? '';
 
 console.log('[SMS] Provider initialized');
 
-const at  = AfricasTalking({ username, apiKey });
-const sms = at.SMS;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+let sms: any = null;
+try {
+  const at = AfricasTalking({ username, apiKey });
+  sms = at.SMS;
+} catch (e) {
+  console.error('[SMS] Africa\'s Talking SDK init failed:', e);
+}
 
 export interface SmsResult {
   success: boolean;
@@ -44,6 +50,7 @@ export async function sendRawSms(to: string, message: string): Promise<SmsResult
       payload.from = process.env.AT_SHORTCODE;
     }
 
+    if (!sms) return { success: false, providerResponse: 'SMS provider not initialized' };
     // 8s timeout — safely under Vercel hobby plan's 10s limit
     const res = await withTimeout(
       sms.send(payload) as Promise<ATResponse>,
