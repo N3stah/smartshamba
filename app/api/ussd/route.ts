@@ -51,7 +51,7 @@ export async function POST(req: NextRequest) {
     const step  = steps.length;
 
     const farmer = await prisma.farmer.findUnique({ where: { phone: phoneNumber } });
-    const buyer = await prisma.buyer.findFirst({ where: { phone: phoneNumber } });
+    const _buyer = await prisma.buyer.findFirst({ where: { phone: phoneNumber } });
     
     let response: string = '';
     const lang = farmer?.language ?? 'en'; // Default to English if not registered or not set
