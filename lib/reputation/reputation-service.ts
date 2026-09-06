@@ -37,7 +37,7 @@ export async function calculateAndSaveTrustScore(userId: string, userType: 'FARM
 
     if (userType === 'FARMER' || userType === 'BUYER') {
       const model = userType === 'FARMER' ? prisma.farmer : prisma.buyer;
-      // @ts-expect-error
+      // @ts-expect-error -- Prisma dynamic include shape not statically known
       const user = await model.findFirst({
         where: { id: userId },
         include: {
@@ -123,7 +123,7 @@ export async function calculateAndSaveTrustScore(userId: string, userType: 'FARM
       if (!group) return null;
 
       // Group score is average of member scores + group tx success rate
-      const memberScores = group.members.map((_: { farmer: { id: string } }) => 0);
+      const memberScores = group.members.map((_m: { farmer: { id: string } }) => 0);
       const avgScore = memberScores.length > 0 ? memberScores.reduce((a, b) => a + b, 0) / memberScores.length : 0;
       
       // Map to breakdown roughly

@@ -1,10 +1,9 @@
-// @ts-nocheck
 // TODO: V2 - Re-enable type checking after this module schema is built
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import { prisma } from '@/lib/prisma';
-import { ArrowLeft, Truck, MapPin, Package, CheckCircle, Clock, DollarSign, TrendingUp } from 'lucide-react';
+import { ArrowLeft, Truck, MapPin, Package, CheckCircle, Clock, DollarSign } from 'lucide-react';
 
 export const dynamic = 'force-dynamic';
 

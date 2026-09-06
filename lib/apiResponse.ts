@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { logger } from '@/lib/logger';
 
-export const apiSuccess = (data: any, status: number = 200) => {
+export const apiSuccess = (data: unknown, status: number = 200) => {
   return NextResponse.json({ success: true, data }, { status });
 };
 

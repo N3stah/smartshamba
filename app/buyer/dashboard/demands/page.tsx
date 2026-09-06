@@ -2,6 +2,7 @@ import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { prisma } from '@/lib/prisma';
 import DemandForm from '@/components/DemandForm';
+export const dynamic = 'force-dynamic';
 
 export default async function BuyerDemands() {
   const cookieStore = await cookies();

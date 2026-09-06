@@ -6,6 +6,7 @@ import ChatWindow from '@/components/chat/ChatWindow';
 import StatusBadge from '@/components/ui/StatusBadge';
 import TransactionActions from '@/components/TransactionActions';
 import { ArrowLeft, Truck, MapPin, Calendar, FileText } from 'lucide-react';
+export const dynamic = 'force-dynamic';
 
 export default async function AdminTransactionDetail({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;

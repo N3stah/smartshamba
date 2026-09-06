@@ -2,6 +2,7 @@ import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { prisma } from '@/lib/prisma';
 import PasswordSetter from '@/components/PasswordSetter';
+export const dynamic = 'force-dynamic';
 
 export default async function BuyerSettings() {
   const cookieStore = await cookies();

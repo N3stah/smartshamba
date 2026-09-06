@@ -1,4 +1,3 @@
-// @ts-nocheck
 // TODO: V2 - Re-enable type checking after this module schema is built
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
