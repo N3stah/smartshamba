@@ -6,6 +6,21 @@ import { prisma } from '@/lib/prisma';
 import { ArrowLeft, Truck, CheckCircle, XCircle, Phone, MapPin } from 'lucide-react';
 import ProviderActions from '@/components/admin/ProviderActions';
 
+interface TransportProviderRecord {
+  id: string;
+  name: string;
+  phone: string;
+  vehicleType: string;
+  capacityBags: number;
+  isVerified: boolean;
+  active: boolean;
+  ratePerKm: number | null;
+  county?: { name: string } | null;
+  createdAt: string | Date;
+  _count: { bookings: number };
+}
+
+
 export const dynamic = 'force-dynamic';
 
 export default async function AdminTransportProvidersPage() {
@@ -13,7 +28,7 @@ export default async function AdminTransportProvidersPage() {
   const isAdmin = cookieStore.get('smartshamba_admin')?.value === process.env.ADMIN_API_KEY;
   if (!isAdmin) redirect('/admin/login');
 
-  const providers = await (prisma as any).transportProvider.findMany({
+  const providers: TransportProviderRecord[] = await (prisma as any).transportProvider.findMany({
     include: { _count: { select: { bookings: true } } },
     orderBy: { createdAt: 'desc' }
   });
@@ -41,9 +56,9 @@ export default async function AdminTransportProvidersPage() {
             <div className="flex justify-between items-start mb-4">
               <div>
                 <h3 className="font-bold text-gray-900">{p.name}</h3>
-                <p className="text-xs text-gray-500">{p.vehicleType} • {p.capacityKg}kg</p>
+                <p className="text-xs text-gray-500">{p.vehicleType} • {p.capacityBags} bags</p>
               </div>
-              {p.verified ? (
+              {p.isVerified ? (
                 <span className="flex items-center gap-1 text-xs font-bold text-green-700 bg-green-100 px-2 py-1 rounded-full">
                   <CheckCircle className="w-3 h-3" /> Verified
                 </span>
@@ -55,7 +70,7 @@ export default async function AdminTransportProvidersPage() {
             </div>
             <div className="space-y-2 text-sm text-gray-600 mb-4">
               <p className="flex items-center gap-2"><Phone className="w-4 h-4 text-gray-400" /> {p.phone}</p>
-              <p className="flex items-center gap-2"><MapPin className="w-4 h-4 text-gray-400" /> {p.location}</p>
+              <p className="flex items-center gap-2"><MapPin className="w-4 h-4 text-gray-400" /> {p.county?.name ?? "Location N/A"}</p>
               <p className="flex items-center gap-2"><Truck className="w-4 h-4 text-gray-400" /> {p._count.bookings} Total Jobs</p>
             </div>
             <div className="mt-auto pt-4 border-t border-gray-100">
