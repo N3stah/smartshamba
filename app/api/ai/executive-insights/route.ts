@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { requireAdminAuth } from '@/lib/auth';
+import { getWalletBalance } from '@/lib/finance/ledger-service';
 import * as Sentry from '@sentry/nextjs';
 
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
@@ -17,7 +18,7 @@ export async function GET(req: NextRequest) {
       prisma.transaction.count(),
       prisma.transaction.count({ where: { status: 'SETTLED' } }),
       prisma.transaction.count({ where: { status: 'DISPUTED' } }),
-      (prisma as any).ledgerEntry.aggregate({ _sum: { amount: true }, where: { userId: 'revenue', userType: 'PLATFORM', entryType: 'CREDIT' } })
+      getWalletBalance('PLATFORM', 'PLATFORM')
     ]);
 
     const successRate = totalTx > 0 ? (settledTx / totalTx) * 100 : 0;
@@ -32,7 +33,7 @@ export async function GET(req: NextRequest) {
     - Total Transactions: ${totalTx}
     - Success Rate: ${successRate.toFixed(1)}%
     - Dispute Rate: ${disputeRate.toFixed(1)}%
-    - Platform Revenue: KSh ${totalRevenue._sum.amount || 0}`;
+    - Platform Revenue: KSh ${totalRevenue}`;
 
     let aiResponse = "Executive AI summary unavailable.";
     if (GEMINI_API_KEY) {
@@ -47,12 +48,16 @@ export async function GET(req: NextRequest) {
           const data = await res.json();
           aiResponse = data.candidates?.[0]?.content?.parts?.[0]?.text || aiResponse;
         }
-      } catch (e) { /* Fallback */ }
+      } catch (e) {
+        console.error('[AI] Gemini request failed:', e);
+      }
     }
 
     return NextResponse.json({ summary: aiResponse });
   } catch (error) {
     console.error('[API] AI Executive Insights error:', error);
+    Sentry.captureException(error);
+    await Sentry.flush(2000);
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
 }
