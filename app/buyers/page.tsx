@@ -1,10 +1,11 @@
+export const dynamic = 'force-dynamic';
+
 import Link from 'next/link';
 import { prisma } from '@/lib/prisma';
 import PublicHeader from '@/components/PublicHeader';
 import PublicFooter from '@/components/PublicFooter';
 import { ShieldCheck, MapPin } from 'lucide-react';
 
-export const dynamic = 'force-dynamic';
 export default async function BuyersPage() {
   const buyers = await prisma.buyer.findMany({ 
     where: { active: true }, 

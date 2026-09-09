@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic';
+
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
@@ -6,7 +8,6 @@ import MarketIntelligenceCard from '@/components/ai/MarketIntelligenceCard';
 import AITrendChart from '@/components/ai/AITrendChart';
 import { ArrowLeft, Brain } from 'lucide-react';
 
-export const dynamic = 'force-dynamic';
 
 export default async function FarmerAIMarketPage() {
   const cookieStore = await cookies();

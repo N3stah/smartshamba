@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic';
+
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
@@ -5,7 +7,6 @@ import { prisma } from '@/lib/prisma';
 import { ArrowLeft, CloudRain, AlertTriangle, MapPin } from 'lucide-react';
 import RefreshWeatherButton from '@/components/admin/RefreshWeatherButton';
 
-export const dynamic = 'force-dynamic';
 
 interface WeatherCurrent {
   temp: number;

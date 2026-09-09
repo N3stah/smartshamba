@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic';
+
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
@@ -5,7 +7,6 @@ import { prisma } from '@/lib/prisma';
 import { ArrowLeft, MapPin } from 'lucide-react';
 import MapView from '@/components/gis/MapView';
 
-export const dynamic = 'force-dynamic';
 
 export default async function BuyerNearbyPage() {
   const cookieStore = await cookies();

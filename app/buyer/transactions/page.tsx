@@ -1,9 +1,10 @@
+export const dynamic = 'force-dynamic';
+
 import Link from 'next/link';
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { prisma } from '@/lib/prisma';
 import StatusBadge from '@/components/ui/StatusBadge';
-export const dynamic = 'force-dynamic';
 
 export default async function BuyerTransactions() {
   const cookieStore = await cookies();

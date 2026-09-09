@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic';
+
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
@@ -5,7 +7,6 @@ import { prisma } from '@/lib/prisma';
 import EditFarmerForm from '@/components/admin/EditFarmerForm';
 import StatusBadge from '@/components/ui/StatusBadge';
 import { ArrowLeft, ShieldCheck, MapPin, Phone, User, Globe, Calendar } from 'lucide-react';
-export const dynamic = 'force-dynamic';
 
 interface PageProps {
   params: Promise<{ id: string }>;

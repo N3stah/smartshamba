@@ -1,5 +1,6 @@
 export const dynamic = 'force-dynamic';
 
+
 import { prisma } from '@/lib/prisma';
 import PublicHeader from '@/components/PublicHeader';
 import PublicFooter from '@/components/PublicFooter';

@@ -1,10 +1,11 @@
+export const dynamic = 'force-dynamic';
+
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import { prisma } from '@/lib/prisma';
 import { ArrowLeft, Brain, TrendingUp, Activity } from 'lucide-react';
 
-export const dynamic = 'force-dynamic';
 
 export default async function AdminAIDashboardPage() {
   const cookieStore = await cookies();

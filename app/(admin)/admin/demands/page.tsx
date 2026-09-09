@@ -1,10 +1,11 @@
+export const dynamic = 'force-dynamic';
+
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { prisma } from '@/lib/prisma';
 import DemandModerationButton from '@/components/admin/DemandModerationButton';
 import StatusBadge from '@/components/ui/StatusBadge';
 
-export const dynamic = 'force-dynamic';
 
 export default async function AdminDemandsPage() {
   const cookieStore = await cookies();

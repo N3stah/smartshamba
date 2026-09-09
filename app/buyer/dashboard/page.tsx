@@ -1,7 +1,8 @@
+export const dynamic = 'force-dynamic';
+
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { prisma } from '@/lib/prisma';
-export const dynamic = 'force-dynamic';
 
 export default async function BuyerDashboard() {
   const cookieStore = await cookies();

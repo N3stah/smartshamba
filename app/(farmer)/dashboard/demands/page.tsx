@@ -1,5 +1,6 @@
 export const dynamic = 'force-dynamic';
 
+
 import { prisma } from '@/lib/prisma';
 import { MapPin, Package, User } from 'lucide-react';
 import AcceptDemandButton from '@/components/AcceptDemandButton';

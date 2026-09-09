@@ -1,9 +1,10 @@
+export const dynamic = 'force-dynamic';
+
 import Link from 'next/link';
 import { prisma } from '@/lib/prisma';
 import TrustScoreBadge from '@/components/reputation/TrustScoreBadge';
 import { ArrowLeft, MapPin, Package } from 'lucide-react';
 
-export const dynamic = 'force-dynamic';
 
 export default async function PublicProfilePage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;

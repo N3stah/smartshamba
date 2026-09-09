@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic';
+
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
@@ -6,7 +8,6 @@ import { ArrowLeft, CloudRain } from 'lucide-react';
 import ProWeatherDashboard from '@/components/weather/ProWeatherDashboard';
 import WeatherAlertBanner from '@/components/weather/WeatherAlertBanner';
 
-export const dynamic = 'force-dynamic';
 
 export default async function FarmerWeatherPage() {
   const cookieStore = await cookies();

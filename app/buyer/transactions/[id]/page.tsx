@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic';
+
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { prisma } from '@/lib/prisma';
@@ -5,7 +7,6 @@ import ChatWindow from '@/components/chat/ChatWindow';
 import StatusBadge from '@/components/ui/StatusBadge';
 import TransactionActions from '@/components/TransactionActions';
 import { Truck, MapPin, Calendar, FileText } from 'lucide-react';
-export const dynamic = 'force-dynamic';
 
 export default async function BuyerTransactionDetail({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
