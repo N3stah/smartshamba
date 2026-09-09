@@ -5,18 +5,6 @@ import Link from 'next/link';
 import { prisma } from '@/lib/prisma';
 import { ArrowLeft, Truck, MapPin, Package, CheckCircle, Clock, DollarSign } from 'lucide-react';
 
-interface TransportBookingRecord {
-  id: string;
-  status: string;
-  cost: number;
-  pickupLocation: string;
-  dropoffLocation: string;
-  createdAt: string | Date;
-  provider: { name: string; vehicleType: string };
-  transaction?: { reference: string } | null;
-  groupTransaction?: { reference: string } | null;
-}
-
 
 export const dynamic = 'force-dynamic';
 
@@ -25,7 +13,7 @@ export default async function AdminLogisticsPage() {
   const isAdmin = cookieStore.get('smartshamba_admin')?.value === process.env.ADMIN_API_KEY;
   if (!isAdmin) redirect('/admin/login');
 
-  const bookings: TransportBookingRecord[] = await (prisma as any).transportBooking.findMany({
+  const bookings = await prisma.transportBooking.findMany({
     include: {
       provider: true,
       transaction: { include: { farmer: true, buyer: true } },
