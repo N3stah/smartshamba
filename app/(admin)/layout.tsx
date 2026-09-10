@@ -6,39 +6,78 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import LanguageSwitcher from '@/components/LanguageSwitcher';
 import { useI18n } from '@/lib/i18n';
-import { LayoutDashboard, ArrowLeftRight, Building2, Users, Bell, Megaphone, ShieldCheck, LogOut, Menu, X, BarChart2, Package } from 'lucide-react';
+import { 
+  LayoutDashboard, ArrowLeftRight, Building2, Users, Bell, Megaphone, 
+  ShieldCheck, LogOut, Menu, X, BarChart2, Package, 
+  ChevronDown, CloudRain, Truck, Map, Fence, Wallet, FileText, Brain
+} from 'lucide-react';
+
+interface NavItem {
+  href: string;
+  label: string;
+  icon: any;
+}
+
+interface NavSection {
+  title: string;
+  items: NavItem[];
+}
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const { t } = useI18n();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [openSections, setOpenSections] = useState<Record<string, boolean>>({
+    'Core Operations': true,
+    'V2 Intelligence': true,
+    'Executive': true,
+  });
   const pathname = usePathname();
 
-  const navItems = [
-    { href: '/admin', label: t.dashboard.title, icon: LayoutDashboard },
-    { href: '/admin/analytics', label: 'Analytics', icon: BarChart2 },
-    { href: '/admin/transactions', label: 'Transactions', icon: ArrowLeftRight },
-    { href: '/admin/listings', label: 'Listings', icon: Package },
-    { href: '/admin/demands', label: 'Demands', icon: Megaphone },
-    { href: '/admin/buyers', label: 'Buyers', icon: Building2 },
-    { href: '/admin/farmers', label: 'Farmers', icon: Users },
-    { href: '/admin/groups', label: 'Groups', icon: Users },
-    { href: '/admin/disputes', label: 'Disputes', icon: ShieldCheck },
-    { href: '/admin/notifications', label: 'Notifications', icon: Bell },
-    { href: '/admin/advisories', label: 'Advisories', icon: Megaphone },
-    { href: '/admin/audit-logs', label: 'Audit Logs', icon: ShieldCheck },
-    { href: '/admin/ai-dashboard', label: 'AI Intelligence', icon: BarChart2 },
-    { href: '/admin/weather-dashboard', label: 'Weather', icon: Bell },
-    { href: '/admin/logistics', label: 'Logistics', icon: ArrowLeftRight },
-    { href: '/admin/transport-providers', label: 'Transport', icon: Building2 },
-    { href: '/admin/reputation', label: 'Reputation', icon: ShieldCheck },
-    { href: '/admin/map', label: 'GIS Map', icon: LayoutDashboard },
-    { href: '/admin/geofences', label: 'Geofences', icon: Package },
-    { href: '/admin/finance', label: 'Finance', icon: BarChart2 },
-    { href: '/admin/contract-analytics', label: 'Contracts', icon: Package },
-    { href: '/admin/contract-templates', label: 'Contract Templates', icon: Package },
-    { href: '/admin/executive', label: 'Executive BI', icon: BarChart2 },
-    { href: '/admin/reports', label: 'Reports', icon: Package },
+  const navSections: NavSection[] = [
+    {
+      title: 'Core Operations',
+      items: [
+        { href: '/admin', label: t.dashboard.title, icon: LayoutDashboard },
+        { href: '/admin/analytics', label: 'Analytics', icon: BarChart2 },
+        { href: '/admin/transactions', label: 'Transactions', icon: ArrowLeftRight },
+        { href: '/admin/listings', label: 'Listings', icon: Package },
+        { href: '/admin/demands', label: 'Demands', icon: Megaphone },
+        { href: '/admin/buyers', label: 'Buyers', icon: Building2 },
+        { href: '/admin/farmers', label: 'Farmers', icon: Users },
+        { href: '/admin/groups', label: 'Groups', icon: Users },
+        { href: '/admin/disputes', label: 'Disputes', icon: ShieldCheck },
+        { href: '/admin/notifications', label: 'Notifications', icon: Bell },
+        { href: '/admin/advisories', label: 'Advisories', icon: Megaphone },
+        { href: '/admin/audit-logs', label: 'Audit Logs', icon: ShieldCheck },
+        { href: '/admin/reports', label: 'Reports', icon: Package },
+      ]
+    },
+    {
+      title: 'V2 Intelligence',
+      items: [
+        { href: '/admin/ai-dashboard', label: 'AI Intelligence', icon: Brain },
+        { href: '/admin/weather-dashboard', label: 'Weather', icon: CloudRain },
+        { href: '/admin/logistics', label: 'Logistics', icon: Truck },
+        { href: '/admin/transport-providers', label: 'Transport', icon: Truck },
+        { href: '/admin/reputation', label: 'Reputation', icon: ShieldCheck },
+        { href: '/admin/map', label: 'GIS Map', icon: Map },
+        { href: '/admin/geofences', label: 'Geofences', icon: Fence },
+        { href: '/admin/finance', label: 'Finance', icon: Wallet },
+        { href: '/admin/contract-analytics', label: 'Contracts', icon: FileText },
+        { href: '/admin/contract-templates', label: 'Contract Templates', icon: FileText },
+      ]
+    },
+    {
+      title: 'Executive',
+      items: [
+        { href: '/admin/executive', label: 'Executive BI', icon: BarChart2 },
+      ]
+    }
   ];
+
+  const toggleSection = (title: string) => {
+    setOpenSections(prev => ({ ...prev, [title]: !prev[title] }));
+  };
 
   return (
     <div className="min-h-screen bg-gray-50 flex">
@@ -80,22 +119,37 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
            </button>
         </div>
 
-        <nav className="p-4 space-y-1 flex-1 overflow-y-auto">
-          {navItems.map((item) => {
-            const isActive = pathname === item.href;
-            return (
-              <Link
-                key={item.href}
-                href={item.href}
-                onClick={() => setSidebarOpen(false)}
-                className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors focus:outline-none focus:ring-2 focus:ring-white/50
-                ${isActive ? 'bg-white/15 text-white font-semibold' : 'text-green-100 hover:bg-white/10 hover:text-white'}`}
+        <nav className="p-4 space-y-4 flex-1 overflow-y-auto">
+          {navSections.map((section) => (
+            <div key={section.title}>
+              <button 
+                onClick={() => toggleSection(section.title)}
+                className="w-full flex items-center justify-between px-3 py-2 text-xs font-bold uppercase tracking-wider text-green-200 hover:text-white transition-colors"
               >
-                <item.icon className="w-5 h-5" />
-                <span>{item.label}</span>
-              </Link>
-            );
-          })}
+                <span>{section.title}</span>
+                <ChevronDown className={`w-4 h-4 transition-transform ${openSections[section.title] ? 'rotate-180' : ''}`} />
+              </button>
+              {openSections[section.title] && (
+                <div className="mt-1 space-y-1">
+                  {section.items.map((item) => {
+                    const isActive = pathname === item.href;
+                    return (
+                      <Link
+                        key={item.href}
+                        href={item.href}
+                        onClick={() => setSidebarOpen(false)}
+                        className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors focus:outline-none focus:ring-2 focus:ring-white/50
+                        ${isActive ? 'bg-white/15 text-white font-semibold' : 'text-green-100 hover:bg-white/10 hover:text-white'}`}
+                      >
+                        <item.icon className="w-5 h-5" />
+                        <span>{item.label}</span>
+                      </Link>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          ))}
         </nav>
 
         <div className="p-4 border-t border-green-700/50 space-y-3">
