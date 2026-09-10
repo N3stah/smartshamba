@@ -2,7 +2,7 @@ import { withSentryConfig } from "@sentry/nextjs";
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  serverExternalPackages: ['africastalking'],
+  // africastalking removed — using direct REST API calls
 };
 
 export default withSentryConfig(nextConfig, {
