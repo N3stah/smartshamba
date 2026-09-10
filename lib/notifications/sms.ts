@@ -1,18 +1,10 @@
-import AfricasTalking from 'africastalking';
+/**
+ * Africa's Talking SMS via direct REST API calls.
+ * Replaces the africastalking SDK to avoid jsdom ESM/CJS crashes on Vercel.
+ */
 
 const username = process.env.AT_USERNAME ?? 'sandbox';
 const apiKey   = process.env.AT_API_KEY   ?? '';
-
-console.log('[SMS] Provider initialized');
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-let sms: any = null;
-try {
-  const at = AfricasTalking({ username, apiKey });
-  sms = at.SMS;
-} catch (e) {
-  console.error('[SMS] Africa\'s Talking SDK init failed:', e);
-}
 
 export interface SmsResult {
   success: boolean;
@@ -40,24 +32,37 @@ const withTimeout = <T>(promise: Promise<T>, ms: number): Promise<T> =>
 export async function sendRawSms(to: string, message: string): Promise<SmsResult> {
   const normalized = to.startsWith('+') ? to : `+${to}`;
 
+  if (!apiKey) {
+    console.warn('[SMS] AT_API_KEY not configured — skipping send');
+    return { success: false, providerResponse: 'AT_API_KEY not configured' };
+  }
+
   try {
-    const payload: { to: string[]; message: string; from?: string } = {
-      to: [normalized],
-      message,
-    };
+    const params = new URLSearchParams();
+    params.append('username', username);
+    params.append('to', normalized);
+    params.append('message', message);
 
     if (username !== 'sandbox' && process.env.AT_SHORTCODE) {
-      payload.from = process.env.AT_SHORTCODE;
+      params.append('from', process.env.AT_SHORTCODE);
     }
 
-    if (!sms) return { success: false, providerResponse: 'SMS provider not initialized' };
     // 8s timeout — safely under Vercel hobby plan's 10s limit
     const res = await withTimeout(
-      sms.send(payload) as Promise<ATResponse>,
+      fetch('https://api.africastalking.com/version1/messaging', {
+        method: 'POST',
+        headers: {
+          'apiKey': apiKey,
+          'Content-Type': 'application/x-www-form-urlencoded',
+          'Accept': 'application/json',
+        },
+        body: params,
+      }),
       8000
     );
 
-    const status  = res.SMSMessageData.Recipients[0]?.status ?? 'Unknown';
+    const data: ATResponse = await res.json();
+    const status  = data.SMSMessageData?.Recipients?.[0]?.status ?? 'Unknown';
     const success = status === 'Success';
 
     console.log('[SMS]', success ? 'sent' : 'failed', 'status:', status, 'to:', normalized);
