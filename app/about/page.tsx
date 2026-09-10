@@ -5,7 +5,7 @@ import { Target, Lightbulb, MapPin } from 'lucide-react';
 const team = [
   { name: 'Daisy Ayuma', role: 'Chief Executive Officer (CEO)' },
   { name: 'Mark Manoti', role: 'Chief Technology Officer (CTO)' },
-  { name: 'Grace Akomo', role: 'Chief Operating Officer (COO)' },
+  { name: 'Grace Akomo', role: 'Chief Financial Officer (CFO)' },
   { name: 'Eva Chepchumba', role: 'Product Manager (PM)' },
 ];
 

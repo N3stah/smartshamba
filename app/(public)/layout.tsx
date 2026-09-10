@@ -44,7 +44,7 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
               <ul className="mt-3 space-y-2 text-sm text-green-100">
                 <li>CEO — Daisy Ayuma</li>
                 <li>CTO — Mark Manoti</li>
-                <li>COO — Grace Akomo</li>
+                <li>CFO — Grace Akomo</li>
                 <li>PM — Eva Chepchumba</li>
               </ul>
             </div>

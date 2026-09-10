@@ -64,17 +64,14 @@ export async function GET(req: NextRequest) {
         farmerGrowth: newFarmers30d, buyerGrowth: newBuyers30d,
         aiPredictions, activeContracts
       },
-      // 2. COO View
-      coo: {
+      // 2. CFO View (Operations + Finance)
+      cfo: {
         successRate: parseFloat(successRate.toFixed(1)),
         disputeRate: parseFloat(disputeRate.toFixed(1)),
         activeTransport,
         transportSuccessRate: parseFloat(transportSuccessRate.toFixed(1)),
         txVolume30d: tx30d,
-        activeContracts
-      },
-      // 3. CFO View
-      cfo: {
+        activeContracts,
         totalRevenue: totalRevenueBalance || 0,
         revenue30d: 0,
         platformLiabilities,

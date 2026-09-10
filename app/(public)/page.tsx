@@ -113,7 +113,7 @@ export default function Home() {
               <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center text-green-800 font-bold text-lg">GA</div>
               <div>
                 <p className="font-bold text-gray-900">Grace Akomo</p>
-                <p className="text-sm text-green-700">COO · Customer Discovery Lead</p>
+                <p className="text-sm text-green-700">CFO · Customer Discovery Lead</p>
               </div>
             </div>
             <div className="bg-white rounded-2xl border border-green-100 p-6 flex items-center gap-4 shadow-sm">
@@ -423,7 +423,7 @@ export default function Home() {
                 responsibilities: ["Platform Architecture", "USSD Engineering", "API Development", "Infrastructure"],
               },
               {
-                initials: "GA", name: "Grace Akomo", role: "COO",
+                initials: "GA", name: "Grace Akomo", role: "CFO",
                 responsibilities: ["Farmer Operations", "Pilot Coordination", "Customer Discovery", "Field Research"],
               },
               {
