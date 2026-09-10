@@ -11,7 +11,7 @@ import RefreshWeatherButton from '@/components/admin/RefreshWeatherButton';
 interface WeatherCurrent {
   temp: number;
   rainProbability: number;
-  wind: number;
+  windSpeed: number;
   humidity: number;
 }
 export default async function AdminWeatherDashboard() {
@@ -90,7 +90,7 @@ prisma.weatherAlert.findMany({ orderBy: { createdAt: 'desc' } })
                 <span>Rain: {(w.data as unknown as { current: WeatherCurrent }).current.rainProbability}%</span>
               </div>
               <div className="flex justify-between text-xs text-gray-600 mb-2">
-                <span>Wind: {(w.data as unknown as { current: WeatherCurrent }).current.wind} km/h</span>
+                <span>Wind: {(w.data as unknown as { current: WeatherCurrent }).current.windSpeed} km/h</span>
                 <span>Humidity: {(w.data as unknown as { current: WeatherCurrent }).current.humidity}%</span>
               </div>
               <p className="text-xs text-gray-500 italic mt-2 pt-2 border-t border-gray-200">&ldquo;{w.advisory}&rdquo;</p>
