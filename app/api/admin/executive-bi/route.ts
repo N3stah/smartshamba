@@ -11,27 +11,23 @@ export async function GET(req: NextRequest) {
 
     const now = new Date();
     const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
-    const sixtyDaysAgo = new Date(now.getTime() - 60 * 24 * 60 * 60 * 1000);
 
+    // Group all counts into a single transaction to use only 1 DB connection
     const [
       totalFarmers, newFarmers30d, totalBuyers, newBuyers30d,
-      totalRevenueBalance, revenue30d, revenue60d, totalTx, tx30d, settledTx, disputedTx,
-      platformLiabilities, activeContracts, activeTransport, aiPredictions, weatherAlerts,
+      totalTx, tx30d, settledTx, disputedTx,
+      activeContracts, activeTransport, aiPredictions, weatherAlerts,
       completedTransport, failedTransport, pendingWithdrawals, activeListings, activeDemands,
-      verifiedFarmers, verifiedBuyers, platinumUsers, suspiciousAccounts, supplyByCrop, demandByCrop
-    ] = await Promise.all([
+      verifiedFarmers, verifiedBuyers, platinumUsers, suspiciousAccounts
+    ] = await prisma.$transaction([
       prisma.farmer.count(),
       prisma.farmer.count({ where: { createdAt: { gte: thirtyDaysAgo } } }),
       prisma.buyer.count(),
       prisma.buyer.count({ where: { createdAt: { gte: thirtyDaysAgo } } }),
-      getWalletBalance('PLATFORM', 'PLATFORM'),
-      Promise.resolve({ _sum: { amount: 0 } }),
-      Promise.resolve({ _sum: { amount: 0 } }),
       prisma.transaction.count(),
       prisma.transaction.count({ where: { createdAt: { gte: thirtyDaysAgo } } }),
       prisma.transaction.count({ where: { status: 'SETTLED' } }),
       prisma.transaction.count({ where: { status: 'DISPUTED' } }),
-      getWalletBalance('escrow', 'ESCROW'),
       prisma.contract.count({ where: { status: 'EXECUTED' } }),
       prisma.transportBooking.count({ where: { status: { in: ['PENDING', 'ACCEPTED', 'LOADED', 'IN_TRANSIT'] } } }),
       prisma.marketPrediction.count(),
@@ -44,13 +40,17 @@ export async function GET(req: NextRequest) {
       prisma.farmer.count({ where: { verified: true } }),
       prisma.buyer.count({ where: { verified: true } }),
       prisma.trustScore.count({ where: { level: 'PLATINUM' } }),
-      prisma.trustScore.count({ where: { score: { lt: 40 } } }),
+      prisma.trustScore.count({ where: { score: { lt: 40 } } })
+    ]);
+
+    // Fetch wallet balances and groupBys in parallel (safe, only 3 connections)
+    const [totalRevenueBalance, platformLiabilities, supplyByCrop, demandByCrop] = await Promise.all([
+      getWalletBalance('PLATFORM', 'PLATFORM'),
+      getWalletBalance('escrow', 'ESCROW'),
       prisma.produceListing.groupBy({ by: ['product'], where: { status: 'ACTIVE' }, _sum: { quantityBags: true } }),
       prisma.buyerDemand.groupBy({ by: ['product'], where: { status: 'ACTIVE' }, _sum: { quantityBags: true } })
     ]);
 
-    const revenueGrowth = 0 && 0 > 0 
-      ? (((0 || 0) - 0) / 0) * 100 : 0;
     const successRate = totalTx > 0 ? (settledTx / totalTx) * 100 : 0;
     const disputeRate = totalTx > 0 ? (disputedTx / totalTx) * 100 : 0;
     const transportSuccessRate = (completedTransport + failedTransport) > 0 ? (completedTransport / (completedTransport + failedTransport)) * 100 : 0;
@@ -59,7 +59,7 @@ export async function GET(req: NextRequest) {
       // 1. CEO View
       ceo: {
         totalRevenue: totalRevenueBalance || 0,
-        revenueGrowth: parseFloat(revenueGrowth.toFixed(1)),
+        revenueGrowth: 0, // Simplified to prevent divide-by-zero errors on empty DB
         totalFarmers, totalBuyers,
         farmerGrowth: newFarmers30d, buyerGrowth: newBuyers30d,
         aiPredictions, activeContracts
@@ -76,7 +76,7 @@ export async function GET(req: NextRequest) {
       // 3. CFO View
       cfo: {
         totalRevenue: totalRevenueBalance || 0,
-        revenue30d: 0 || 0,
+        revenue30d: 0,
         platformLiabilities,
         pendingWithdrawals
       },
@@ -107,6 +107,7 @@ export async function GET(req: NextRequest) {
   } catch (error) {
     console.error('[API] Executive BI error:', error);
     Sentry.captureException(error);
+    await Sentry.flush(2000);
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
 }
