@@ -4,12 +4,18 @@ export const dynamic = 'force-dynamic';
 import { prisma } from '@/lib/prisma';
 import PublicHeader from '@/components/PublicHeader';
 import PublicFooter from '@/components/PublicFooter';
-import { TrendingUp, BarChart3 } from 'lucide-react';
+import { TrendingUp, BarChart3, Package } from 'lucide-react';
 
 export default async function MarketPricesPage() {
   const buyers = await prisma.buyer.findMany({ 
     where: { active: true, pricePerBag: { gt: 0 } }, 
     orderBy: { pricePerBag: 'desc' } 
+  });
+
+  const demands = await prisma.buyerDemand.findMany({
+    where: { status: 'ACTIVE' },
+    include: { buyer: { select: { name: true } } },
+    orderBy: { createdAt: 'desc' }
   });
 
   return (
@@ -19,6 +25,27 @@ export default async function MarketPricesPage() {
         <div className="text-center mb-16">
           <h1 className="text-4xl font-extrabold text-gray-900">Market Price Insights</h1>
           <p className="mt-4 text-lg text-gray-600">Real-time regional maize price trends per 90kg bag.</p>
+        </div>
+
+
+        <div className="mb-16 bg-white rounded-2xl border border-gray-100 shadow-sm p-8">
+          <div className="flex items-center gap-3 mb-6">
+            <Package className="w-6 h-6 text-[#00703C]" />
+            <h2 className="text-xl font-bold text-gray-900">Active Purchase Requests</h2>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {demands.map((demand) => (
+              <div key={demand.id} className="border border-gray-200 rounded-xl p-5 flex flex-col">
+                <div className="flex justify-between items-start mb-3">
+                  <h3 className="font-bold text-gray-900">{demand.product}</h3>
+                  <span className="bg-blue-100 text-blue-700 text-xs font-bold px-2 py-0.5 rounded-full">{demand.quantityBags} bags</span>
+                </div>
+                <p className="text-sm text-gray-500 mb-1">📍 {demand.location}</p>
+                <p className="text-sm text-gray-500">Buyer: {demand.buyer?.name ?? 'N/A'}</p>
+              </div>
+            ))}
+            {demands.length === 0 && <p className="text-gray-500 col-span-full">No active purchase requests at the moment.</p>}
+          </div>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
