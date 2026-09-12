@@ -93,6 +93,52 @@ export default async function FarmerDashboard() {
         </div>
       </div>
 
+
+      {/* V2 Feature Quick Access */}
+      <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-8">
+        <Link href="/dashboard/ai-market" className="bg-white rounded-xl border border-gray-200 p-5 shadow-sm hover:shadow-md transition-all hover:border-green-300 group">
+          <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center mb-3 group-hover:bg-green-200 transition-colors">
+            <span className="text-xl">🤖</span>
+          </div>
+          <h3 className="font-semibold text-gray-900 text-sm">AI Market Intel</h3>
+          <p className="text-xs text-gray-500 mt-1">Price predictions & recommendations</p>
+        </Link>
+        <Link href="/dashboard/weather" className="bg-white rounded-xl border border-gray-200 p-5 shadow-sm hover:shadow-md transition-all hover:border-blue-300 group">
+          <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center mb-3 group-hover:bg-blue-200 transition-colors">
+            <span className="text-xl">🌦️</span>
+          </div>
+          <h3 className="font-semibold text-gray-900 text-sm">Weather & Alerts</h3>
+          <p className="text-xs text-gray-500 mt-1">Live county weather & farm advisories</p>
+        </Link>
+        <Link href="/dashboard/demands" className="bg-white rounded-xl border border-gray-200 p-5 shadow-sm hover:shadow-md transition-all hover:border-purple-300 group">
+          <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center mb-3 group-hover:bg-purple-200 transition-colors">
+            <span className="text-xl">📋</span>
+          </div>
+          <h3 className="font-semibold text-gray-900 text-sm">Buyer Demands</h3>
+          <p className="text-xs text-gray-500 mt-1">See what buyers are actively purchasing</p>
+        </Link>
+        <Link href="/dashboard/wallet" className="bg-white rounded-xl border border-gray-200 p-5 shadow-sm hover:shadow-md transition-all hover:border-yellow-300 group">
+          <div className="w-10 h-10 bg-yellow-100 rounded-lg flex items-center justify-center mb-3 group-hover:bg-yellow-200 transition-colors">
+            <span className="text-xl">💰</span>
+          </div>
+          <h3 className="font-semibold text-gray-900 text-sm">My Wallet</h3>
+          <p className="text-xs text-gray-500 mt-1">Balance, ledger & withdrawals</p>
+        </Link>
+        <Link href="/dashboard/contracts" className="bg-white rounded-xl border border-gray-200 p-5 shadow-sm hover:shadow-md transition-all hover:border-green-300 group">
+          <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center mb-3 group-hover:bg-green-200 transition-colors">
+            <span className="text-xl">📄</span>
+          </div>
+          <h3 className="font-semibold text-gray-900 text-sm">My Contracts</h3>
+          <p className="text-xs text-gray-500 mt-1">Digital trade agreements</p>
+        </Link>
+        <Link href="/dashboard/assistant" className="bg-white rounded-xl border border-gray-200 p-5 shadow-sm hover:shadow-md transition-all hover:border-indigo-300 group">
+          <div className="w-10 h-10 bg-indigo-100 rounded-lg flex items-center justify-center mb-3 group-hover:bg-indigo-200 transition-colors">
+            <span className="text-xl">💬</span>
+          </div>
+          <h3 className="font-semibold text-gray-900 text-sm">AI Assistant</h3>
+          <p className="text-xs text-gray-500 mt-1">Ask questions about your farm</p>
+        </Link>
+      </div>
       <div className="bg-green-800 text-white rounded-xl p-6 mb-8">
         <div className="bg-white rounded-xl border border-green-200 shadow-sm p-6 mb-8">
           <div className="flex items-center justify-between">
