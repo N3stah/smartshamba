@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-// import { requireAdminAuth } from '@/lib/auth';
+import { requireAdminAuth } from '@/lib/auth';
 
 export async function GET(req: NextRequest) {
-  // const authError = requireAdminAuth(req);
- // if (authError) return authError;
+  const authError = requireAdminAuth(req);
+  if (authError) return authError;
 
   try {
     const buyers = await prisma.buyer.findMany({
@@ -20,12 +20,12 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
-  //const authError = requireAdminAuth(req);
- // if (authError) return authError;
+  const authError = requireAdminAuth(req);
+  if (authError) return authError;
 
   try {
     const body = await req.json();
-    const { name, location, pricePerBag, capacityBags } = body;
+    const { name, location, pricePerBag, capacityBags, phone } = body;
 
     if (!name || !location || !pricePerBag || !capacityBags) {
       return NextResponse.json(
@@ -51,7 +51,7 @@ export async function POST(req: NextRequest) {
     }
 
     const buyer = await prisma.buyer.create({
-      data: { name, location, pricePerBag, capacityBags, verified: true, active: true },
+      data: { name, location, pricePerBag, capacityBags, phone, verified: true, active: true },
     });
 
     console.log(`[ADMIN] Created buyer: ${buyer.name}`);
