@@ -4,7 +4,8 @@ import * as Sentry from '@sentry/nextjs';
 
 export async function GET(req: NextRequest) {
   try {
-    if (req.nextUrl.searchParams.get('secret') !== process.env.CRON_SECRET) {
+    const authHeader = req.headers.get('authorization');
+    if (process.env.CRON_SECRET && authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
@@ -69,6 +70,7 @@ export async function GET(req: NextRequest) {
   } catch (error) {
     console.error('[CRON] Reputation sync error:', error);
     Sentry.captureException(error);
+    await Sentry.flush(2000);
     return NextResponse.json({ error: 'Server Error' }, { status: 500 });
   }
 }

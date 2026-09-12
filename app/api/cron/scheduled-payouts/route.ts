@@ -5,8 +5,8 @@ import * as Sentry from '@sentry/nextjs';
 
 export async function GET(req: NextRequest) {
   try {
-    const { searchParams } = new URL(req.url);
-    if (searchParams.get('secret') !== process.env.CRON_SECRET) {
+    const authHeader = req.headers.get('authorization');
+    if (process.env.CRON_SECRET && authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
@@ -43,6 +43,7 @@ export async function GET(req: NextRequest) {
         processedCount++;
       } catch (error) {
         Sentry.captureException(error);
+    await Sentry.flush(2000);
       }
     }
 
@@ -51,6 +52,7 @@ export async function GET(req: NextRequest) {
 
   } catch (error) {
     Sentry.captureException(error);
+    await Sentry.flush(2000);
     return NextResponse.json({ error: 'Server Error' }, { status: 500 });
   }
 }
