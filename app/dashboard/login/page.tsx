@@ -44,7 +44,7 @@ function LoginForm() {
     });
     const data = await res.json();
     if (!res.ok) { setError(data.error ?? 'Invalid code'); setLoading(false); return; }
-    router.push(from); router.refresh();
+    router.push(data.redirectTo || from); router.refresh();
   }
 
   async function handlePasswordLogin(e: React.FormEvent) {
@@ -57,7 +57,7 @@ function LoginForm() {
     });
     const data = await res.json();
     if (!res.ok) { setError(data.error ?? 'Invalid credentials'); setLoading(false); return; }
-    router.push(from); router.refresh();
+    router.push(data.redirectTo || from); router.refresh();
   }
 
   async function handleResetPassword(e: React.FormEvent) {

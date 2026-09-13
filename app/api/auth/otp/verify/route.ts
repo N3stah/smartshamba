@@ -34,15 +34,26 @@ export async function POST(req: NextRequest) {
       const buyer = await prisma.buyer.findFirst({ where: { phone: normalized } });
       if (!buyer) return NextResponse.json({ error: 'Account not found' }, { status: 404 });
       setBuyerSessionCookie(response, normalized);
+      
+      const hasTransactions = await prisma.transaction.count({ where: { buyerId: buyer.id } });
+      const hasDemands = await prisma.buyerDemand.count({ where: { buyerId: buyer.id } });
+      const redirectTo = (hasTransactions > 0 || hasDemands > 0) ? '/buyer/dashboard' : '/buyer/demands';
+      
       console.log('[OTP] Buyer login successful:', normalized);
+      return NextResponse.json({ success: true, redirectTo });
     } else {
       const farmer = await prisma.farmer.findUnique({ where: { phone: normalized } });
       if (!farmer) return NextResponse.json({ error: 'Account not found' }, { status: 404 });
       setFarmerSessionCookie(response, normalized);
+      
+      const hasTransactions = await prisma.transaction.count({ where: { farmerId: farmer.id } });
+      const hasLocation = farmer.location || farmer.countyId;
+      const redirectTo = (hasTransactions > 0 || hasLocation) ? '/dashboard' : '/dashboard/settings';
+      
       console.log('[OTP] Farmer login successful:', normalized);
+      return NextResponse.json({ success: true, redirectTo });
     }
 
-    return response;
   } catch (error) {
     console.error('[OTP] Verify error:', (error as Error).message);
     Sentry.captureException(error);
