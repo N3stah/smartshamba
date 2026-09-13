@@ -7,24 +7,48 @@ import LanguageSwitcher from '@/components/LanguageSwitcher';
 import NotificationPermission from '@/components/NotificationPermission';
 import SmartShambaLogo from '@/components/SmartShambaLogo';
 import { useI18n } from '@/lib/i18n';
-import { LayoutDashboard, ArrowLeftRight, AlertTriangle, Bell, Building2, Tag, Settings, Megaphone, LogOut, Menu, X, BarChart2 } from 'lucide-react';
+import { LayoutDashboard, ArrowLeftRight, AlertTriangle, Bell, Building2, Tag, Settings, LogOut, Menu, X, BarChart2, Brain, CloudRain, Wallet, FileText, MessageSquare, ClipboardList, ChevronDown } from 'lucide-react';
 
 export default function FarmerLayout({ children }: { children: React.ReactNode }) {
   const { t } = useI18n();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const pathname = usePathname();
 
-  const navItems = [
-    { href: '/dashboard', label: t.dashboard.title, icon: LayoutDashboard },
-    { href: '/dashboard/analytics', label: 'Analytics', icon: BarChart2 },
-    { href: '/dashboard/listings', label: 'Sell Produce', icon: Tag },
-    { href: '/dashboard/demands', label: 'Active Demands', icon: Megaphone },
-    { href: '/dashboard/transactions', label: 'My Transactions', icon: ArrowLeftRight },
-    { href: '/dashboard/disputes', label: 'My Disputes', icon: AlertTriangle },
-    { href: '/dashboard/notifications', label: 'Notifications', icon: Bell },
-    { href: '/dashboard/buyers', label: 'Buyer Directory', icon: Building2 },
-    { href: '/dashboard/settings', label: 'Settings', icon: Settings },
+  const [openSections, setOpenSections] = useState<Record<string, boolean>>({
+    'Core': true,
+    'V2 Intelligence': true,
+  });
+
+  const navSections = [
+    {
+      title: 'Core',
+      items: [
+        { href: '/dashboard', label: t.dashboard.title, icon: LayoutDashboard },
+        { href: '/dashboard/analytics', label: 'Analytics', icon: BarChart2 },
+        { href: '/dashboard/listings', label: 'Sell Produce', icon: Tag },
+        { href: '/dashboard/demands', label: 'Active Demands', icon: ClipboardList },
+        { href: '/dashboard/transactions', label: 'My Transactions', icon: ArrowLeftRight },
+        { href: '/dashboard/disputes', label: 'My Disputes', icon: AlertTriangle },
+        { href: '/dashboard/notifications', label: 'Notifications', icon: Bell },
+        { href: '/dashboard/buyers', label: 'Buyer Directory', icon: Building2 },
+        { href: '/dashboard/settings', label: 'Settings', icon: Settings },
+      ]
+    },
+    {
+      title: 'V2 Intelligence',
+      items: [
+        { href: '/dashboard/ai-market', label: 'AI Market Intel', icon: Brain },
+        { href: '/dashboard/weather', label: 'Weather & Alerts', icon: CloudRain },
+        { href: '/dashboard/wallet', label: 'My Wallet', icon: Wallet },
+        { href: '/dashboard/contracts', label: 'My Contracts', icon: FileText },
+        { href: '/dashboard/assistant', label: 'AI Assistant', icon: MessageSquare },
+      ]
+    }
   ];
+
+  const toggleSection = (title: string) => {
+    setOpenSections(prev => ({ ...prev, [title]: !prev[title] }));
+  };
 
   return (
     <div className="min-h-screen bg-gray-50 flex">
@@ -49,16 +73,37 @@ export default function FarmerLayout({ children }: { children: React.ReactNode }
            <button onClick={() => setSidebarOpen(false)} className="text-white p-1" aria-label="Close menu"><X className="w-5 h-5" /></button>
         </div>
 
-        <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
-          {navItems.map((item) => {
-            const isActive = pathname === item.href;
-            return (
-              <Link key={item.href} href={item.href} onClick={() => setSidebarOpen(false)} className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors focus:outline-none focus:ring-2 focus:ring-white/50 ${isActive ? 'bg-white/15 text-white font-semibold' : 'text-green-100 hover:bg-white/10 hover:text-white'}`}>
-                <item.icon className="w-5 h-5" />
-                <span>{item.label}</span>
-              </Link>
-            );
-          })}
+        <nav className="p-4 space-y-4 flex-1 overflow-y-auto">
+          {navSections.map((section) => (
+            <div key={section.title}>
+              <button 
+                onClick={() => toggleSection(section.title)}
+                className="w-full flex items-center justify-between px-3 py-2 text-xs font-bold uppercase tracking-wider text-green-200 hover:text-white transition-colors"
+              >
+                <span>{section.title}</span>
+                <ChevronDown className={`w-4 h-4 transition-transform ${openSections[section.title] ? 'rotate-180' : ''}`} />
+              </button>
+              {openSections[section.title] && (
+                <div className="mt-1 space-y-1">
+                  {section.items.map((item) => {
+                    const isActive = pathname === item.href;
+                    return (
+                      <Link
+                        key={item.href}
+                        href={item.href}
+                        onClick={() => setSidebarOpen(false)}
+                        className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors focus:outline-none focus:ring-2 focus:ring-white/50
+                        ${isActive ? 'bg-white/15 text-white font-semibold' : 'text-green-100 hover:bg-white/10 hover:text-white'}`}
+                      >
+                        <item.icon className="w-5 h-5" />
+                        <span>{item.label}</span>
+                      </Link>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          ))}
         </nav>
 
         <div className="p-4 border-t border-green-700/50 space-y-3">
