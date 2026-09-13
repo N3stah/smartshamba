@@ -65,7 +65,7 @@ export default function ProWeatherDashboard({ county, weatherData, advisoryData 
           {getWeatherIcon(weatherData.current.condition)}
           <p className="text-4xl font-bold text-gray-900 mt-2">{weatherData.current.temp}°C</p>
           <p className="text-sm text-gray-500 capitalize">{weatherData.current.description}</p>
-          <p className="text-xs text-gray-400 mt-1">{county} County (EAT: {formatEAT(Date.now()/1000)})</p>
+          <p className="text-xs text-gray-400 mt-1">{county} County (Live Weather)</p>
         </div>
 
         {/* Granular Metrics Grid */}
@@ -151,7 +151,7 @@ export default function ProWeatherDashboard({ county, weatherData, advisoryData 
       {/* Natural Language Weather AI */}
       <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
         <h3 className="text-sm font-bold text-gray-700 mb-3 flex items-center gap-2"><Cloud className="w-4 h-4 text-gray-500" /> Ask Precision Agronomy AI</h3>
-        <p className="text-xs text-gray-500 mb-3">Type naturally, e.g., "Is it too windy for spraying?" or "Will heavy rain delay harvest trucks?"</p>
+        <p className="text-xs text-gray-500 mb-3">Type naturally, e.g., &ldquo;Is it too windy for spraying?&rdquo; or &ldquo;Will heavy rain delay harvest trucks?&rdquo;</p>
         
         <form onSubmit={handleAskAI} className="flex items-center gap-2 mb-3">
           <input
