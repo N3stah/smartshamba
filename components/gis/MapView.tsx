@@ -69,11 +69,15 @@ export default function MapView({ markers = [], center, zoom = 7 }: MapViewProps
       });
 
       // Add markers
+      const bounds = new google.maps.LatLngBounds();
       markers.forEach((m) => {
         if (m.latitude == null || m.longitude == null) return;
 
         const color = m.type === 'FARMER' ? '#10b981' : m.type === 'BUYER' ? '#3b82f6' : '#6b7280';
         
+        if (m.latitude != null && m.longitude != null) {
+          bounds.extend({ lat: m.latitude, lng: m.longitude });
+        }
         const marker = new google.maps.Marker({
           position: { lat: m.latitude, lng: m.longitude },
           map: map.current,
@@ -96,6 +100,11 @@ export default function MapView({ markers = [], center, zoom = 7 }: MapViewProps
           infoWindow.open(map.current, marker);
         });
       });
+      
+      // Zoom to fit all markers if there are any
+      if (markers.length > 0) {
+        map.current.fitBounds(bounds);
+      }
     }
   }, [markers, center, zoom]);
 
