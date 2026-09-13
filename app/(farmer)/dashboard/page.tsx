@@ -139,29 +139,18 @@ export default async function FarmerDashboard() {
           <p className="text-xs text-gray-500 mt-1">Ask questions about your farm</p>
         </Link>
       </div>
-      <div className="bg-green-800 text-white rounded-xl p-6 mb-8">
-        <div className="bg-white rounded-xl border border-green-200 shadow-sm p-6 mb-8">
-          <div className="flex items-center justify-between">
-            <div>
-              <h2 className="text-lg font-semibold text-gray-900">
-                Farmer Groups
-              </h2>
-              <p className="text-sm text-gray-500 mt-1">
-                Join a farmer group, combine harvests with nearby farmers and negotiate better prices with buyers.
-              </p>
-            </div>
-            <Link
-              href="/dashboard/groups"
-              className="bg-green-700 hover:bg-green-600 text-white px-5 py-3 rounded-lg font-medium transition-colors"
-            >
-              View Groups →
-            </Link>
+      <div className="bg-white rounded-xl border border-green-200 shadow-sm p-6 mb-8">
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="text-lg font-semibold text-gray-900">Farmer Groups</h2>
+            <p className="text-sm text-gray-500 mt-1">Join a farmer group, combine harvests with nearby farmers and negotiate better prices with buyers.</p>
           </div>
+          <Link href="/dashboard/groups" className="bg-green-700 hover:bg-green-600 text-white px-5 py-3 rounded-lg font-medium transition-colors">View Groups →</Link>
         </div>
-        <p className="font-semibold">{t.dashboard.readyToSell}</p>
-        <p className="text-green-200 text-sm mt-1">
-          {t.dashboard.dialUssd}
-        </p>
+      </div>
+
+      <div className="bg-green-800 text-white rounded-xl p-4 mb-8 text-center">
+        <p className="text-sm">📱 Dial *384*53374# to sell maize via your phone</p>
       </div>
 
       <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
