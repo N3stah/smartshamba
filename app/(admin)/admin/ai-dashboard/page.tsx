@@ -1,6 +1,6 @@
 export const dynamic = 'force-dynamic';
 
-import { cookies } from 'next/headers';
+import { getAdminSession } from '@/lib/auth';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import { prisma } from '@/lib/prisma';
@@ -8,9 +8,8 @@ import { ArrowLeft, Brain, TrendingUp, Activity } from 'lucide-react';
 
 
 export default async function AdminAIDashboardPage() {
-  const cookieStore = await cookies();
-  const isAdmin = cookieStore.get('smartshamba_admin')?.value === process.env.ADMIN_API_KEY;
-  if (!isAdmin) redirect('/admin/login');
+  const session = await getAdminSession();
+  if (!session) redirect('/admin/login');
 
   const predictions = await prisma.marketPrediction.findMany({
     orderBy: [

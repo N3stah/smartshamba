@@ -1,13 +1,12 @@
-import { cookies } from 'next/headers';
+import { getAdminSession } from '@/lib/auth';
 import { redirect } from 'next/navigation';
 import FullPageAssistant from '@/components/ai/FullPageAssistant';
 
 export const dynamic = 'force-dynamic';
 
 export default async function AdminAssistantPage() {
-  const cookieStore = await cookies();
-  const isAdmin = cookieStore.get('smartshamba_admin')?.value === process.env.ADMIN_API_KEY;
-  if (!isAdmin) redirect('/admin/login');
+  const session = await getAdminSession();
+  if (!session) redirect('/admin/login');
 
   return <FullPageAssistant role="ADMIN" />;
 }

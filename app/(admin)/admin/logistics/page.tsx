@@ -1,7 +1,7 @@
 export const dynamic = 'force-dynamic';
 
 // TODO: V2 - Re-enable type checking after this module schema is built
-import { cookies } from 'next/headers';
+import { getAdminSession } from '@/lib/auth';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import { prisma } from '@/lib/prisma';
@@ -10,9 +10,8 @@ import { ArrowLeft, Truck, MapPin, Package, CheckCircle, Clock, DollarSign } fro
 
 
 export default async function AdminLogisticsPage() {
-  const cookieStore = await cookies();
-  const isAdmin = cookieStore.get('smartshamba_admin')?.value === process.env.ADMIN_API_KEY;
-  if (!isAdmin) redirect('/admin/login');
+  const session = await getAdminSession();
+  if (!session) redirect('/admin/login');
 
   const bookings = await prisma.transportBooking.findMany({
     include: {

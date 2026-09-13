@@ -1,6 +1,6 @@
 export const dynamic = 'force-dynamic';
 
-import { cookies } from 'next/headers';
+import { getAdminSession } from '@/lib/auth';
 import { redirect } from 'next/navigation';
 import { prisma } from '@/lib/prisma';
 import ListingModerationButton from '@/components/admin/ListingModerationButton';
@@ -8,9 +8,8 @@ import StatusBadge from '@/components/ui/StatusBadge';
 
 
 export default async function AdminListingsPage() {
-  const cookieStore = await cookies();
-  const isAdmin = cookieStore.get('smartshamba_admin')?.value === process.env.ADMIN_API_KEY;
-  if (!isAdmin) redirect('/admin/login');
+  const session = await getAdminSession();
+  if (!session) redirect('/admin/login');
 
   const listings = await prisma.produceListing.findMany({
     include: { farmer: { select: { name: true, phone: true } } },

@@ -1,6 +1,6 @@
 export const dynamic = 'force-dynamic';
 
-import { cookies } from 'next/headers';
+import { getAdminSession } from '@/lib/auth';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import { prisma } from '@/lib/prisma';
@@ -15,9 +15,8 @@ interface WeatherCurrent {
   humidity: number;
 }
 export default async function AdminWeatherDashboard() {
-  const cookieStore = await cookies();
-  const isAdmin = cookieStore.get('smartshamba_admin')?.value === process.env.ADMIN_API_KEY;
-  if (!isAdmin) redirect('/admin/login');
+  const session = await getAdminSession();
+  if (!session) redirect('/admin/login');
 
   let weatherData: Awaited<ReturnType<typeof prisma.weatherData.findMany>> = [];
   let activeAlerts: Awaited<ReturnType<typeof prisma.weatherAlert.findMany>> = [];

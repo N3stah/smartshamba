@@ -1,4 +1,4 @@
-import { cookies } from 'next/headers';
+import { getAdminSession } from '@/lib/auth';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import StatCard from '@/components/analytics/StatCard';
@@ -24,9 +24,8 @@ export default async function AdminAnalyticsPage({ searchParams }: { searchParam
   const params = await searchParams;
   const range = params.range || '30d';
 
-  const cookieStore = await cookies();
-  const isAdmin = cookieStore.get('smartshamba_admin')?.value === process.env.ADMIN_API_KEY;
-  if (!isAdmin) redirect('/admin/login');
+  const session = await getAdminSession();
+  if (!session) redirect('/admin/login');
 
   let data;
   try {
