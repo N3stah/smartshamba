@@ -18,6 +18,13 @@ export default async function MarketPricesPage() {
     orderBy: { createdAt: 'desc' }
   });
 
+  const predictions = await prisma.marketPrediction.findMany({
+    where: { region: 'National' },
+    orderBy: { generatedAt: 'desc' },
+    distinct: ['crop', 'horizon'],
+    take: 3
+  });
+
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
       <PublicHeader />
@@ -74,9 +81,21 @@ export default async function MarketPricesPage() {
               <h2 className="text-xl font-bold text-gray-900">Market Advisory Notes</h2>
             </div>
             <div className="space-y-4 text-gray-600">
-              <p><strong className="text-gray-900">Price Trend:</strong> Maize prices are currently stable across Rift Valley, with a slight upward trend expected due to seasonal demand.</p>
+              {predictions.length > 0 ? (
+                predictions.map((p) => (
+                  <div key={p.id} className="border-l-4 border-green-500 pl-3">
+                    <p className="font-semibold text-gray-900">{p.crop} ({p.horizon})</p>
+                    <p>Rec: {p.recommendation} — Predicted: KSh {p.predictedPrice.toLocaleString()}</p>
+                    {p.explanation && <p className="text-sm mt-1">{p.explanation}</p>}
+                  </div>
+                ))
+              ) : (
+                <>
+                  <p><strong className="text-gray-900">Price Trend:</strong> Maize prices are currently stable across Rift Valley, with a slight upward trend expected due to seasonal demand.</p>
               <p><strong className="text-gray-900">Quality Premium:</strong> Buyers are offering up to 10% above base price for maize with moisture content below 13.5%.</p>
               <p><strong className="text-gray-900">Group Selling Impact:</strong> Farmers participating in group selling are reporting an average 8% higher returns compared to individual sales.</p>
+                </>
+              )}
             </div>
           </div>
         </div>
