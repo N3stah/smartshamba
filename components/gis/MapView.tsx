@@ -1,14 +1,13 @@
 'use client';
 import { useEffect, useRef } from 'react';
-import type { GeoJSON } from 'geojson';
 import * as maplibregl from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
 
 interface MarkerData {
   id: string;
-  name: string;
-  latitude: number;
-  longitude: number;
+  name?: string | null;
+  latitude?: number | null;
+  longitude?: number | null;
   description?: string;
   type?: 'FARMER' | 'BUYER' | 'WAREHOUSE';
 }
@@ -17,138 +16,57 @@ interface MapViewProps {
   markers?: MarkerData[];
   center: [number, number];
   zoom?: number;
-  routeGeometry?: GeoJSON.Geometry;
 }
 
-export default function MapView({ markers = [], center, zoom = 7, routeGeometry }: MapViewProps) {
+export default function MapView({ markers = [], center, zoom = 7 }: MapViewProps) {
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<maplibregl.Map | null>(null);
+  const popupsRef = useRef<maplibregl.Popup[]>([]);
 
+  // Initialize map only once
   useEffect(() => {
     if (!mapContainer.current || map.current) return;
 
     map.current = new maplibregl.Map({
       container: mapContainer.current,
-      style: {
-        version: 8,
-        sources: {
-          'osm-tiles': {
-            type: 'raster',
-            tiles: ['https://tile.openstreetmap.org/{z}/{x}/{y}.png'],
-            tileSize: 256,
-            attribution: '&copy; OpenStreetMap contributors'
-          }
-        },
-        layers: [{
-          id: 'osm-layer',
-          type: 'raster',
-          source: 'osm-tiles'
-        }]
-      },
+      style: `https://api.maptiler.com/maps/streets/style.json?key=${process.env.NEXT_PUBLIC_MAPTILER_KEY}`,
       center: [center[1], center[0]],
       zoom: zoom
     });
 
     map.current.addControl(new maplibregl.NavigationControl(), 'top-right');
+  }, [center, zoom]);
 
-    map.current.on('load', () => {
-      if (!map.current) return;
+  // Update markers when data changes
+  useEffect(() => {
+    if (!map.current || markers.length === 0) return;
 
-      map.current.addSource('markers', {
-        type: 'geojson',
-        data: {
-          type: 'FeatureCollection',
-          features: markers.map(m => ({
-            type: 'Feature',
-            properties: { ...m },
-            geometry: { type: 'Point', coordinates: [m.longitude, m.latitude] }
-          }))
-        },
-        cluster: true,
-        clusterMaxZoom: 14,
-        clusterRadius: 50
-      });
+    // Clear existing popups
+    popupsRef.current.forEach(p => p.remove());
+    popupsRef.current = [];
 
-      map.current.addLayer({
-        id: 'clusters',
-        type: 'circle',
-        source: 'markers',
-        filter: ['has', 'point_count'],
-        paint: {
-          'circle-color': '#00703C',
-          'circle-radius': ['step', ['get', 'point_count'], 20, 100, 30, 750, 40],
-          'circle-opacity': 0.8
-        }
-      });
+    markers.forEach((m) => {
+      if (m.latitude == null || m.longitude == null) return;
 
-      map.current.addLayer({
-        id: 'cluster-count',
-        type: 'symbol',
-        source: 'markers',
-        filter: ['has', 'point_count'],
-        layout: {
-          'text-field': '{point_count_abbreviated}',
-          'text-size': 12
-        },
-        paint: {
-          'text-color': '#FFFFFF'
-        }
-      });
+      const color = m.type === 'FARMER' ? '#10b981' : m.type === 'BUYER' ? '#3b82f6' : '#6b7280';
+      
+      const el = document.createElement('div');
+      el.className = 'flex items-center justify-center rounded-full border-2 border-white shadow-lg cursor-pointer';
+      el.style.width = '20px';
+      el.style.height = '20px';
+      el.style.backgroundColor = color;
 
-      map.current.addLayer({
-        id: 'unclustered-point',
-        type: 'circle',
-        source: 'markers',
-        filter: ['!', ['has', 'point_count']],
-        paint: {
-          'circle-color': ['match', ['get', 'type'], 'FARMER', '#10b981', 'BUYER', '#3b82f6', '#6b7280'],
-          'circle-radius': 7,
-          'circle-stroke-width': 2,
-          'circle-stroke-color': '#fff'
-        }
-      });
+      const popup = new maplibregl.Popup({ offset: 15, closeButton: false })
+        .setHTML(`<div style="padding:8px; font-family: sans-serif;"><p style="font-weight: bold; margin: 0 0 4px 0; font-size: 14px;">${m.name}</p><p style="margin: 0; font-size: 12px; color: #666;">${m.type || 'Location'}</p></div>`);
 
-      map.current.on('click', 'unclustered-point', (e) => {
-        if (!map.current || !e.features || e.features.length === 0) return;
-        const geometry = e.features[0].geometry;
-        if (geometry.type !== 'Point') return;
-        const coordinates = geometry.coordinates.slice() as [number, number];
-        const props = e.features[0].properties as MarkerData;
+      new maplibregl.Marker(el)
+        .setLngLat([m.longitude, m.latitude])
+        .setPopup(popup)
+        .addTo(map.current!);
         
-        new maplibregl.Popup()
-          .setLngLat(coordinates)
-          .setHTML(`<div style="padding:4px"><p style="font-weight:bold;margin:0">${props.name}</p><p style="font-size:12px;color:#666;margin:0">${props.type}</p></div>`)
-          .addTo(map.current);
-      });
-
-      if (routeGeometry) {
-        map.current.addSource('route', {
-          type: 'geojson',
-          data: {
-            type: 'Feature',
-            properties: {},
-            geometry: routeGeometry
-          }
-        });
-
-        map.current.addLayer({
-          id: 'route-line',
-          type: 'line',
-          source: 'route',
-          layout: { 'line-join': 'round', 'line-cap': 'round' },
-          paint: {
-            'line-color': '#00703C', 'line-width': 5, 'line-opacity': 0.8 
-          }
-        });
-
-        if (routeGeometry.type === 'LineString') {
-          const coordinates = routeGeometry.coordinates as [number, number][];
-          const bounds = coordinates.reduce((b, coord) => b.extend(coord), new maplibregl.LngLatBounds(coordinates[0], coordinates[0]));
-          map.current.fitBounds(bounds, { padding: 50 });
-        }
-      }
+      popupsRef.current.push(popup);
     });
-  }, [markers, center, zoom, routeGeometry]);
+  }, [markers]);
 
-  return <div ref={mapContainer} className="h-125 w-full rounded-xl overflow-hidden border border-gray-200 shadow-sm z-0" />;
+  return <div ref={mapContainer} className="h-[500px] w-full rounded-xl overflow-hidden border border-gray-200 shadow-sm z-0" />;
 }

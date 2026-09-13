@@ -12,6 +12,7 @@ interface MapMarker {
   name?: string | null;
   latitude?: number | null;
   longitude?: number | null;
+  type?: 'FARMER' | 'BUYER' | 'WAREHOUSE';
   [key: string]: unknown;
 }
   const [mapData, setMapData] = useState<{ farmers?: MapMarker[]; buyers?: MapMarker[]; warehouses?: MapMarker[] } | null>(null);
@@ -32,9 +33,9 @@ interface MapMarker {
   if (loading) return <div className="flex justify-center p-8"><Loader2 className="w-6 h-6 animate-spin text-[#00703C]" /></div>;
 
   const markers = [
-    ...(mapData?.farmers || []).map((f: MapMarker) => ({ ...f, type: 'FARMER', description: 'Farmer' })),
-    ...(mapData?.buyers || []).map((b: MapMarker) => ({ ...b, type: 'BUYER', description: 'Buyer' })),
-    ...(mapData?.warehouses || []).map((w: MapMarker) => ({ ...w, type: 'WAREHOUSE', description: 'Warehouse' }))
+    ...(mapData?.farmers || []).map((f: MapMarker) => ({ ...f, type: 'FARMER' as const, description: 'Farmer' })),
+    ...(mapData?.buyers || []).map((b: MapMarker) => ({ ...b, type: 'BUYER' as const, description: 'Buyer' })),
+    ...(mapData?.warehouses || []).map((w: MapMarker) => ({ ...w, type: 'WAREHOUSE' as const, description: 'Warehouse' }))
   ];
 
   return (
@@ -54,8 +55,7 @@ interface MapMarker {
         </Link>
       </div>
 
-      {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-  <MapView markers={markers as any} center={[0.1769, 37.9083]} zoom={6} />
+      <MapView markers={markers} center={[0.1769, 37.9083]} zoom={6} />
       
       <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
         <div className="grid grid-cols-3 gap-4 text-center">
