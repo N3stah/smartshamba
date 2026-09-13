@@ -93,7 +93,22 @@ prisma.weatherAlert.findMany({ orderBy: { createdAt: 'desc' } })
                 <span>Wind: {(w.data as unknown as { current: WeatherCurrent }).current.windSpeed} km/h</span>
                 <span>Humidity: {(w.data as unknown as { current: WeatherCurrent }).current.humidity}%</span>
               </div>
-              <p className="text-xs text-gray-500 italic mt-2 pt-2 border-t border-gray-200">&ldquo;{w.advisory}&rdquo;</p>
+              <div className="text-xs text-gray-600 mt-2 pt-2 border-t border-gray-200 space-y-1">
+                {(() => {
+                  try {
+                    const advisory = JSON.parse(w.advisory ?? '{}');
+                    return (
+                      <>
+                        {advisory.agronomy && <p><span className="font-semibold text-gray-700">Agronomy:</span> {advisory.agronomy}</p>}
+                        {advisory.disease_risk && <p><span className="font-semibold text-gray-700">Disease Risk:</span> {advisory.disease_risk}</p>}
+                        {advisory.logistics && <p><span className="font-semibold text-gray-700">Logistics:</span> {advisory.logistics}</p>}
+                      </>
+                    );
+                  } catch {
+                    return <p>{w.advisory}</p>;
+                  }
+                })()}
+              </div>
             </div>
           ))}
           {weatherData.length === 0 && <p className="text-gray-400 text-sm col-span-full text-center py-4">No weather data cached yet. Run cron job.</p>}
