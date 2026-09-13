@@ -32,7 +32,7 @@ export async function GET(req: NextRequest) {
 
 // POST /api/advisories — admin creates an advisory
 export async function POST(req: NextRequest) {
-  const auth = requireAdminAuth(req);
+  const auth = await requireAdminAuth(req);
   if (auth) return auth;
 
   try {

@@ -8,7 +8,7 @@ const VALID_STATUSES: DisputeStatus[] = ['OPEN', 'UNDER_REVIEW', 'RESOLVED', 'CL
 
 export async function GET(req: NextRequest) {
   try {
-    const auth = requireAdminAuth(req);
+    const auth = await requireAdminAuth(req);
     if (auth) return auth;
 
     const url = new URL(req.url);

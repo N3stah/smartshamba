@@ -7,7 +7,7 @@ import { requireAdminAuth } from "@/lib/auth";
 // GET /api/admin/groups
 // Returns all farmer groups with summary statistics.
 export async function GET(req: NextRequest) {
-  const auth = requireAdminAuth(req);
+  const auth = await requireAdminAuth(req);
 
   if (auth) {
     return auth;

@@ -8,7 +8,7 @@ export async function PUT(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const auth = requireAdminAuth(req);
+  const auth = await requireAdminAuth(req);
   if (auth) return auth;
 
   try {
@@ -56,7 +56,7 @@ export async function DELETE(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const auth = requireAdminAuth(req);
+  const auth = await requireAdminAuth(req);
   if (auth) return auth;
 
   try {

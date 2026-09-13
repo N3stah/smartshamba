@@ -1,18 +1,53 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { prisma } from '@/lib/prisma';
+import type { StaffRole } from '@prisma/client';
 
 const ADMIN_COOKIE = 'smartshamba_admin';
 const FARMER_COOKIE = 'smartshamba_farmer';
 const BUYER_COOKIE = 'smartshamba_buyer';
 
-// Admin Auth
-export function requireAdminAuth(req: NextRequest): NextResponse | null {
+// Admin Auth (Async to support DB-backed Staff sessions)
+export async function getStaffSession(req: NextRequest) {
   const cookie = req.cookies.get(ADMIN_COOKIE);
   const apiKey = req.headers.get('x-admin-key');
   
-  if (cookie?.value === process.env.ADMIN_API_KEY || apiKey === process.env.ADMIN_API_KEY) {
-    return null;
+  // 1. Check legacy API key (backward compatibility)
+  if (apiKey === process.env.ADMIN_API_KEY) {
+    return { id: 'legacy-admin', role: 'ADMIN', name: 'Admin' };
   }
-  return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  if (cookie?.value === process.env.ADMIN_API_KEY) {
+    return { id: 'legacy-admin', role: 'ADMIN', name: 'Admin' };
+  }
+  
+  // 2. Check Staff database session
+  if (!cookie?.value) return null;
+  const staff = await prisma.staff.findUnique({ where: { id: cookie.value } });
+  if (!staff || !staff.active) return null;
+  return staff;
+}
+
+export async function requireAdminAuth(req: NextRequest): Promise<NextResponse | null> {
+  const staff = await getStaffSession(req);
+  if (!staff) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+  return null;
+}
+
+export async function requireRoleAuth(req: NextRequest, roles: StaffRole[]) {
+  const staff = await getStaffSession(req);
+  if (!staff) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+  // Legacy ADMIN_API_KEY is NOT an executive role and is rejected on protected endpoints
+  if (staff.id === 'legacy-admin') {
+    return NextResponse.json({ error: 'Forbidden: Staff authentication required' }, { status: 403 });
+  }
+  
+  if (!roles.includes(staff.role as StaffRole)) {
+    return NextResponse.json({ error: 'Forbidden: Insufficient permissions' }, { status: 403 });
+  }
+  return null;
 }
 
 // Farmer Auth
@@ -72,8 +107,13 @@ export async function getAdminSession() {
   const { cookies } = await import('next/headers');
   const cookieStore = await cookies();
   const value = cookieStore.get('smartshamba_admin')?.value;
-  if (!value || value !== process.env.ADMIN_API_KEY) return null;
-  return { role: 'admin' as const };
+  if (!value) return null;
+  
+  if (value === process.env.ADMIN_API_KEY) return { role: 'admin' as const, id: 'legacy', name: 'Admin' };
+  
+  const staff = await prisma.staff.findUnique({ where: { id: value } });
+  if (!staff || !staff.active) return null;
+  return { role: staff.role.toLowerCase() as 'ceo' | 'cto' | 'cfo' | 'pm', id: staff.id, name: staff.name };
 }
 
 export async function getUserSession() {

@@ -399,8 +399,10 @@ model QualityAssessment {
 model AuditLog {
   id         String   @id @default(cuid())
   action     String   // e.g. "SETTLE_TRANSACTION", "UPDATE_BUYER", "RESOLVE_DISPUTE"
-  actorType  String   // "ADMIN" | "SYSTEM"
-  actorId    String?  // admin identifier (phone or email)
+  actorType  String   // "STAFF" | "SYSTEM"
+  actorId    String?  // Staff ID
+  staffId    String?
+  staff      Staff?   @relation(fields: [staffId], references: [id])
   entityType String   // "Transaction" | "Buyer" | "Dispute" etc.
   entityId   String
   before     Json?
@@ -878,4 +880,26 @@ model EventOutbox {
   createdAt   DateTime         @default(now())
 
   @@index([status, createdAt])
+}
+
+
+// --- SmartShamba RBAC: Executive Staff ---
+enum StaffRole {
+  CEO
+  CTO
+  CFO
+  PM
+}
+
+model Staff {
+  id           String     @id @default(cuid())
+  name         String
+  email        String     @unique
+  role         StaffRole
+  passwordHash String
+  active       Boolean    @default(true)
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+
+  auditLogs    AuditLog[]
 }

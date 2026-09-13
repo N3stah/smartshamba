@@ -5,7 +5,7 @@ import * as Sentry from '@sentry/nextjs';
 
 export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const authError = requireAdminAuth(req);
+    const authError = await requireAdminAuth(req);
     if (authError) return authError;
 
     const { id } = await params;

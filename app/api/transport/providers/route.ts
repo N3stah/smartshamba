@@ -38,7 +38,7 @@ export async function GET(req: NextRequest) {
 // POST - Admin creates a transport provider (unchanged)
 export async function POST(req: NextRequest) {
   try {
-    const authError = requireAdminAuth(req);
+    const authError = await requireAdminAuth(req);
     if (authError) return authError;
 
     const body = await req.json();

@@ -9,7 +9,7 @@ export async function PATCH(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const auth = requireAdminAuth(req);
+  const auth = await requireAdminAuth(req);
   if (auth) return auth;
 
   try {

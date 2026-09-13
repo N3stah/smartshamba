@@ -11,7 +11,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
     // Auth check: Only parties involved or admin can download
     const farmerPhone = getFarmerSession(req);
     const buyerPhone = getBuyerSession(req);
-    const isAdmin = !requireAdminAuth(req);
+    const isAdmin = !await requireAdminAuth(req);
     
     if (!farmerPhone && !buyerPhone && !isAdmin) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });

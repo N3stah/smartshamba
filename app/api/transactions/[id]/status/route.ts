@@ -30,7 +30,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
 
     const farmerPhone = getFarmerSession(req);
     const buyerPhone = getBuyerSession(req);
-    const isAdmin = !requireAdminAuth(req);
+    const isAdmin = !await requireAdminAuth(req);
 
     if (!farmerPhone && !buyerPhone && !isAdmin) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });

@@ -6,7 +6,7 @@ import * as Sentry from '@sentry/nextjs';
 
 export async function GET(req: NextRequest) {
   try {
-    const authError = requireAdminAuth(req);
+    const authError = await requireAdminAuth(req);
     if (authError) return authError;
 
     // Calculate Platform Revenue (Fees)

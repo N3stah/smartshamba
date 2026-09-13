@@ -44,7 +44,7 @@ const getStats = unstable_cache(
 
 export async function GET(req: NextRequest) {
   try {
-    const authError = requireAdminAuth(req);
+    const authError = await requireAdminAuth(req);
     if (authError) return authError;
 
     const stats = await getStats();

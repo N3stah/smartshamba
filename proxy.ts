@@ -64,7 +64,8 @@ export function proxy(req: NextRequest) {
   // Protect admin routes
   if (pathname.startsWith('/admin') && pathname !== '/admin/login') {
     const cookie = req.cookies.get(ADMIN_COOKIE);
-    if (cookie?.value !== process.env.ADMIN_API_KEY) {
+    // Allow if legacy API key OR if staff session cookie exists (CUID starts with 'c')
+    if (cookie?.value !== process.env.ADMIN_API_KEY && !cookie?.value?.startsWith('c')) {
       const loginUrl = new URL('/admin/login', req.url);
       loginUrl.searchParams.set('from', pathname);
       return NextResponse.redirect(loginUrl);

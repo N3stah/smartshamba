@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { requireAdminAuth } from '@/lib/auth';
+import { requireRoleAuth } from '@/lib/auth';
+import { StaffRole } from '@prisma/client';
 import { getWalletBalance } from '@/lib/finance/ledger-service';
 import * as Sentry from '@sentry/nextjs';
 
@@ -8,7 +9,7 @@ const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
 
 export async function GET(req: NextRequest) {
   try {
-    const authError = requireAdminAuth(req);
+    const authError = await requireRoleAuth(req, [StaffRole.CEO, StaffRole.CFO, StaffRole.CTO, StaffRole.PM]);
     if (authError) return authError;
 
     // Fetch high-level KPIs for AI context

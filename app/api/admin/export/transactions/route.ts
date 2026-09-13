@@ -5,7 +5,7 @@ import { convertToCSV, formatTransactionsForCSV } from '@/lib/csvExport';
 
 export async function GET(req: NextRequest) {
   try {
-    const authError = requireAdminAuth(req);
+    const authError = await requireAdminAuth(req);
     if (authError) return authError;
 
     const transactions = await prisma.transaction.findMany({

@@ -14,7 +14,7 @@ export async function POST(req: NextRequest) {
 
     const farmerPhone = getFarmerSession(req);
     const buyerPhone = getBuyerSession(req);
-    const isAdmin = !requireAdminAuth(req);
+    const isAdmin = !await requireAdminAuth(req);
 
     if (farmerPhone) {
       role = 'FARMER';

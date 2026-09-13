@@ -7,7 +7,7 @@ export async function GET(req: NextRequest) {
     let userId: string | null = null;
     const farmerPhone = getFarmerSession(req);
     const buyerPhone = getBuyerSession(req);
-    const isAdmin = !requireAdminAuth(req);
+    const isAdmin = !await requireAdminAuth(req);
 
     if (farmerPhone) {
       const farmer = await prisma.farmer.findUnique({ where: { phone: farmerPhone } });

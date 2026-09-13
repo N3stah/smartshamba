@@ -11,7 +11,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Basic auth check
-    if (!getFarmerSession(req) && !getBuyerSession(req) && requireAdminAuth(req)) {
+    if (!getFarmerSession(req) && !getBuyerSession(req) && await requireAdminAuth(req)) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 

@@ -14,7 +14,7 @@ function generateReference(): string {
 }
 
 export async function GET(req: NextRequest) {
-  const authError = requireAdminAuth(req);
+  const authError = await requireAdminAuth(req);
   if (authError) return authError;
 
   try {

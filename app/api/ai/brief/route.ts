@@ -10,7 +10,7 @@ export async function GET(req: NextRequest) {
 
     const farmerPhone = getFarmerSession(req);
     const buyerPhone = getBuyerSession(req);
-    const isAdmin = !requireAdminAuth(req);
+    const isAdmin = !await requireAdminAuth(req);
 
     if (farmerPhone) { role = 'FARMER'; phone = farmerPhone; }
     else if (buyerPhone) { role = 'BUYER'; phone = buyerPhone; }

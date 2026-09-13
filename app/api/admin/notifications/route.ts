@@ -6,7 +6,7 @@ import { NotificationStatus, NotificationType } from '@/lib/notifications/types'
 
 // GET /api/admin/notifications — paginated notification log with stats
 export async function GET(req: NextRequest) {
-  const auth = requireAdminAuth(req);
+  const auth = await requireAdminAuth(req);
   if (auth) return auth;
 
   try {

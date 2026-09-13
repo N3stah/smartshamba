@@ -4,7 +4,7 @@ import { requireAdminAuth } from '@/lib/auth';
 
 export async function GET(req: NextRequest) {
   try {
-    const authError = requireAdminAuth(req);
+    const authError = await requireAdminAuth(req);
     if (authError) return authError;
 
     const [farmers, buyers, warehouses] = await Promise.all([
