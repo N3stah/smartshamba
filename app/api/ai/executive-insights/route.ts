@@ -3,11 +3,9 @@ import { prisma } from '@/lib/prisma';
 import { requireRoleAuth } from '@/lib/auth';
 import { StaffRole } from '@prisma/client';
 import { getWalletBalance } from '@/lib/finance/ledger-service';
-import { GoogleGenAI } from '@google/genai';
 import * as Sentry from '@sentry/nextjs';
 
-const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
-const ai = new GoogleGenAI({ apiKey: GEMINI_API_KEY! });
+const NVIDIA_API_KEY = process.env.NVIDIA_API_KEY;
 
 export async function GET(req: NextRequest) {
   try {
@@ -39,19 +37,25 @@ export async function GET(req: NextRequest) {
     - Platform Revenue: KSh ${totalRevenue}`;
 
     let aiResponse = "Executive AI summary unavailable.";
-    if (GEMINI_API_KEY) {
+    if (NVIDIA_API_KEY) {
       try {
-        const response = await ai.models.generateContent({
-          model: 'gemini-3.6-flash',
-          contents: prompt,
-          config: { temperature: 0.4, maxOutputTokens: 150 }
+        const res = await fetch('https://integrate.api.nvidia.com/v1/chat/completions', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${NVIDIA_API_KEY}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            model: "deepseek-ai/deepseek-v4-flash-0731",
+            messages: [{ role: "user", content: prompt }],
+            temperature: 0.4,
+            max_tokens: 150
+          })
         });
-        
-        if (response.text) {
-          aiResponse = response.text;
-        }
+        const data = await res.json();
+        aiResponse = data.choices?.[0]?.message?.content || aiResponse;
       } catch (e) {
-        console.error('[AI] Gemini request failed:', e);
+        console.error('[AI] NVIDIA Executive Insights request failed:', e);
       }
     }
 
