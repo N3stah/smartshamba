@@ -75,7 +75,7 @@ export async function streamChatResponse(
   ---
   USER QUESTION: ${message}`;
 
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:streamGenerateContent?key=${GEMINI_API_KEY}`;
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:streamGenerateContent?key=${GEMINI_API_KEY}`;
   
   const res = await fetch(url, {
     method: 'POST',
