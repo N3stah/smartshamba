@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { requireRoleAuth } from '@/lib/auth';
+import { requireRoleAuth, getStaffSession } from '@/lib/auth';
 import { StaffRole } from '@prisma/client';
 import * as Sentry from '@sentry/nextjs';
 import fs from 'fs';
@@ -46,6 +46,21 @@ export async function GET(req: NextRequest) {
     // Strict RBAC: Only CTO and CEO can access technical metrics
     const authError = await requireRoleAuth(req, [StaffRole.CTO, StaffRole.CEO]);
     if (authError) return authError;
+
+    // Audit Log: Record who accessed this executive data
+    const staff = await getStaffSession(req);
+    if (staff && staff.id !== 'legacy-admin') {
+      await prisma.auditLog.create({
+        data: {
+          action: 'CTO_VIEWED_SYSTEM_METRICS',
+          actorType: 'STAFF',
+          actorId: staff.id,
+          staffId: staff.id,
+          entityType: 'SystemHealth',
+          entityId: 'metrics'
+        }
+      }).catch(e => console.error('[AUDIT]', e));
+    }
 
     // 1. System Info
     const system = {

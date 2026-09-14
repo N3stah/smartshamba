@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { requireRoleAuth } from '@/lib/auth';
+import { requireRoleAuth, getStaffSession } from '@/lib/auth';
 import { StaffRole } from '@prisma/client';
 import { getWalletBalance } from '@/lib/finance/ledger-service';
 import * as Sentry from '@sentry/nextjs';
@@ -9,6 +9,21 @@ export async function GET(req: NextRequest) {
   try {
     const authError = await requireRoleAuth(req, [StaffRole.CEO, StaffRole.CFO, StaffRole.CTO, StaffRole.PM]);
     if (authError) return authError;
+
+    // Audit Log: Record who accessed this executive data
+    const staff = await getStaffSession(req);
+    if (staff && staff.id !== 'legacy-admin') {
+      await prisma.auditLog.create({
+        data: {
+          action: 'EXECUTIVE_VIEWED_BI_DASHBOARD',
+          actorType: 'STAFF',
+          actorId: staff.id,
+          staffId: staff.id,
+          entityType: 'BusinessIntelligence',
+          entityId: 'metrics'
+        }
+      }).catch(e => console.error('[AUDIT]', e));
+    }
 
     const now = new Date();
     const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
