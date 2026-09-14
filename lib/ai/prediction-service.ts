@@ -1,10 +1,12 @@
 import { prisma } from '@/lib/prisma';
+import { GoogleGenAI } from '@google/genai';
 import type { AIRecommendation } from '@prisma/client';
 import * as Sentry from '@sentry/nextjs';
 
 const AI_PROVIDER = process.env.AI_PROVIDER || 'gemini';
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
 const NVIDIA_API_KEY = process.env.NVIDIA_API_KEY;
+const ai = new GoogleGenAI({ apiKey: GEMINI_API_KEY! });
 
 interface PredictionResult {
   predictedPrice: number;
@@ -53,39 +55,19 @@ async function collectMarketData(crop: string) {
 
 async function callAIProvider(prompt: string): Promise<string | null> {
   try {
-    if (AI_PROVIDER === 'gemini' && GEMINI_API_KEY) {
-      const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`;
-      const res = await fetch(url, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          contents: [{ parts: [{ text: prompt }] }],
-          generationConfig: { responseMimeType: "application/json" }
-        })
+    if (GEMINI_API_KEY) {
+      console.log('[AI] Calling Gemini SDK for prediction...');
+      const response = await ai.models.generateContent({
+        model: 'gemini-3.6-flash',
+        contents: prompt,
+        config: { temperature: 0.7, maxOutputTokens: 1000, responseMimeType: "application/json" }
       });
-      const data = await res.json();
-      return data.candidates?.[0]?.content?.parts?.[0]?.text || null;
+      console.log('[AI] Raw Gemini response:', JSON.stringify(response));
+      return response.text || null;
     } 
-    else if (AI_PROVIDER === 'nvidia' && NVIDIA_API_KEY) {
-      const res = await fetch('https://integrate.api.nvidia.com/v1/chat/completions', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${NVIDIA_API_KEY}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          model: "z-ai/glm-5.2",
-          messages: [{ role: "user", content: prompt }],
-          temperature: 0.7,
-          max_tokens: 1000
-        })
-      });
-      const data = await res.json();
-      return data.choices?.[0]?.message?.content || null;
-    }
     return null;
   } catch (error) {
-    console.error(`[AI] ${AI_PROVIDER} request failed:`, error);
+    console.error('[AI] Gemini prediction request failed:', error);
     Sentry.captureException(error);
     return null;
   }
@@ -114,6 +96,7 @@ export async function generateAndCachePrediction(crop: string, horizon: string) 
   }`;
 
   const aiResponse = await callAIProvider(prompt);
+  console.log('[AI] Parsed response:', aiResponse);
   if (!aiResponse) return;
 
   try {

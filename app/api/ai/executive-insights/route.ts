@@ -3,9 +3,11 @@ import { prisma } from '@/lib/prisma';
 import { requireRoleAuth } from '@/lib/auth';
 import { StaffRole } from '@prisma/client';
 import { getWalletBalance } from '@/lib/finance/ledger-service';
+import { GoogleGenAI } from '@google/genai';
 import * as Sentry from '@sentry/nextjs';
 
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
+const ai = new GoogleGenAI({ apiKey: GEMINI_API_KEY! });
 
 export async function GET(req: NextRequest) {
   try {
@@ -39,15 +41,14 @@ export async function GET(req: NextRequest) {
     let aiResponse = "Executive AI summary unavailable.";
     if (GEMINI_API_KEY) {
       try {
-        const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`;
-        const res = await fetch(url, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }], generationConfig: { temperature: 0.4, maxOutputTokens: 150 } })
+        const response = await ai.models.generateContent({
+          model: 'gemini-3.6-flash',
+          contents: prompt,
+          config: { temperature: 0.4, maxOutputTokens: 150 }
         });
-        if (res.ok) {
-          const data = await res.json();
-          aiResponse = data.candidates?.[0]?.content?.parts?.[0]?.text || aiResponse;
+        
+        if (response.text) {
+          aiResponse = response.text;
         }
       } catch (e) {
         console.error('[AI] Gemini request failed:', e);
