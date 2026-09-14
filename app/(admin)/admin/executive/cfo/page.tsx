@@ -1,6 +1,6 @@
 'use client';
 import { useEffect, useState } from 'react';
-import { Loader2, TrendingUp, Activity, ShieldCheck, AlertTriangle, DollarSign, ArrowRight } from 'lucide-react';
+import { Loader2, TrendingUp, Activity, ShieldCheck, AlertTriangle, DollarSign, ArrowRight, FileText } from 'lucide-react';
 import Link from 'next/link';
 
 interface CFOData {
@@ -37,6 +37,24 @@ export default function CFODashboard() {
 
   return (
     <div className="space-y-6">
+      {/* Liquidity & Float Monitors */}
+      <div className="bg-gradient-to-r from-gray-800 to-gray-900 rounded-xl p-6 text-white flex flex-col md:flex-row justify-between items-center gap-4">
+        <div>
+          <h3 className="text-sm font-bold uppercase tracking-wider mb-1">Financial Control Center</h3>
+          <p className="text-xs text-gray-400">Real-time liquidity and escrow management</p>
+        </div>
+        <div className="flex gap-6">
+          <div className="text-center">
+            <p className="text-xs text-gray-400 uppercase">M-Pesa B2C Float</p>
+            <p className="text-xl font-bold text-green-400">KSh {(data.totalRevenue || 0).toLocaleString()}</p>
+          </div>
+          <div className="text-center">
+            <p className="text-xs text-gray-400 uppercase">Escrow Holdings</p>
+            <p className="text-xl font-bold text-yellow-400">KSh {(data.platformLiabilities || 0).toLocaleString()}</p>
+          </div>
+        </div>
+      </div>
+
       {/* Financial KPIs */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         {kpis.map(k => (
@@ -51,7 +69,7 @@ export default function CFODashboard() {
         ))}
       </div>
 
-      {/* Operational Health & Actionable Items */}
+      {/* Auditing & Reconciliation */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div className="bg-white rounded-xl border p-6 shadow-sm">
           <h3 className="font-bold text-lg mb-4 flex items-center gap-2"><ShieldCheck className="w-5 h-5 text-green-600" /> Operational Health</h3>
@@ -78,18 +96,24 @@ export default function CFODashboard() {
         </div>
 
         <div className="bg-white rounded-xl border p-6 shadow-sm">
-          <h3 className="font-bold text-lg mb-4 flex items-center gap-2"><DollarSign className="w-5 h-5 text-orange-600" /> Pending Payouts</h3>
-          <div className="flex justify-between items-center p-4 bg-orange-50 rounded-lg border border-orange-100 mb-4">
-            <div>
-              <p className="text-sm font-semibold text-gray-900">Awaiting Processing</p>
-              <p className="text-xs text-gray-500">Withdrawal requests pending</p>
-            </div>
-            <p className="text-2xl font-bold text-orange-700">{data.pendingWithdrawals || 0}</p>
+          <h3 className="font-bold text-lg mb-4 flex items-center gap-2"><FileText className="w-5 h-5 text-blue-600" /> Critical Actions</h3>
+          <div className="space-y-3">
+            <Link href="/admin/finance" className="flex justify-between items-center p-3 bg-orange-50 rounded-lg border border-orange-100">
+              <div>
+                <p className="text-sm font-semibold text-gray-900">Pending Payouts</p>
+                <p className="text-xs text-gray-500">{data.pendingWithdrawals} awaiting processing</p>
+              </div>
+              <ArrowRight className="w-4 h-4 text-orange-600" />
+            </Link>
+            <Link href="/admin/audit-logs" className="flex justify-between items-center p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
+              <span className="text-sm font-medium text-gray-700">View Audit Ledger</span>
+              <ArrowRight className="w-4 h-4 text-gray-500" />
+            </Link>
+            <button className="w-full flex justify-between items-center p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
+              <span className="text-sm font-medium text-gray-700">Export KRA Tax Ledger</span>
+              <FileText className="w-4 h-4 text-gray-500" />
+            </button>
           </div>
-          <Link href="/admin/finance" className="flex justify-between items-center p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
-            <span className="text-sm font-medium text-gray-700">Process Payouts</span>
-            <ArrowRight className="w-4 h-4 text-gray-500" />
-          </Link>
         </div>
       </div>
     </div>

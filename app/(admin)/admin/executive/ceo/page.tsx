@@ -1,6 +1,6 @@
 'use client';
 import { useEffect, useState } from 'react';
-import { Loader2, TrendingUp, Users, Brain, FileText, Sparkles, Activity, ArrowRight } from 'lucide-react';
+import { Loader2, TrendingUp, Users, Brain, FileText, Sparkles, Activity, ArrowRight, Target } from 'lucide-react';
 import Link from 'next/link';
 
 interface CEOData {
@@ -49,13 +49,23 @@ export default function CEODashboard() {
 
   return (
     <div className="space-y-6">
-      {/* AI Executive Brief */}
-      <div className="bg-linear-to-br from-[#00703C] to-[#004d29] rounded-xl shadow-lg p-6 text-white">
-        <div className="flex items-center gap-2 mb-3">
-          <Sparkles className="w-5 h-5" />
-          <h2 className="text-sm font-bold uppercase tracking-wider">AI Executive Brief</h2>
+      {/* AI Executive Brief & Strategic Vision */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="lg:col-span-2 bg-gradient-to-br from-gray-800 to-gray-900 rounded-xl shadow-lg p-6 text-white">
+          <div className="flex items-center gap-2 mb-3">
+            <Sparkles className="w-5 h-5 text-green-400" />
+            <h2 className="text-sm font-bold uppercase tracking-wider">AI Executive Brief</h2>
+          </div>
+          <p className="text-sm italic text-gray-300">&ldquo;{aiBrief}&rdquo;</p>
         </div>
-        <p className="text-sm italic">&ldquo;{aiBrief}&rdquo;</p>
+        <div className="bg-white rounded-xl border p-6 shadow-sm">
+          <h3 className="text-sm font-bold uppercase text-gray-500 mb-3 flex items-center gap-2"><Target className="w-4 h-4" /> Strategic Vision</h3>
+          <div className="space-y-2 text-sm text-gray-700">
+            <p>• Expand to 5 new counties in Rift Valley</p>
+            <p>• Onboard 1,000 active farmers by Q4</p>
+            <p>• Secure 3 strategic buyer partnerships</p>
+          </div>
+        </div>
       </div>
 
       {/* Growth & Financial KPIs */}
