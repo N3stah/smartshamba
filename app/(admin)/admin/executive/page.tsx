@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { ArrowLeft, Loader2, TrendingUp, Users, DollarSign, Activity, ShieldCheck, Brain, AlertTriangle, Download, Truck, FileText, Sparkles, CloudRain } from 'lucide-react';
 import CTODashboard from './cto/page';
+import PMDashboard from './pm/page';
 
 interface ExecutiveData {
   ceo: {
@@ -43,7 +44,7 @@ export default function ExecutiveDashboardPage() {
   const [aiBrief, setAiBrief] = useState<string>('');
   const [alerts, setAlerts] = useState<Alert[]>([]);
   const [loading, setLoading] = useState(true);
-  const [tab, setTab] = useState<'CEO' | 'CFO' | 'CTO'>('CEO');
+  const [tab, setTab] = useState<'CEO' | 'CFO' | 'CTO' | 'PM'>('CEO');
 
   useEffect(() => {
     Promise.all([
@@ -109,7 +110,7 @@ export default function ExecutiveDashboardPage() {
 
       {/* Tabs */}
       <div className="flex border-b border-gray-200">
-        {(['CEO', 'CFO', 'CTO'] as const).map(t => (
+        {(['CEO', 'CFO', 'CTO', 'PM'] as const).map(t => (
           <button key={t} onClick={() => setTab(t)} className={`px-4 py-2 text-sm font-medium ${tab === t ? 'text-[#00703C] border-b-2 border-[#00703C]' : 'text-gray-500'}`}>{t} View</button>
         ))}
       </div>
@@ -184,6 +185,11 @@ export default function ExecutiveDashboardPage() {
             <p className="text-xs text-gray-400 mt-1">Awaiting processing</p>
           </div>
         </div>
+      )}
+
+      {/* PM View */}
+      {tab === 'PM' && (
+        <PMDashboard />
       )}
 
       {/* CTO View */}
