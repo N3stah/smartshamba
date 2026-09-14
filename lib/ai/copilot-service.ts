@@ -75,7 +75,7 @@ export async function streamChatResponse(
   ---
   USER QUESTION: ${message}`;
 
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:streamGenerateContent?key=${GEMINI_API_KEY}`;
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:streamGenerateContent?key=${GEMINI_API_KEY}`;
   
   const res = await fetch(url, {
     method: 'POST',
@@ -87,7 +87,9 @@ export async function streamChatResponse(
   });
 
   if (!res.ok || !res.body) {
-    throw new Error('Gemini streaming failed');
+    const errorText = await res.text();
+    console.error('[AI Service] Gemini Error:', res.status, errorText);
+    throw new Error(`Gemini streaming failed: ${errorText}`);
   }
 
   const decoder = new TextDecoder();
