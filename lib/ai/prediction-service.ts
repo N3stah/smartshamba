@@ -1,12 +1,10 @@
 import { prisma } from '@/lib/prisma';
-import { GoogleGenAI } from '@google/genai';
 import type { AIRecommendation } from '@prisma/client';
 import * as Sentry from '@sentry/nextjs';
 
 const AI_PROVIDER = process.env.AI_PROVIDER || 'gemini';
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
 const NVIDIA_API_KEY = process.env.NVIDIA_API_KEY;
-const ai = new GoogleGenAI({ apiKey: GEMINI_API_KEY! });
 
 interface PredictionResult {
   predictedPrice: number;
@@ -55,19 +53,35 @@ async function collectMarketData(crop: string) {
 
 async function callAIProvider(prompt: string): Promise<string | null> {
   try {
-    if (GEMINI_API_KEY) {
-      console.log('[AI] Calling Gemini SDK for prediction...');
-      const response = await ai.models.generateContent({
-        model: 'gemini-3.6-flash',
-        contents: prompt,
-        config: { temperature: 0.7, maxOutputTokens: 1000, responseMimeType: "application/json" }
+    if (NVIDIA_API_KEY) {
+      console.log('[AI] Calling NVIDIA (GPT-OSS-20B) for prediction...');
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 60000); // 60s timeout
+      
+      const res = await fetch('https://integrate.api.nvidia.com/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${NVIDIA_API_KEY}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          model: "openai/gpt-oss-20b",
+          messages: [{ role: "user", content: prompt }],
+          temperature: 0.7,
+          max_tokens: 1000
+        }),
+        signal: controller.signal
       });
-      console.log('[AI] Raw Gemini response:', JSON.stringify(response));
-      return response.text || null;
+      
+      clearTimeout(timeoutId);
+      const data = await res.json();
+      const content = data.choices?.[0]?.message?.content || null;
+      console.log('[AI] Raw NVIDIA response:', content);
+      return content;
     } 
     return null;
   } catch (error) {
-    console.error('[AI] Gemini prediction request failed:', error);
+    console.error('[AI] NVIDIA prediction request failed:', error);
     Sentry.captureException(error);
     return null;
   }
