@@ -33,9 +33,27 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // AI Chat is stateless to avoid conflicts with Transaction Conversations
-    const convId = conversationId || 'ai-session';
-    const history: { role: 'user' | 'ai', content: string }[] = [];
+    // 1. Get or Create AI Conversation
+    let convId = conversationId;
+    if (!convId) {
+      const conv = await prisma.aiConversation.create({
+        data: { userId, role, title: message.substring(0, 30) }
+      });
+      convId = conv.id;
+    }
+
+    // 2. Save User Message
+    await prisma.aiMessage.create({
+      data: { conversationId: convId, role: 'user', content: message }
+    });
+
+    // 3. Fetch History
+    const dbHistory = await prisma.aiMessage.findMany({
+      where: { conversationId: convId },
+      orderBy: { createdAt: 'desc' },
+      take: 10
+    });
+    const history = dbHistory.reverse().map(h => ({ role: h.role as 'user' | 'ai', content: h.content }));
 
     // 4. Stream AI Response
     const aiStream = await streamChatResponse(message, role, userId, history as any);
@@ -73,6 +91,11 @@ export async function POST(req: NextRequest) {
               fullAiText = "I understood you want to create a listing, but I couldn't parse the details. Please use the 'Sell Produce' page to create it manually.";
             }
           }
+
+          // Save the complete AI text to DB when stream finishes
+          await prisma.aiMessage.create({
+            data: { conversationId: convId!, role: 'ai', content: fullAiText }
+          }).catch(dbErr => console.error('[AI] Failed to save AI message:', dbErr));
         }
       }
     });

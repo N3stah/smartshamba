@@ -903,3 +903,25 @@ model Staff {
 
   auditLogs    AuditLog[]
 }
+
+
+// --- SmartShamba AI Assistant Persistence ---
+model AiConversation {
+  id        String      @id @default(cuid())
+  userId    String
+  role      String      // "FARMER" | "BUYER" | "ADMIN"
+  title     String?
+  createdAt DateTime    @default(now())
+  messages  AiMessage[]
+}
+
+model AiMessage {
+  id             String         @id @default(cuid())
+  conversationId String
+  role           String         // "user" | "ai"
+  content        String         @db.Text
+  createdAt      DateTime       @default(now())
+  conversation   AiConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  @@index([conversationId])
+}
