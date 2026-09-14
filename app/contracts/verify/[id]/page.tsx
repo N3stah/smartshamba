@@ -1,6 +1,6 @@
 'use client';
 import { useEffect, useState } from 'react';
-import { useSearchParams } from 'next/navigation';
+import { } from 'next/navigation';
 import { CheckCircle, XCircle, Loader2, ShieldCheck } from 'lucide-react';
 
 export default function ContractVerificationPage({ params }: { params: { id: string } }) {

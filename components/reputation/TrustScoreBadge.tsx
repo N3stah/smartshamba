@@ -1,5 +1,5 @@
 'use client';
-import { Shield, Award, Star } from 'lucide-react';
+import { Star } from 'lucide-react';
 
 interface TrustScore {
   score: number;

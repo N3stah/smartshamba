@@ -56,7 +56,7 @@ export default function TransportBooking({ transactionId, bags, pickupCounty, dr
       } else {
         throw new Error('Booking failed');
       }
-    } catch (err) {
+    } catch {
       setBookingStatus('error');
     }
   };

@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
 import { requireAdminAuth } from '@/lib/auth';
 import { getAuditLogs } from '@/lib/auditLog';
 import * as Sentry from '@sentry/nextjs';

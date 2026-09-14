@@ -2,7 +2,7 @@
 import SmartShambaLogo from '@/components/SmartShambaLogo';
 import { useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { Eye, EyeOff, Loader2 } from 'lucide-react';
+import { Eye, EyeOff } from 'lucide-react';
 
 function LoginForm() {
   const [phone, setPhone] = useState('');

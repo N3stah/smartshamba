@@ -117,7 +117,7 @@ export async function GET(req: NextRequest) {
       const vercelConfigRaw = fs.readFileSync(vercelConfigPath, 'utf-8');
       const vercelConfigParsed = JSON.parse(vercelConfigRaw);
       cron = vercelConfigParsed.crons || [];
-    } catch (e) {
+    } catch {
       // Fallback if vercel.json is not found
       cron = [];
     }

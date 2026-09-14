@@ -29,7 +29,7 @@ export async function GET(req: NextRequest) {
       farmers: farmers.map(f => ({ ...f, name: farmerMap.get(f.userId)?.name, location: farmerMap.get(f.userId)?.location })),
       buyers: buyers.map(b => ({ ...b, name: buyerMap.get(b.userId)?.name, location: buyerMap.get(b.userId)?.location }))
     });
-  } catch (error) {
+  } catch {
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
 }

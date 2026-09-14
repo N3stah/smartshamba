@@ -6,7 +6,7 @@ import SalesTrendChart from '@/components/analytics/SalesTrendChart';
 import CropPerformanceChart from '@/components/analytics/CropPerformanceChart';
 import InsightCard from '@/components/analytics/InsightCard';
 import DateFilter from '@/components/analytics/DateFilter';
-import { Users, ShieldCheck, Building2, Package, ArrowLeft, DollarSign, TrendingUp, MessageSquare, KeyRound, AlertTriangle, CheckCircle, UsersRound, Coins, Trophy, Clock } from 'lucide-react';
+import { Users, ShieldCheck, Building2, Package, ArrowLeft, DollarSign, MessageSquare, KeyRound, AlertTriangle, CheckCircle, UsersRound, Coins, Trophy, Clock } from 'lucide-react';
 
 export const dynamic = 'force-dynamic';
 

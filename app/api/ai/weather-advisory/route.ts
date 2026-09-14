@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
 import * as Sentry from '@sentry/nextjs';
 
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY;

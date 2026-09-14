@@ -75,7 +75,7 @@ export default function ChatWindow({ transactionId, currentUserId, viewerRole }:
       setMessages(prev => prev.map(m => 
         m.id === tempId ? { ...m, id: data.message.id, status: 'sent' } : m
       ));
-    } catch (err) {
+    } catch {
       // Mark as failed, but keep the message in the UI
       setMessages(prev => prev.map(m => 
         m.id === tempId ? { ...m, status: 'failed' } : m

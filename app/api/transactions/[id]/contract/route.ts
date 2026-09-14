@@ -14,7 +14,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
 
     if (!contract) return NextResponse.json({ error: 'Contract not found' }, { status: 404 });
     return NextResponse.json(contract);
-  } catch (error) {
+  } catch {
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
 }
@@ -38,9 +38,9 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
 
     const contract = await signContract(id, userType, signatureName, farmerPhone || buyerPhone || 'unknown');
     return NextResponse.json({ success: true, contract });
-  } catch (error: any) {
+  } catch (error) {
     console.error('[API] Contract sign error:', error);
     Sentry.captureException(error);
-    return NextResponse.json({ error: error.message || 'Internal Server Error' }, { status: 500 });
+    return NextResponse.json({ error: (error as Error).message || 'Internal Server Error' }, { status: 500 });
   }
 }

@@ -1,7 +1,7 @@
 'use client';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Loader2, Truck, Phone, MapPin, Calendar, DollarSign, Package, CheckCircle, Star } from 'lucide-react';
+import { Loader2, Truck, Phone, MapPin, Calendar, DollarSign, Package, CheckCircle } from 'lucide-react';
 import PasswordSetter from '@/components/PasswordSetter';
 
 export default function TransportProfilePage() {

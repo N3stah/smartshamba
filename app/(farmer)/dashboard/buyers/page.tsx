@@ -2,7 +2,7 @@ export const dynamic = 'force-dynamic';
 
 
 import { prisma } from '@/lib/prisma';
-import { ShieldCheck, MapPin, Star } from 'lucide-react';
+import { ShieldCheck, MapPin } from 'lucide-react';
 
 export default async function FarmerBuyerDirectory() {
   const buyers = await prisma.buyer.findMany({ 

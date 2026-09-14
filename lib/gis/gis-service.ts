@@ -1,4 +1,4 @@
-import * as Sentry from '@sentry/nextjs';
+
 
 /**
  * Calculates distance between two coordinates in Km using Haversine formula.

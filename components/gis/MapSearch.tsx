@@ -27,7 +27,7 @@ export default function MapSearch({ onPlaceSelected }: MapSearchProps) {
       } else {
         setError(data.error || 'Location not found.');
       }
-    } catch (err) {
+    } catch {
       setError('Failed to search location.');
     } finally {
       setLoading(false);

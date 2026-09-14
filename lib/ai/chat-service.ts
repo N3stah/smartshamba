@@ -21,7 +21,7 @@ async function callGemini(prompt: string): Promise<string | null> {
     if (!res.ok) return null;
     const data = await res.json();
     return data.candidates?.[0]?.content?.parts?.[0]?.text || null;
-  } catch (e) { return null; }
+  } catch { return null; }
 }
 
 async function callNvidia(prompt: string): Promise<string | null> {
@@ -40,7 +40,7 @@ async function callNvidia(prompt: string): Promise<string | null> {
     if (!res.ok) return null;
     const data = await res.json();
     return data.choices?.[0]?.message?.content || null;
-  } catch (e) { return null; }
+  } catch { return null; }
 }
 
 export async function handleChatMessage(rawMessage: string, role: 'FARMER' | 'BUYER' | 'ADMIN', phone: string) {

@@ -23,7 +23,7 @@ export async function GET(req: NextRequest) {
         'Content-Disposition': 'attachment; filename="smartshamba_transactions.csv"',
       },
     });
-  } catch (error) {
+  } catch {
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
 }

@@ -1,6 +1,6 @@
 'use client';
 import { useState, useRef, useEffect } from 'react';
-import { Brain, Send, X, Loader2 } from 'lucide-react';
+import { Brain, Send, X } from 'lucide-react';
 
 interface Message {
   role: 'user' | 'ai';
@@ -54,7 +54,7 @@ export default function AIChatWidget({ role }: { role: 'FARMER' | 'BUYER' | 'ADM
       } else {
         setMessages(prev => [...prev, { role: 'ai', text: "I'm having trouble connecting to the market data right now." }]);
       }
-    } catch (err) {
+    } catch {
       setMessages(prev => [...prev, { role: 'ai', text: "Network error. Please try again." }]);
     } finally {
       setLoading(false);

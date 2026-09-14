@@ -1,6 +1,6 @@
 'use client';
 import { useState, useEffect } from 'react';
-import { Loader2, FileText, Plus, Trash2 } from 'lucide-react';
+import { Loader2, FileText, Plus } from 'lucide-react';
 
 interface Clause {
   title: string;

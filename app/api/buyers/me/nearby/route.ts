@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { getBuyerSession } from '@/lib/auth';
-import { Prisma } from '@prisma/client';
+import { } from '@prisma/client';
 
 export async function GET(req: NextRequest) {
   try {

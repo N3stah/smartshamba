@@ -34,7 +34,7 @@ export default function LocationSetter({ hasLocation }: { hasLocation: boolean }
           } else {
             throw new Error('Failed to save location');
           }
-        } catch (err) {
+        } catch {
           setStatus('error');
           setMessage('Failed to save location. Please try again.');
         } finally {
@@ -65,7 +65,7 @@ export default function LocationSetter({ hasLocation }: { hasLocation: boolean }
       } else {
         throw new Error('Failed to save location');
       }
-    } catch (e) {
+    } catch {
       setStatus('error');
       setMessage('Failed to save location.');
     } finally {

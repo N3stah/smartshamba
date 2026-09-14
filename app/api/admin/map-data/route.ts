@@ -14,7 +14,7 @@ export async function GET(req: NextRequest) {
     ]);
 
     return NextResponse.json({ farmers, buyers, warehouses });
-  } catch (error) {
+  } catch {
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
 }

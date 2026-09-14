@@ -4,7 +4,7 @@ import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import { prisma } from '@/lib/prisma';
-import { ArrowLeft, Brain, CheckCircle } from 'lucide-react';
+import { ArrowLeft, Brain } from 'lucide-react';
 
 
 export default async function MarketReportsPage() {

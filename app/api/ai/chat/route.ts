@@ -87,7 +87,7 @@ export async function POST(req: NextRequest) {
                 });
                 fullAiText = "✅ Done! I've created the produce listing for you. You can view it in your 'Sell Produce' dashboard.";
               }
-            } catch (parseError) {
+            } catch {
               fullAiText = "I understood you want to create a listing, but I couldn't parse the details. Please use the 'Sell Produce' page to create it manually.";
             }
           }

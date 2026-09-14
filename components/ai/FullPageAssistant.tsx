@@ -82,7 +82,7 @@ export default function FullPageAssistant({ role }: { role: 'FARMER' | 'BUYER' |
           return updated;
         });
       }
-    } catch (err) {
+    } catch {
       setMessages(prev => [...prev, { role: 'ai', content: "I'm having trouble connecting right now." }]);
     } finally {
       setLoading(false);
@@ -101,7 +101,7 @@ export default function FullPageAssistant({ role }: { role: 'FARMER' | 'BUYER' |
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ messageId, feedback })
       });
-    } catch (e) {
+    } catch {
       // Revert on error
       setMessages(prev => prev.map(m => m.id === messageId ? { ...m, feedback: null } : m));
     }

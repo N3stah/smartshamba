@@ -49,7 +49,7 @@ export default function ProWeatherDashboard({ county, weatherData, advisoryData 
       const data = await res.json();
       if (res.ok) setChatRes(data.response);
       else setChatRes(data.error || 'Sorry, I could not process that.');
-    } catch (e) { setChatRes('Network error.'); }
+    } catch { setChatRes('Network error.'); }
     finally { setChatLoading(false); setChatInput(''); }
   };
 

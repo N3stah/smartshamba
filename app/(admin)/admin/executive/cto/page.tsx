@@ -1,7 +1,7 @@
 'use client';
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { Loader2, ShieldCheck, Database, Cloud, Truck, Lock, Clock, Activity, Server, ChevronRight } from 'lucide-react';
+import { Loader2, ShieldCheck, Database, Clock, Activity, Server, ChevronRight } from 'lucide-react';
 
 interface CTOMetrics {
   system: { nodeVersion: string; platform: string; uptime: number; env: string; };

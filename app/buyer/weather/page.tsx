@@ -4,7 +4,7 @@ import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import { prisma } from '@/lib/prisma';
-import { ArrowLeft, CloudRain, TrendingUp, AlertTriangle, ShoppingCart, Clock } from 'lucide-react';
+import { ArrowLeft, CloudRain } from 'lucide-react';
 import ProWeatherDashboard from '@/components/weather/ProWeatherDashboard';
 import WeatherAlertBanner from '@/components/weather/WeatherAlertBanner';
 import ProcurementIntelligence from '@/components/weather/ProcurementIntelligence';
