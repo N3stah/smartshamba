@@ -9,7 +9,7 @@ import { useI18n } from '@/lib/i18n';
 import { 
   LayoutDashboard, ArrowLeftRight, Building2, Users, Bell, Megaphone, 
   ShieldCheck, LogOut, Menu, X, BarChart2, Package, 
-  ChevronDown, CloudRain, Truck, Map, Fence, Wallet, FileText, Brain
+  ChevronDown, CloudRain, Truck, Map, Fence, Wallet, FileText, Brain, Settings
 } from 'lucide-react';
 
 interface NavItem {
@@ -50,6 +50,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         { href: '/admin/advisories', label: 'Advisories', icon: Megaphone },
         { href: '/admin/audit-logs', label: 'Audit Logs', icon: ShieldCheck },
         { href: '/admin/reports', label: 'Reports', icon: Package },
+        { href: '/admin/settings', label: 'Settings', icon: Settings },
       ]
     },
     {
