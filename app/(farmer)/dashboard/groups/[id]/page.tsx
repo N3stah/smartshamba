@@ -9,6 +9,8 @@ import JoinGroupButton from "@/components/groups/JoinGroupButton";
 import UpdatePledgeButton from "@/components/groups/UpdatePledgeButton";
 import ConfirmGroupSaleButton from "@/components/groups/ConfirmGroupSaleButton";
 import WhatsAppGroupManager from "@/components/groups/WhatsAppGroupManager";
+import { Truck } from 'lucide-react';
+import ArrangeGroupTransportButton from '@/components/transport/ArrangeGroupTransportButton';
 
 type PageProps = {
   params: Promise<{ id: string }>;
