@@ -1,3 +1,7 @@
+/**
+ * @deprecated This component is deprecated. Use ArrangeTransportButton instead.
+ * This component calls the legacy /api/transport/book route.
+ */
 'use client';
 import { useState, useEffect } from 'react';
 import { Truck, Loader2, CheckCircle, MapPin, Package, Sparkles, AlertTriangle } from 'lucide-react';

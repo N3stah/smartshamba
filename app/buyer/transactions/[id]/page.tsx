@@ -7,6 +7,7 @@ import ChatWindow from '@/components/chat/ChatWindow';
 import StatusBadge from '@/components/ui/StatusBadge';
 import TransactionActions from '@/components/TransactionActions';
 import { Truck, MapPin, Calendar, FileText } from 'lucide-react';
+import ArrangeTransportButton from '@/components/transport/ArrangeTransportButton';
 
 export default async function BuyerTransactionDetail({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -19,7 +20,16 @@ export default async function BuyerTransactionDetail({ params }: { params: Promi
 
   const transaction = await prisma.transaction.findUnique({
     where: { id },
-    include: { farmer: true },
+    include: { 
+      farmer: true,
+      transportRequest: true,
+      transportBooking: { 
+        include: { 
+          provider: { select: { name: true } }, 
+          vehicle: { select: { registrationNumber: true } } 
+        } 
+      }
+    },
   });
 
   if (!transaction) redirect('/buyer/transactions');
@@ -64,6 +74,8 @@ export default async function BuyerTransactionDetail({ params }: { params: Promi
           <h3 className="text-sm font-semibold text-gray-700 mb-3">Actions</h3>
           <TransactionActions transactionId={transaction.id} currentStatus={transaction.status} userRole="BUYER" />
         </div>
+        
+        <ArrangeTransportButton transactionId={transaction.id} userRole="BUYER" existingRequest={transaction.transportRequest} existingBooking={transaction.transportBooking} />
       </div>
 
       <div>
