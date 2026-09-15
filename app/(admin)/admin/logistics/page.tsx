@@ -101,7 +101,7 @@ export default async function AdminLogisticsPage() {
                 <tr key={b.id} className="hover:bg-gray-50">
                   <td className="p-4">
                     <p className="font-medium text-gray-900">{b.provider.name}</p>
-                    <p className="text-xs text-gray-500">{b.provider.vehicleType}</p>
+                    <p className="text-xs text-gray-500">{b.provider.contactPerson || "N/A"}</p>
                   </td>
                   <td className="p-4">
                     <span className={`inline-flex px-2 py-1 rounded-full text-xs font-bold ${

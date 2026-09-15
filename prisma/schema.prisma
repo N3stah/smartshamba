@@ -10,15 +10,15 @@ datasource db {
 
 model County {
   transportProviders TransportProvider[]
-  id           String        @id @default(cuid())
-  code         String        @unique
-  name         String        @unique
-  wards        Ward[]
-  farmers      Farmer[]
-  buyers       Buyer[]
-  farmerGroups FarmerGroup[]
-  createdAt    DateTime      @default(now())
-  advisories             Advisory[]
+  id                 String              @id @default(cuid())
+  code               String              @unique
+  name               String              @unique
+  wards              Ward[]
+  farmers            Farmer[]
+  buyers             Buyer[]
+  farmerGroups       FarmerGroup[]
+  createdAt          DateTime            @default(now())
+  advisories         Advisory[]
 }
 
 model Ward {
@@ -35,27 +35,27 @@ model Ward {
 }
 
 model Farmer {
-  latitude Float?
-  longitude Float?
-  isFrozen Boolean @default(false)
-  frozenReason String?
-  frozenAt DateTime?
+  latitude          Float?
+  longitude         Float?
+  isFrozen          Boolean            @default(false)
+  frozenReason      String?
+  frozenAt          DateTime?
   transportBookings TransportBooking[]
-  contractsAsSeller Contract[] @relation("ContractSeller")
-  wallet Wallet? @relation("FarmerWallet")
-  aiInsights AIInsight[] @relation("FarmerAIInsights")
-  language        String   @default("en") // i18n: "en" | "sw"
-  id          String   @id @default(cuid())
-  nationalId  String?  // KYC-lite: 8-digit Kenya National ID
-  password    String?
-  verified    Boolean  @default(false)
-  phone     String   @unique
-  name      String?
-  location  String?
-  countyId  String?
-  wardId    String?
-  village   String?
-  createdAt DateTime @default(now())
+  contractsAsSeller Contract[]         @relation("ContractSeller")
+  wallet            Wallet?            @relation("FarmerWallet")
+  aiInsights        AIInsight[]        @relation("FarmerAIInsights")
+  language          String             @default("en") // i18n: "en" | "sw"
+  id                String             @id @default(cuid())
+  nationalId        String? // KYC-lite: 8-digit Kenya National ID
+  password          String?
+  verified          Boolean            @default(false)
+  phone             String             @unique
+  name              String?
+  location          String?
+  countyId          String?
+  wardId            String?
+  village           String?
+  createdAt         DateTime           @default(now())
 
   transactions Transaction[]
   ratings      Rating[]
@@ -69,76 +69,78 @@ model Farmer {
 
   notifications          Notification[]
   notificationPreference NotificationPreference?
-  ProduceListing        ProduceListing[]
+  ProduceListing         ProduceListing[]
 }
 
 model Buyer {
-  latitude Float?
-  longitude Float?
-  isFrozen Boolean @default(false)
-  frozenReason String?
-  frozenAt DateTime?
-  contractsAsBuyer Contract[] @relation("ContractBuyer")
-  wallet Wallet? @relation("BuyerWallet")
-  aiInsights AIInsight[] @relation("BuyerAIInsights")
-  phone           String? @unique // Added for USSD/OTP login
-  password    String?
-  language        String   @default("en") // i18n: "en" | "sw"
-  id           String    @id @default(cuid())
-  name         String
-  location     String
-  verified     Boolean   @default(false)
-  capacityBags Int
-  pricePerBag  Float
-  active       Boolean   @default(true)
-  countyId     String?
-  wardId       String?
-  village      String?
-  createdAt    DateTime? @default(now()) @db.Timestamptz(6)
+  latitude         Float?
+  longitude        Float?
+  isFrozen         Boolean     @default(false)
+  frozenReason     String?
+  frozenAt         DateTime?
+  contractsAsBuyer Contract[]  @relation("ContractBuyer")
+  wallet           Wallet?     @relation("BuyerWallet")
+  aiInsights       AIInsight[] @relation("BuyerAIInsights")
+  phone            String?     @unique // Added for USSD/OTP login
+  password         String?
+  language         String      @default("en") // i18n: "en" | "sw"
+  id               String      @id @default(cuid())
+  name             String
+  location         String
+  verified         Boolean     @default(false)
+  capacityBags     Int
+  pricePerBag      Float
+  active           Boolean     @default(true)
+  countyId         String?
+  wardId           String?
+  village          String?
+  createdAt        DateTime?   @default(now()) @db.Timestamptz(6)
 
   transactions      Transaction[]
   ratings           Rating[]
   disputes          Dispute[]
   groupTransactions GroupTransaction[]
 
-  county County? @relation(fields: [countyId], references: [id])
-  ward   Ward?   @relation(fields: [wardId], references: [id])
-  notifications          Notification[]
-  BuyerDemand           BuyerDemand[]
+  county        County?        @relation(fields: [countyId], references: [id])
+  ward          Ward?          @relation(fields: [wardId], references: [id])
+  notifications Notification[]
+  BuyerDemand   BuyerDemand[]
 }
 
 model Transaction {
-  transportBooking TransportBooking?
+  transportBooking  TransportBooking?
+  transportRequest  TransportRequest?
   negotiationOffers NegotiationOffer[]
-  contract Contract?
-  ledgerEntries LedgerEntry[]
-  id           String   @id @default(cuid())
-  farmerId     String
-  buyerId      String
-  produceListingId String?
-  buyerDemandId    String?
-  conversation    Conversation?
-  b2cPayout       B2CPayout?
-  createdAt    DateTime @default(now())
-  mpesaRef     String?
-  pricePerBag  Float
-  quantityBags Int
-  reference    String   @unique
-  totalValue   Float
-  status          TxStatus @default(PENDING)
-  deliveryMethod  String?  // "PICKUP" | "DELIVERY"
-  deliveryLocation String?
-  scheduledDate   DateTime?
-  fulfillmentNotes String?
-  platformFee     Float    @default(0)
-  b2cRef          String?  // M-PESA B2C ConversationID
+  contract          Contract?
+  ledgerEntries     LedgerEntry[]
+  id                String             @id @default(cuid())
+  farmerId          String
+  buyerId           String
+  produceListingId  String?
+  buyerDemandId     String?
+  conversation      Conversation?
+  b2cPayout         B2CPayout?
+  createdAt         DateTime           @default(now())
+  mpesaRef          String?
+  pricePerBag       Float
+  quantityBags      Int
+  reference         String             @unique
+  totalValue        Float
+  status            TxStatus           @default(PENDING)
+  deliveryMethod    String? // "PICKUP" | "DELIVERY"
+  deliveryLocation  String?
+  scheduledDate     DateTime?
+  fulfillmentNotes  String?
+  platformFee       Float              @default(0)
+  b2cRef            String? // M-PESA B2C ConversationID
 
   buyer  Buyer  @relation(fields: [buyerId], references: [id])
   farmer Farmer @relation(fields: [farmerId], references: [id])
 
-  ratings Rating[]
-  dispute Dispute?
-  qualityAssessment      QualityAssessment?
+  ratings           Rating[]
+  dispute           Dispute?
+  qualityAssessment QualityAssessment?
+
   @@index([createdAt])
   @@index([buyerId])
   @@index([farmerId])
@@ -146,9 +148,9 @@ model Transaction {
 }
 
 model FarmerGroup {
-  id          String  @id @default(cuid())
-  name        String
-  description String?
+  id           String  @id @default(cuid())
+  name         String
+  description  String?
   whatsappLink String?
 
   countyId String?
@@ -194,7 +196,8 @@ model GroupMember {
 
 model GroupTransaction {
   transportBookings TransportBooking[] @relation("TransportBookings")
-  id String @id @default(cuid())
+  transportRequests TransportRequest[]
+  id                String             @id @default(cuid())
 
   groupId String
   buyerId String
@@ -289,7 +292,7 @@ model Rating {
 }
 
 model Dispute {
-  adminNotes      String?  // Internal notes for escalated disputes
+  adminNotes    String? // Internal notes for escalated disputes
   id            String        @id @default(cuid())
   transactionId String        @unique
   farmerId      String
@@ -343,8 +346,8 @@ model Notification {
   createdAt        DateTime           @default(now())
   updatedAt        DateTime           @updatedAt
 
-  farmer           Farmer?            @relation(fields: [farmerId], references: [id])
-  buyer            Buyer?             @relation(fields: [buyerId], references: [id])
+  farmer Farmer? @relation(fields: [farmerId], references: [id])
+  buyer  Buyer?  @relation(fields: [buyerId], references: [id])
 
   @@index([farmerId])
   @@index([type])
@@ -363,7 +366,7 @@ model NotificationPreference {
   createdAt          DateTime @default(now())
   updatedAt          DateTime @updatedAt
 
-  farmer             Farmer   @relation(fields: [farmerId], references: [id])
+  farmer Farmer @relation(fields: [farmerId], references: [id])
 }
 
 model Advisory {
@@ -377,41 +380,41 @@ model Advisory {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  county    County?  @relation(fields: [countyId], references: [id])
+  county County? @relation(fields: [countyId], references: [id])
 
   @@index([active])
   @@index([countyId])
 }
 
 model QualityAssessment {
-  id             String      @id @default(cuid())
-  transactionId  String      @unique
+  id             String   @id @default(cuid())
+  transactionId  String   @unique
   moistureAnswer String?
   grainColour    String?
   brokenGrain    String?
   foreignMatter  String?
   notes          String?
-  createdAt      DateTime    @default(now())
+  createdAt      DateTime @default(now())
 
-  transaction    Transaction @relation(fields: [transactionId], references: [id])
+  transaction Transaction @relation(fields: [transactionId], references: [id])
 }
 
 model AuditLog {
   id         String   @id @default(cuid())
-  action     String   // e.g. "SETTLE_TRANSACTION", "UPDATE_BUYER", "RESOLVE_DISPUTE"
-  actorType  String   // "STAFF" | "SYSTEM"
-  actorId    String?  // Staff ID
+  action     String // e.g. "SETTLE_TRANSACTION", "UPDATE_BUYER", "RESOLVE_DISPUTE"
+  actorType  String // "STAFF" | "SYSTEM"
+  actorId    String? // Staff ID
   staffId    String?
   staff      Staff?   @relation(fields: [staffId], references: [id])
-  entityType String   // "Transaction" | "Buyer" | "Dispute" etc.
+  entityType String // "Transaction" | "Buyer" | "Dispute" etc.
   entityId   String
   before     Json?
   after      Json?
-  ipAddress  String?  // IP address of the actor
-  userAgent  String?  // User agent of the actor
-  reason     String?  // Reason for override
+  ipAddress  String? // IP address of the actor
+  userAgent  String? // User agent of the actor
+  reason     String? // Reason for override
   createdAt  DateTime @default(now())
-  
+
   @@index([entityType, entityId])
   @@index([actorType, actorId])
   @@index([createdAt])
@@ -420,12 +423,13 @@ model AuditLog {
 model ProduceListing {
   id           String   @id @default(cuid())
   farmerId     String
-  product      String   // e.g., "Maize", "Beans"
+  product      String // e.g., "Maize", "Beans"
   quantityBags Int
   pricePerBag  Float
   status       String   @default("ACTIVE") // ACTIVE, CLOSED
   createdAt    DateTime @default(now())
   farmer       Farmer   @relation(fields: [farmerId], references: [id])
+
   @@index([farmerId])
 }
 
@@ -438,17 +442,17 @@ model BuyerDemand {
   status       String   @default("ACTIVE") // ACTIVE, CLOSED
   createdAt    DateTime @default(now())
   buyer        Buyer    @relation(fields: [buyerId], references: [id])
+
   @@index([buyerId])
 }
 
-
 model Conversation {
-  id             String       @id @default(cuid())
-  transactionId  String       @unique
-  transaction    Transaction  @relation(fields: [transactionId], references: [id])
-  messages       Message[]
-  createdAt      DateTime     @default(now())
-  updatedAt      DateTime     @updatedAt
+  id            String      @id @default(cuid())
+  transactionId String      @unique
+  transaction   Transaction @relation(fields: [transactionId], references: [id])
+  messages      Message[]
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
 }
 
 model Message {
@@ -456,32 +460,30 @@ model Message {
   conversationId String
   conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
   senderId       String
-  senderType     String       // "FARMER" | "BUYER"
+  senderType     String // "FARMER" | "BUYER"
   body           String
   createdAt      DateTime     @default(now())
 
   @@index([conversationId])
 }
 
-
 model B2CPayout {
-  id                    String   @id @default(cuid())
-  transactionId         String   @unique
-  transaction           Transaction @relation(fields: [transactionId], references: [id])
-  conversationId        String?  // Safaricom ConversationID
+  id                       String      @id @default(cuid())
+  transactionId            String      @unique
+  transaction              Transaction @relation(fields: [transactionId], references: [id])
+  conversationId           String? // Safaricom ConversationID
   originatorConversationID String? // Safaricom OriginatorConversationID
-  amount                Float
-  status                String   @default("PENDING") // PENDING, SUCCESS, FAILED
-  mpesaRef              String?  // M-PESA Transaction ID if successful
-  failureReason         String?
-  createdAt             DateTime @default(now())
-  updatedAt             DateTime @updatedAt
+  amount                   Float
+  status                   String      @default("PENDING") // PENDING, SUCCESS, FAILED
+  mpesaRef                 String? // M-PESA Transaction ID if successful
+  failureReason            String?
+  createdAt                DateTime    @default(now())
+  updatedAt                DateTime    @updatedAt
 }
-
 
 model PushSubscription {
   id        String   @id @default(cuid())
-  userId    String   // Generic ID (Farmer ID or Buyer ID)
+  userId    String // Generic ID (Farmer ID or Buyer ID)
   endpoint  String   @unique
   keys      Json
   createdAt DateTime @default(now())
@@ -496,7 +498,7 @@ enum AIRecommendation {
 }
 
 model MarketPrediction {
-  id              String   @id @default(cuid())
+  id              String           @id @default(cuid())
   crop            String
   region          String
   horizon         String
@@ -504,8 +506,8 @@ model MarketPrediction {
   predictedPrice  Float
   confidenceScore Int
   recommendation  AIRecommendation
-  explanation     String?  @db.Text
-  generatedAt     DateTime @default(now())
+  explanation     String?          @db.Text
+  generatedAt     DateTime         @default(now())
 
   @@unique([crop, region, horizon])
 }
@@ -524,18 +526,18 @@ enum AIInsightType {
 }
 
 model AIInsight {
-  id        String       @id @default(cuid())
+  id        String        @id @default(cuid())
   userId    String
   userType  AIUserType
   type      AIInsightType
   title     String
-  body      String       @db.Text
+  body      String        @db.Text
   data      Json?
-  read      Boolean      @default(false)
-  createdAt DateTime     @default(now())
+  read      Boolean       @default(false)
+  createdAt DateTime      @default(now())
 
   farmer Farmer? @relation("FarmerAIInsights", fields: [userId], references: [id], map: "AIInsight_farmerId_fkey")
-  buyer Buyer? @relation("BuyerAIInsights", fields: [userId], references: [id], map: "AIInsight_buyerId_fkey")
+  buyer  Buyer?  @relation("BuyerAIInsights", fields: [userId], references: [id], map: "AIInsight_buyerId_fkey")
 }
 
 // --- V2-2: Weather Intelligence ---
@@ -562,7 +564,7 @@ model WeatherAlert {
   type      String
   severity  WeatherSeverity
   message   String          @db.Text
-  createdAt DateTime         @default(now())
+  createdAt DateTime        @default(now())
 
   @@unique([county, type])
 }
@@ -588,18 +590,18 @@ enum WalletType {
 }
 
 model Wallet {
-  id            String      @id @default(cuid())
-  type          WalletType  @default(USER)
-  farmerId      String?     @unique
-  buyerId       String?     @unique
-  balance       Float       @default(0)
-  currency      String      @default("KES")
-  lockedBalance Float       @default(0)
-  createdAt     DateTime    @default(now())
-  updatedAt     DateTime    @updatedAt
+  id            String     @id @default(cuid())
+  type          WalletType @default(USER)
+  farmerId      String?    @unique
+  buyerId       String?    @unique
+  balance       Float      @default(0)
+  currency      String     @default("KES")
+  lockedBalance Float      @default(0)
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
 
-  farmer      Farmer?           @relation("FarmerWallet", fields: [farmerId], references: [id])
-  buyer       Buyer?            @relation("BuyerWallet", fields: [buyerId], references: [id])
+  farmer      Farmer?             @relation("FarmerWallet", fields: [farmerId], references: [id])
+  buyer       Buyer?              @relation("BuyerWallet", fields: [buyerId], references: [id])
   entries     LedgerEntry[]
   withdrawals WithdrawalRequest[]
 }
@@ -622,7 +624,7 @@ model LedgerEntry {
   relatedContractId    String?
   createdAt            DateTime        @default(now())
 
-  wallet      Wallet      @relation(fields: [walletId], references: [id])
+  wallet      Wallet       @relation(fields: [walletId], references: [id])
   transaction Transaction? @relation(fields: [relatedTransactionId], references: [id])
 
   @@index([walletId])
@@ -637,14 +639,14 @@ enum WithdrawalStatus {
 }
 
 model WithdrawalRequest {
-  id         String           @id @default(cuid())
-  walletId   String
-  amount     Float
-  mpesaPhone String
-  status     WithdrawalStatus @default(PENDING)
-  mpesaRef   String?
+  id          String           @id @default(cuid())
+  walletId    String
+  amount      Float
+  mpesaPhone  String
+  status      WithdrawalStatus @default(PENDING)
+  mpesaRef    String?
   processedAt DateTime?
-  createdAt  DateTime         @default(now())
+  createdAt   DateTime         @default(now())
 
   wallet Wallet @relation(fields: [walletId], references: [id])
 
@@ -654,12 +656,12 @@ model WithdrawalRequest {
 // --- V2-4: Digital Contracts + Negotiation ---
 model ContractTemplate {
   contracts Contract[]
-  id        String   @id @default(cuid())
+  id        String     @id @default(cuid())
   name      String
-  content   String   @db.Text
-  version   Int      @default(1)
-  isActive  Boolean  @default(true)
-  createdAt DateTime @default(now())
+  content   String     @db.Text
+  version   Int        @default(1)
+  isActive  Boolean    @default(true)
+  createdAt DateTime   @default(now())
 }
 
 enum NegotiationActor {
@@ -675,14 +677,14 @@ enum OfferStatus {
 }
 
 model NegotiationOffer {
-  id           String          @id @default(cuid())
+  id            String           @id @default(cuid())
   transactionId String
-  actor        NegotiationActor
-  pricePerUnit Float
-  quantity     Int
-  terms        String?         @db.Text
-  status       OfferStatus     @default(PENDING)
-  createdAt    DateTime        @default(now())
+  actor         NegotiationActor
+  pricePerUnit  Float
+  quantity      Int
+  terms         String?          @db.Text
+  status        OfferStatus      @default(PENDING)
+  createdAt     DateTime         @default(now())
 
   transaction Transaction @relation(fields: [transactionId], references: [id])
 }
@@ -699,28 +701,28 @@ enum ContractStatus {
 }
 
 model Contract {
-  id               String         @id @default(cuid())
-  transactionId    String         @unique
-  templateId       String?
-  sellerId         String
-  buyerId          String
-  quantity         Int
-  pricePerUnit     Float
-  totalValue       Float
-  terms            Json?
-  paymentTerms     String?        @db.Text
-  transportTerms   String?        @db.Text
-  status           ContractStatus @default(DRAFT)
-  verificationId   String         @unique @default(cuid())
-  farmerSigned     Boolean        @default(false)
-  buyerSigned      Boolean        @default(false)
-  farmerSignedAt   DateTime?
-  buyerSignedAt    DateTime?
-  farmerSignature  String?
-  buyerSignature   String?
-  pdfUrl           String?
-  createdAt        DateTime       @default(now())
-  updatedAt        DateTime       @updatedAt
+  id              String         @id @default(cuid())
+  transactionId   String         @unique
+  templateId      String?
+  sellerId        String
+  buyerId         String
+  quantity        Int
+  pricePerUnit    Float
+  totalValue      Float
+  terms           Json?
+  paymentTerms    String?        @db.Text
+  transportTerms  String?        @db.Text
+  status          ContractStatus @default(DRAFT)
+  verificationId  String         @unique @default(cuid())
+  farmerSigned    Boolean        @default(false)
+  buyerSigned     Boolean        @default(false)
+  farmerSignedAt  DateTime?
+  buyerSignedAt   DateTime?
+  farmerSignature String?
+  buyerSignature  String?
+  pdfUrl          String?
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
 
   transaction Transaction       @relation(fields: [transactionId], references: [id])
   seller      Farmer            @relation("ContractSeller", fields: [sellerId], references: [id])
@@ -730,29 +732,49 @@ model Contract {
 
 // --- V2-5: Transport Marketplace ---
 model TransportProvider {
-  id            String   @id @default(cuid())
+  id            String  @id @default(cuid())
   name          String
-  phone         String   @unique
+  phone         String  @unique
   passwordHash  String?
-  vehicleType   String
-  capacityBags  Int
-  licensePlate  String?
+  email         String? @unique
+  contactPerson String?
+  nationalId    String?
+  baseLocation  String?
   countyId      String?
-  isVerified    Boolean  @default(false)
-  active        Boolean  @default(true)
   ratePerKm     Float?
-  createdAt     DateTime @default(now())
 
-  county   County?           @relation(fields: [countyId], references: [id])
+  verificationStatus String    @default("PENDING")
+  verificationNotes  String?   @db.Text
+  verifiedAt         DateTime?
+  verifiedBy         String?
+
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  county   County?            @relation(fields: [countyId], references: [id])
   bookings TransportBooking[]
+  vehicles TransportVehicle[]
+  requests TransportRequest[]
+}
+
+enum TransportRequestStatus {
+  REQUESTED
+  MATCHED
+  ACCEPTED
+  DECLINED
+  EXPIRED
+  CANCELLED
 }
 
 enum TransportBookingStatus {
-  PENDING
+  REQUESTED
+  MATCHED
   ACCEPTED
   LOADED
   IN_TRANSIT
   DELIVERED
+  COMPLETED
   CANCELLED
 }
 
@@ -761,30 +783,71 @@ enum BookedByType {
   BUYER
 }
 
-model TransportBooking {
-  id             String                 @id @default(cuid())
-  transactionId  String? @unique
+model TransportRequest {
+  id                 String                 @id @default(cuid())
+  transactionId      String?                @unique
   groupTransactionId String?
-  providerId     String
-  farmerId       String
-  pickupLocation String
-  dropoffLocation String
-  distanceKm     Float
-  cost           Float
-  bookedById     String
-  bookedByType   BookedByType
-  status         TransportBookingStatus @default(PENDING)
-  isHalted       Boolean                @default(false)
-  haltReason     String?
-  bookedAt       DateTime               @default(now())
-  completedAt    DateTime?
-  createdAt      DateTime               @default(now())
+  requestedById      String
+  requestedByType    BookedByType
+  providerId         String?
+  pickupLocation     String
+  dropoffLocation    String
+  quantityBags       Int
+  status             TransportRequestStatus @default(REQUESTED)
+  requestedPickupAt  DateTime?
+  createdAt          DateTime               @default(now())
+  updatedAt          DateTime               @updatedAt
 
   transaction      Transaction?       @relation(fields: [transactionId], references: [id])
+  groupTransaction GroupTransaction?  @relation(fields: [groupTransactionId], references: [id])
+  provider         TransportProvider? @relation(fields: [providerId], references: [id])
+  booking          TransportBooking?  @relation("RequestToBooking")
+}
+
+model TransportBooking {
+  id                 String                 @id @default(cuid())
+  transactionId      String?                @unique
+  groupTransactionId String?
+  requestId          String?                @unique
+  providerId         String
+  farmerId           String
+  pickupLocation     String
+  dropoffLocation    String
+  distanceKm         Float
+  cost               Float
+  grossCost          Float?
+  platformFee        Float?
+  providerPayout     Float?
+  commissionRate     Float?
+  bookedById         String
+  bookedByType       BookedByType
+  status             TransportBookingStatus @default(REQUESTED)
+  isHalted           Boolean                @default(false)
+  haltReason         String?
+  bookedAt           DateTime               @default(now())
+  completedAt        DateTime?
+  createdAt          DateTime               @default(now())
+
+  transaction      Transaction?      @relation(fields: [transactionId], references: [id])
   groupTransaction GroupTransaction? @relation("TransportBookings", fields: [groupTransactionId], references: [id])
   provider         TransportProvider @relation(fields: [providerId], references: [id])
   farmer           Farmer            @relation(fields: [farmerId], references: [id])
+  request          TransportRequest? @relation("RequestToBooking", fields: [requestId], references: [id])
   events           DeliveryEvent[]
+}
+
+model TransportVehicle {
+  id                 String   @id @default(cuid())
+  providerId         String
+  registrationNumber String   @unique
+  vehicleType        String
+  capacityBags       Int
+  status             String   @default("AVAILABLE")
+  isActive           Boolean  @default(true)
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  provider TransportProvider @relation(fields: [providerId], references: [id], onDelete: Cascade)
 }
 
 model DeliveryEvent {
@@ -820,14 +883,14 @@ model TrustScore {
 }
 
 model TrustEvent {
-  id          String       @id @default(cuid())
+  id          String        @id @default(cuid())
   userId      String
   userType    TrustUserType
   eventType   String
   impact      Float
-  description String?      @db.Text
+  description String?       @db.Text
   relatedId   String?
-  createdAt    DateTime     @default(now())
+  createdAt   DateTime      @default(now())
 }
 
 // --- V2-7: GIS + Geofencing ---
@@ -848,16 +911,16 @@ model Geofence {
 }
 
 model Warehouse {
-  id          String   @id @default(cuid())
-  name        String
-  county      String?
-  location    String?
-  latitude    Float?
-  longitude   Float?
+  id           String   @id @default(cuid())
+  name         String
+  county       String?
+  location     String?
+  latitude     Float?
+  longitude    Float?
   capacityBags Int?
-  pricePerBag Float?
-  isActive    Boolean  @default(true)
-  createdAt   DateTime @default(now())
+  pricePerBag  Float?
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
 }
 
 // --- V2-8: Event-Driven Architecture ---
@@ -869,19 +932,18 @@ enum EventOutboxStatus {
 }
 
 model EventOutbox {
-  id          String           @id @default(cuid())
+  id          String            @id @default(cuid())
   eventType   String
   aggregateId String
   payload     Json
   status      EventOutboxStatus @default(PENDING)
-  attempts    Int              @default(0)
-  lastError   String?          @db.Text
+  attempts    Int               @default(0)
+  lastError   String?           @db.Text
   processedAt DateTime?
-  createdAt   DateTime         @default(now())
+  createdAt   DateTime          @default(now())
 
   @@index([status, createdAt])
 }
-
 
 // --- SmartShamba RBAC: Executive Staff ---
 enum StaffRole {
@@ -892,26 +954,25 @@ enum StaffRole {
 }
 
 model Staff {
-  id           String     @id @default(cuid())
+  id           String    @id @default(cuid())
   name         String
-  email        String     @unique
+  email        String    @unique
   role         StaffRole
   passwordHash String
-  active       Boolean    @default(true)
-  mfaEnabled   Boolean    @default(false)
-  totpSecret   String?    // Encrypted or plaintext TOTP secret
-  createdAt    DateTime   @default(now())
-  updatedAt    DateTime   @updatedAt
+  active       Boolean   @default(true)
+  mfaEnabled   Boolean   @default(false)
+  totpSecret   String? // Encrypted or plaintext TOTP secret
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
 
-  auditLogs    AuditLog[]
+  auditLogs AuditLog[]
 }
-
 
 // --- SmartShamba AI Assistant Persistence ---
 model AiConversation {
   id        String      @id @default(cuid())
   userId    String
-  role      String      // "FARMER" | "BUYER" | "ADMIN"
+  role      String // "FARMER" | "BUYER" | "ADMIN"
   title     String?
   createdAt DateTime    @default(now())
   messages  AiMessage[]
@@ -920,7 +981,7 @@ model AiConversation {
 model AiMessage {
   id             String         @id @default(cuid())
   conversationId String
-  role           String         // "user" | "ai"
+  role           String // "user" | "ai"
   content        String         @db.Text
   createdAt      DateTime       @default(now())
   conversation   AiConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)

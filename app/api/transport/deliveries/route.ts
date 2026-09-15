@@ -12,7 +12,7 @@ export async function GET(req: NextRequest) {
     if (!provider) return NextResponse.json({ error: 'Provider not found' }, { status: 404 });
 
     const bookings = await prisma.transportBooking.findMany({
-      where: { providerId: provider.id, status: { in: ['PENDING', 'ACCEPTED', 'LOADED', 'IN_TRANSIT'] } },
+      where: { providerId: provider.id, status: { in: ['REQUESTED', 'MATCHED', 'ACCEPTED', 'LOADED', 'IN_TRANSIT'] } },
       include: {
         transaction: { include: { farmer: true, buyer: true } },
         groupTransaction: { include: { group: true, buyer: true } },

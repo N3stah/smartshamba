@@ -78,7 +78,7 @@ export async function POST(req: NextRequest) {
         dropoffLocation: `${buyerCounty} County`,
         bookedById,
         bookedByType,
-        status: 'PENDING'
+        status: 'REQUESTED'
       }
     });
 

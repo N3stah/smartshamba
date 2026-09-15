@@ -45,7 +45,7 @@ export async function GET(req: NextRequest) {
       prisma.transaction.count({ where: { status: 'SETTLED' } }),
       prisma.transaction.count({ where: { status: 'DISPUTED' } }),
       prisma.contract.count({ where: { status: 'EXECUTED' } }),
-      prisma.transportBooking.count({ where: { status: { in: ['PENDING', 'ACCEPTED', 'LOADED', 'IN_TRANSIT'] } } }),
+      prisma.transportBooking.count({ where: { status: { in: ['REQUESTED', 'MATCHED', 'ACCEPTED', 'LOADED', 'IN_TRANSIT'] } } }),
       prisma.marketPrediction.count(),
       prisma.weatherAlert.count({ where: { createdAt: { gte: thirtyDaysAgo } } }),
       prisma.transportBooking.count({ where: { status: 'DELIVERED' } }),

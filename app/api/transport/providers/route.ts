@@ -23,7 +23,7 @@ export async function GET(req: NextRequest) {
     // If transaction details are provided, get AI recommendation
     let aiRecommendation = null;
     if (bags > 0 && county) {
-      aiRecommendation = await generateTransportRecommendation(bags, county, dropoff, providers);
+      aiRecommendation = await generateTransportRecommendation(bags, county, dropoff, providers.map(p => ({ ...p, vehicleType: 'Unknown', capacityBags: 0 })));
     }
 
     return NextResponse.json({ providers, aiRecommendation });
@@ -49,7 +49,7 @@ export async function POST(req: NextRequest) {
     }
 
     const provider = await prisma.transportProvider.create({
-      data: { name, phone, vehicleType, capacityBags, ratePerKm, countyId }
+      data: { name, phone, ratePerKm, countyId }
     });
 
     return NextResponse.json({ success: true, provider });

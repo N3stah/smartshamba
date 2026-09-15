@@ -14,7 +14,7 @@ export async function GET(req: NextRequest) {
     // Fetch stats
     const [totalDeliveries, activeDeliveries, totalEarnings, completedBookings] = await Promise.all([
       prisma.transportBooking.count({ where: { providerId: provider.id } }),
-      prisma.transportBooking.count({ where: { providerId: provider.id, status: { in: ['PENDING', 'ACCEPTED', 'LOADED', 'IN_TRANSIT'] } } }),
+      prisma.transportBooking.count({ where: { providerId: provider.id, status: { in: ['REQUESTED', 'MATCHED', 'ACCEPTED', 'LOADED', 'IN_TRANSIT'] } } }),
       prisma.transportBooking.aggregate({ _sum: { cost: true }, where: { providerId: provider.id, status: 'DELIVERED' } }),
       prisma.transportBooking.count({ where: { providerId: provider.id, status: 'DELIVERED' } })
     ]);
