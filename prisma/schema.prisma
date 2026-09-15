@@ -9,7 +9,6 @@ datasource db {
 }
 
 model County {
-  transportProviders TransportProvider[]
   id                 String              @id @default(cuid())
   code               String              @unique
   name               String              @unique
@@ -17,8 +16,12 @@ model County {
   farmers            Farmer[]
   buyers             Buyer[]
   farmerGroups       FarmerGroup[]
-  createdAt          DateTime            @default(now())
+  transportProviders TransportProvider[]
+  transportPickups   TransportBooking[]  @relation("TransportPickupCounty")
+  transportDropoffs  TransportBooking[]  @relation("TransportDropoffCounty")
+  weatherAlerts      WeatherAlert[]      @relation("WeatherAlertCounty")
   advisories         Advisory[]
+  createdAt          DateTime            @default(now())
 }
 
 model Ward {
@@ -562,10 +565,15 @@ enum WeatherSeverity {
 model WeatherAlert {
   id        String          @id @default(cuid())
   county    String
+  countyId  String?
   type      String
+  status    String          @default("ACTIVE")
   severity  WeatherSeverity
   message   String          @db.Text
   createdAt DateTime        @default(now())
+
+  countyRel         County?            @relation("WeatherAlertCounty", fields: [countyId], references: [id])
+  transportBookings TransportBooking[] @relation("TransportWeatherAlerts")
 
   @@unique([county, type])
 }
@@ -815,6 +823,10 @@ model TransportBooking {
   requestId          String?                @unique
   providerId         String
   vehicleId          String?
+  pickupCountyId     String?
+  dropoffCountyId    String?
+  weatherAlertId     String?
+  weatherOverride    Boolean                @default(false)
   farmerId           String
   pickupLocation     String
   dropoffLocation    String
@@ -838,10 +850,13 @@ model TransportBooking {
   groupTransaction GroupTransaction? @relation("TransportBookings", fields: [groupTransactionId], references: [id])
   provider         TransportProvider @relation(fields: [providerId], references: [id])
   vehicle          TransportVehicle? @relation(fields: [vehicleId], references: [id])
+  pickupCounty     County?           @relation("TransportPickupCounty", fields: [pickupCountyId], references: [id])
+  dropoffCounty    County?           @relation("TransportDropoffCounty", fields: [dropoffCountyId], references: [id])
+  weatherAlert     WeatherAlert?     @relation("TransportWeatherAlerts", fields: [weatherAlertId], references: [id])
   farmer           Farmer            @relation(fields: [farmerId], references: [id])
   request          TransportRequest? @relation("RequestToBooking", fields: [requestId], references: [id])
   events           DeliveryEvent[]
-  allocations     TransportCostAllocation[]
+  allocations      TransportCostAllocation[]
 }
 
 model TransportVehicle {

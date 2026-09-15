@@ -31,6 +31,11 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
     if (!booking) return NextResponse.json({ error: 'Booking not found' }, { status: 404 });
     if (booking.providerId !== provider.id) return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
 
+    // Weather Hold Protection
+    if (newStatus === 'COMPLETED' && booking.isHalted) {
+      return NextResponse.json({ error: 'Cannot complete delivery while transport is halted due to weather.' }, { status: 400 });
+    }
+
     // State Transition Validation
     const allowedNextStatuses = validTransitions[booking.status];
     if (!allowedNextStatuses || !allowedNextStatuses.includes(newStatus)) {

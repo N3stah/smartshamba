@@ -67,6 +67,12 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
     }
 
     // Create TransportBooking
+    // Fetch counties for weather matching
+    const txData = await prisma.transaction.findUnique({
+      where: { id: request.transactionId! },
+      select: { farmer: { select: { countyId: true } }, buyer: { select: { countyId: true } } }
+    });
+
     const booking = await prisma.transportBooking.create({
       data: {
         requestId: request.id,
@@ -76,6 +82,8 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
         vehicleId: vehicle.id,
         farmerId: farmerId,
         pickupLocation: request.pickupLocation,
+        pickupCountyId: txData?.farmer?.countyId || null,
+        dropoffCountyId: txData?.buyer?.countyId || null,
         dropoffLocation: request.dropoffLocation,
         distanceKm: distance,
         cost: cost,

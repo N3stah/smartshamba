@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { fetchAndCacheWeather } from '@/lib/weather/weather-service';
 import * as Sentry from '@sentry/nextjs';
+import { processTransportWeatherHolds } from '@/lib/weather/weather-processor';
 
 export async function GET(req: NextRequest) {
   try {
@@ -37,6 +38,8 @@ export async function GET(req: NextRequest) {
       console.error('[Weather Cron] Errors:', errors);
       return NextResponse.json({ success: false, error: errors.join('\\n') }, { status: 500 });
     }
+
+    await processTransportWeatherHolds();
 
     return NextResponse.json({ success: true, message: `Weather refreshed for ${counties.length} counties.` });
   } catch (error) {
