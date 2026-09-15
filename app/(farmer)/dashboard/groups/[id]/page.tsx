@@ -98,6 +98,16 @@ export default async function GroupDetailsPage({ params }: PageProps) {
           </>
         )}
       </div>
+
+      {/* Group Transport Section */}
+      {group.transactions.length > 0 && (
+        <div className="bg-white rounded-xl border p-6 shadow-sm mt-6">
+          <h3 className="text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
+            <Truck className="w-4 h-4" /> Group Transport
+          </h3>
+          <ArrangeGroupTransportButton groupTransactionId={group.transactions[0].id} userId={farmer.id} />
+        </div>
+      )}
     </div>
   );
 }

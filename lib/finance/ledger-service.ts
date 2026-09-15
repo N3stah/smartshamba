@@ -268,3 +268,156 @@ export async function processTransactionSettlement(transactionId: string, totalV
     });
   }
 }
+
+/**
+ * Processes the financial settlement for a Group Transport Booking.
+ * Must be atomic and idempotent. Splits cost among participating farmers.
+ */
+export async function processGroupTransportSettlement(bookingId: string): Promise<{ success: boolean; message: string }> {
+  try {
+    return await prisma.$transaction(async (tx) => {
+      // 1. Atomically claim the settlement
+      const booking = await tx.transportBooking.update({
+        where: { id: bookingId, financialSettled: false },
+        data: { financialSettled: true },
+        include: { 
+          allocations: true,
+          transaction: true,
+          groupTransaction: true
+        }
+      }).catch(() => null);
+
+      if (!booking) {
+        const existing = await tx.transportBooking.findUnique({ where: { id: bookingId } });
+        if (existing && existing.financialSettled) return { success: true, message: 'Already settled' };
+        throw new Error('Booking not found or state invalid');
+      }
+
+      if (booking.status !== 'COMPLETED') throw new Error('Booking is not COMPLETED');
+
+      // 2. Check for active disputes
+      const disputeTxId = booking.transactionId || booking.groupTransactionId;
+      if (disputeTxId) {
+        const activeDispute = await tx.dispute.findFirst({ where: { transactionId: disputeTxId, status: 'OPEN' } });
+        if (activeDispute) throw new Error('Active dispute prevents settlement');
+      }
+
+      if (!booking.grossCost || !booking.platformFee || !booking.providerPayout) throw new Error('Financial snapshot missing');
+
+      // 3. Resolve Wallets
+      const providerWallet = await tx.wallet.upsert({ 
+        where: { providerId: booking.providerId }, 
+        update: {}, 
+        create: { providerId: booking.providerId, type: 'USER' } 
+      });
+      let platformWallet = await tx.wallet.findFirst({ where: { type: 'PLATFORM' } });
+      if (!platformWallet) platformWallet = await tx.wallet.create({ data: { type: 'PLATFORM' } });
+
+      // 4. Determine Payer (FARMER_PAYS vs BUYER_PAYS)
+      // For Phase G, we assume FARMER_PAYS if allocations exist, otherwise BUYER_PAYS
+      if (booking.allocations.length > 0) {
+        // FARMER_PAYS: Split among farmers
+        let totalAllocated = 0;
+        const farmerWallets = [];
+
+        for (const alloc of booking.allocations) {
+          const fWallet = await tx.wallet.upsert({ 
+            where: { farmerId: alloc.farmerId }, 
+            update: {}, 
+            create: { farmerId: alloc.farmerId, type: 'USER' } 
+          });
+          if (fWallet.balance < alloc.shareAmount) {
+            throw new Error(`Insufficient balance for farmer ${alloc.farmerId}`);
+          }
+          farmerWallets.push({ alloc, wallet: fWallet });
+          totalAllocated += alloc.shareAmount;
+        }
+
+        if (Math.round(totalAllocated * 100) !== Math.round(booking.grossCost * 100)) {
+          throw new Error('Allocation total does not match gross cost');
+        }
+
+        // Debit Farmers
+        for (const fw of farmerWallets) {
+          const balanceAfter = fw.wallet.balance - fw.alloc.shareAmount;
+          await tx.ledgerEntry.create({
+            data: {
+              walletId: fw.wallet.id,
+              type: 'DEBIT',
+              amount: fw.alloc.shareAmount,
+              description: `Group transport share for Booking ${booking.id.substring(0, 8)}`,
+              reference: `TRANSPORT_SETTLEMENT:${booking.id}`,
+              balanceAfter,
+              relatedTransactionId: booking.transactionId ?? booking.groupTransactionId ?? null,
+            }
+          });
+          await tx.wallet.update({ where: { id: fw.wallet.id }, data: { balance: balanceAfter } });
+          await tx.transportCostAllocation.update({ where: { id: fw.alloc.id }, data: { isSettled: true } });
+        }
+      } else {
+        // BUYER_PAYS: Single payer
+        const buyerWallet = await tx.wallet.upsert({ 
+          where: { buyerId: booking.bookedById }, 
+          update: {}, 
+          create: { buyerId: booking.bookedById, type: 'USER' } 
+        });
+        if (buyerWallet.balance < booking.grossCost) throw new Error('Insufficient balance');
+        
+        const balanceAfter = buyerWallet.balance - booking.grossCost;
+        await tx.ledgerEntry.create({
+          data: {
+            walletId: buyerWallet.id,
+            type: 'DEBIT',
+            amount: booking.grossCost,
+            description: `Transport cost for Booking ${booking.id.substring(0, 8)}`,
+            reference: `TRANSPORT_SETTLEMENT:${booking.id}`,
+            balanceAfter,
+            relatedTransactionId: booking.transactionId ?? booking.groupTransactionId ?? null,
+          }
+        });
+        await tx.wallet.update({ where: { id: buyerWallet.id }, data: { balance: balanceAfter } });
+      }
+
+      // 5. Credit Provider
+      const providerBalanceAfter = providerWallet.balance + booking.providerPayout;
+      await tx.ledgerEntry.create({
+        data: {
+          walletId: providerWallet.id,
+          type: 'CREDIT',
+          amount: booking.providerPayout,
+          description: `Transport earnings for Booking ${booking.id.substring(0, 8)}`,
+          reference: `TRANSPORT_SETTLEMENT:${booking.id}`,
+          balanceAfter: providerBalanceAfter,
+          relatedTransactionId: booking.transactionId ?? booking.groupTransactionId ?? null,
+        }
+      });
+      await tx.wallet.update({ where: { id: providerWallet.id }, data: { balance: providerBalanceAfter } });
+
+      // 6. Credit Platform
+      if (booking.platformFee > 0) {
+        const platformBalanceAfter = platformWallet.balance + booking.platformFee;
+        await tx.ledgerEntry.create({
+          data: {
+            walletId: platformWallet.id,
+            type: 'CREDIT',
+            amount: booking.platformFee,
+            description: `Platform fee for Booking ${booking.id.substring(0, 8)}`,
+            reference: `TRANSPORT_SETTLEMENT:${booking.id}`,
+            balanceAfter: platformBalanceAfter,
+            relatedTransactionId: booking.transactionId ?? booking.groupTransactionId ?? null,
+          }
+        });
+        await tx.wallet.update({ where: { id: platformWallet.id }, data: { balance: platformBalanceAfter } });
+      }
+
+      return { success: true, message: 'Settlement successful' };
+    }, {
+      timeout: 15000
+    });
+  } catch (error: any) {
+    console.error('[LEDGER] Group transport settlement failed:', error);
+    Sentry.captureException(error);
+    await Sentry.flush(2000);
+    throw error;
+  }
+}

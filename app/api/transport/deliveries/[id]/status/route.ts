@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { getTransportSession } from '@/lib/auth';
-import { processTransportSettlement } from '@/lib/finance/ledger-service';
+import { processTransportSettlement, processGroupTransportSettlement } from '@/lib/finance/ledger-service';
 import * as Sentry from '@sentry/nextjs';
 
 const validTransitions: Record<string, string[]> = {
@@ -44,7 +44,12 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
 
     // Trigger financial settlement on COMPLETED
     if (newStatus === 'COMPLETED') {
-      await processTransportSettlement(id);
+      const bookingInfo = await prisma.transportBooking.findUnique({ where: { id }, select: { groupTransactionId: true } });
+      if (bookingInfo?.groupTransactionId) {
+        await processGroupTransportSettlement(id);
+      } else {
+        await processTransportSettlement(id);
+      }
     }
 
     // If COMPLETED, set vehicle back to AVAILABLE

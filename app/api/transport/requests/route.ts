@@ -86,18 +86,41 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Transport already booked for this transaction' }, { status: 409 });
     }
 
+    // Group Transport Logic
+    let groupTransactionId = body.groupTransactionId;
+    let groupMembers: { farmerId: string; bagsPledged: number }[] = [];
+    let totalBags = transaction.quantityBags;
+
+    if (groupTransactionId) {
+      const groupTx = await prisma.groupTransaction.findUnique({
+        where: { id: groupTransactionId },
+        include: { group: { include: { members: true } } }
+      });
+      if (!groupTx) return NextResponse.json({ error: 'Group transaction not found' }, { status: 404 });
+
+      // Verify requester is part of the group
+      const isMember = groupTx.group.members.some(m => m.farmerId === requestedById);
+      if (!isMember) return NextResponse.json({ error: 'Not authorized to request transport for this group' }, { status: 403 });
+
+      groupMembers = groupTx.group.members.filter(m => m.bagsPledged > 0);
+      totalBags = groupMembers.reduce((sum, m) => sum + m.bagsPledged, 0);
+    }
+
     const request = await prisma.transportRequest.create({
       data: {
-        transactionId,
+        transactionId: groupTransactionId ? null : transactionId,
+        groupTransactionId,
         requestedById,
         requestedByType,
         pickupLocation,
         dropoffLocation,
-        quantityBags: transaction.quantityBags,
+        quantityBags: totalBags,
         requestedPickupAt: requestedPickupAt ? new Date(requestedPickupAt) : null,
         status: 'REQUESTED'
       }
     });
+
+
 
     await prisma.auditLog.create({
       data: {

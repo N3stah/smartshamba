@@ -42,6 +42,7 @@ model Farmer {
   frozenAt          DateTime?
   transportBookings TransportBooking[]
   contractsAsSeller Contract[]         @relation("ContractSeller")
+  transportAllocations TransportCostAllocation[]
   wallet            Wallet?            @relation("FarmerWallet")
   aiInsights        AIInsight[]        @relation("FarmerAIInsights")
   language          String             @default("en") // i18n: "en" | "sw"
@@ -840,6 +841,7 @@ model TransportBooking {
   farmer           Farmer            @relation(fields: [farmerId], references: [id])
   request          TransportRequest? @relation("RequestToBooking", fields: [requestId], references: [id])
   events           DeliveryEvent[]
+  allocations     TransportCostAllocation[]
 }
 
 model TransportVehicle {
@@ -855,6 +857,22 @@ model TransportVehicle {
 
   provider TransportProvider @relation(fields: [providerId], references: [id], onDelete: Cascade)
   bookings TransportBooking[]
+}
+
+model TransportCostAllocation {
+  id            String   @id @default(cuid())
+  bookingId     String
+  farmerId      String
+  bagsAllocated Int
+  shareAmount   Float
+  isSettled     Boolean  @default(false)
+  createdAt     DateTime @default(now())
+
+  booking TransportBooking @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  farmer  Farmer           @relation(fields: [farmerId], references: [id], onDelete: Cascade)
+
+  @@index([bookingId])
+  @@index([farmerId])
 }
 
 model DeliveryEvent {
