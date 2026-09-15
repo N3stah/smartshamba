@@ -48,7 +48,7 @@ export default function TransportHistoryPage() {
                     </span>
                   </td>
                   <td className="p-4 font-bold text-gray-900">KSh {b.cost.toLocaleString()}</td>
-                  <td className="p-4 text-xs text-gray-500">{new Date(b.updatedAt).toLocaleDateString()}</td>
+                  <td className="p-4 text-xs text-gray-500">{new Date(b.completedAt || b.createdAt).toLocaleDateString()}</td>
                 </tr>
               ))}
             </tbody>

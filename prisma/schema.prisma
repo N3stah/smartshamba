@@ -810,6 +810,7 @@ model TransportBooking {
   groupTransactionId String?
   requestId          String?                @unique
   providerId         String
+  vehicleId          String?
   farmerId           String
   pickupLocation     String
   dropoffLocation    String
@@ -831,6 +832,7 @@ model TransportBooking {
   transaction      Transaction?      @relation(fields: [transactionId], references: [id])
   groupTransaction GroupTransaction? @relation("TransportBookings", fields: [groupTransactionId], references: [id])
   provider         TransportProvider @relation(fields: [providerId], references: [id])
+  vehicle          TransportVehicle? @relation(fields: [vehicleId], references: [id])
   farmer           Farmer            @relation(fields: [farmerId], references: [id])
   request          TransportRequest? @relation("RequestToBooking", fields: [requestId], references: [id])
   events           DeliveryEvent[]
@@ -848,6 +850,7 @@ model TransportVehicle {
   updatedAt          DateTime @updatedAt
 
   provider TransportProvider @relation(fields: [providerId], references: [id], onDelete: Cascade)
+  bookings TransportBooking[]
 }
 
 model DeliveryEvent {

@@ -1,3 +1,8 @@
+/**
+ * @deprecated This route is deprecated. Use POST /api/transport/requests/[id]/accept instead.
+ * This route creates bookings directly, bypassing the request/accept workflow.
+ * It is preserved for V1 compatibility until Phase E migrates callers.
+ */
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { getFarmerSession, getBuyerSession } from '@/lib/auth';

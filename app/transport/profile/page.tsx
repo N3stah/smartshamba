@@ -35,7 +35,7 @@ export default function TransportProfilePage() {
             </div>
             <div>
               <h2 className="text-xl font-bold">{provider.name}</h2>
-              <p className="text-sm text-green-100">{provider.vehicleType} • {provider.capacityKg}kg capacity</p>
+              <p className="text-sm text-green-100">{provider.contactPerson || 'Transport Provider'}</p>
             </div>
           </div>
         </div>
@@ -46,7 +46,7 @@ export default function TransportProfilePage() {
           </div>
           <div className="flex items-center gap-2">
             <MapPin className="w-4 h-4 text-gray-400" />
-            <span className="text-sm text-gray-600">{provider.location}</span>
+            <span className="text-sm text-gray-600">{provider.baseLocation || 'N/A'}</span>
           </div>
           <div className="flex items-center gap-2">
             <DollarSign className="w-4 h-4 text-gray-400" />
@@ -86,7 +86,7 @@ export default function TransportProfilePage() {
       {/* Security / Password Setter */}
       <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
         <h3 className="text-lg font-bold text-gray-900 mb-4">Security</h3>
-        <PasswordSetter role="TRANSPORT" hasPassword={!!provider.password} />
+        <PasswordSetter role="TRANSPORT" hasPassword={!!provider.passwordHash} />
       </div>
     </div>
   );

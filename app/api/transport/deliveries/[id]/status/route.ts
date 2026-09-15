@@ -3,6 +3,13 @@ import { prisma } from '@/lib/prisma';
 import { getTransportSession } from '@/lib/auth';
 import * as Sentry from '@sentry/nextjs';
 
+const validTransitions: Record<string, string[]> = {
+  'ACCEPTED': ['LOADED'],
+  'LOADED': ['IN_TRANSIT'],
+  'IN_TRANSIT': ['DELIVERED'],
+  'DELIVERED': ['COMPLETED'],
+};
+
 export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params;
@@ -13,27 +20,53 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
     if (!provider) return NextResponse.json({ error: 'Provider not found' }, { status: 404 });
 
     const body = await req.json();
-    const { status, notes, location } = body;
+    const { status: newStatus, notes, location } = body;
 
     const booking = await prisma.transportBooking.findUnique({
       where: { id },
-      include: { provider: true }
+      include: { vehicle: true }
     });
 
     if (!booking) return NextResponse.json({ error: 'Booking not found' }, { status: 404 });
     if (booking.providerId !== provider.id) return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
 
+    // State Transition Validation
+    const allowedNextStatuses = validTransitions[booking.status];
+    if (!allowedNextStatuses || !allowedNextStatuses.includes(newStatus)) {
+      return NextResponse.json({ error: `Invalid state transition from ${booking.status} to ${newStatus}` }, { status: 400 });
+    }
+
     const updatedBooking = await prisma.transportBooking.update({
       where: { id },
-      data: { status }
+      data: { status: newStatus, completedAt: newStatus === 'COMPLETED' ? new Date() : null }
     });
+
+    // If COMPLETED, set vehicle back to AVAILABLE
+    if (newStatus === 'COMPLETED' && booking.vehicleId) {
+      await prisma.transportVehicle.update({
+        where: { id: booking.vehicleId },
+        data: { status: 'AVAILABLE' }
+      });
+    }
 
     await prisma.deliveryEvent.create({
       data: {
         bookingId: id,
-        eventType: status,
-        notes: notes || `Status updated to ${status}`,
+        eventType: newStatus,
+        notes: notes || `Status updated to ${newStatus}`,
         location: location || null
+      }
+    });
+
+    await prisma.auditLog.create({
+      data: {
+        action: 'TRANSPORT_STATUS_CHANGED',
+        actorType: 'TRANSPORT_PROVIDER',
+        actorId: provider.id,
+        entityType: 'TransportBooking',
+        entityId: booking.id,
+        before: { status: booking.status },
+        after: { status: newStatus }
       }
     });
 
