@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { getTransportSession } from '@/lib/auth';
+import { updateContractTerms } from '@/lib/contracts/contract-service';
 import { calculateDistance, estimateCost } from '@/lib/transport/transport-service';
 import * as Sentry from '@sentry/nextjs';
 

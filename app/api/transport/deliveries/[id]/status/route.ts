@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { getTransportSession } from '@/lib/auth';
+import { processTransportSettlement } from '@/lib/finance/ledger-service';
 import * as Sentry from '@sentry/nextjs';
 
 const validTransitions: Record<string, string[]> = {
@@ -40,6 +41,11 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
       where: { id },
       data: { status: newStatus, completedAt: newStatus === 'COMPLETED' ? new Date() : null }
     });
+
+    // Trigger financial settlement on COMPLETED
+    if (newStatus === 'COMPLETED') {
+      await processTransportSettlement(id);
+    }
 
     // If COMPLETED, set vehicle back to AVAILABLE
     if (newStatus === 'COMPLETED' && booking.vehicleId) {

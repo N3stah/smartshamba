@@ -594,6 +594,7 @@ model Wallet {
   type          WalletType @default(USER)
   farmerId      String?    @unique
   buyerId       String?    @unique
+  providerId    String?    @unique
   balance       Float      @default(0)
   currency      String     @default("KES")
   lockedBalance Float      @default(0)
@@ -602,6 +603,7 @@ model Wallet {
 
   farmer      Farmer?             @relation("FarmerWallet", fields: [farmerId], references: [id])
   buyer       Buyer?              @relation("BuyerWallet", fields: [buyerId], references: [id])
+  provider    TransportProvider? @relation("ProviderWallet", fields: [providerId], references: [id])
   entries     LedgerEntry[]
   withdrawals WithdrawalRequest[]
 }
@@ -753,6 +755,7 @@ model TransportProvider {
   updatedAt DateTime @updatedAt
 
   county   County?            @relation(fields: [countyId], references: [id])
+  wallet   Wallet?           @relation("ProviderWallet")
   bookings TransportBooking[]
   vehicles TransportVehicle[]
   requests TransportRequest[]
@@ -823,6 +826,7 @@ model TransportBooking {
   bookedById         String
   bookedByType       BookedByType
   status             TransportBookingStatus @default(REQUESTED)
+  financialSettled   Boolean                @default(false)
   isHalted           Boolean                @default(false)
   haltReason         String?
   bookedAt           DateTime               @default(now())

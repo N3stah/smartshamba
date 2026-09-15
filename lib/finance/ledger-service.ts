@@ -84,6 +84,141 @@ export async function postLedgerEntry(params: {
 }
 
 /**
+ * Processes the financial settlement for a Transport Booking.
+ * Must be atomic and idempotent.
+ */
+export async function processTransportSettlement(bookingId: string): Promise<{ success: boolean; message: string }> {
+  try {
+    return await prisma.$transaction(async (tx) => {
+      // 1. Atomically claim the settlement
+      const booking = await tx.transportBooking.update({
+        where: { id: bookingId, financialSettled: false },
+        data: { financialSettled: true },
+        include: { transaction: true }
+      }).catch(() => null);
+
+      if (!booking) {
+        const existing = await tx.transportBooking.findUnique({ where: { id: bookingId } });
+        if (existing && existing.financialSettled) {
+          return { success: true, message: 'Already settled' };
+        }
+        throw new Error('Booking not found or state invalid');
+      }
+
+      // 2. Verify booking is COMPLETED
+      if (booking.status !== 'COMPLETED') {
+        throw new Error('Booking is not COMPLETED');
+      }
+
+      // 3. Check for active disputes
+      if (booking.transactionId) {
+        const activeDispute = await tx.dispute.findFirst({
+          where: { transactionId: booking.transactionId, status: 'OPEN' }
+        });
+        if (activeDispute) throw new Error('Active dispute prevents settlement');
+      }
+
+      // 4. Verify financial snapshot
+      if (!booking.grossCost || !booking.platformFee || !booking.providerPayout) {
+        throw new Error('Financial snapshot missing');
+      }
+
+      // 5. Resolve Wallets using TX client to prevent deadlocks
+      let payerWallet;
+      if (booking.bookedByType === 'FARMER') {
+        payerWallet = await tx.wallet.upsert({ where: { farmerId: booking.bookedById }, update: {}, create: { farmerId: booking.bookedById, type: 'USER' } });
+      } else {
+        payerWallet = await tx.wallet.upsert({ where: { buyerId: booking.bookedById }, update: {}, create: { buyerId: booking.bookedById, type: 'USER' } });
+      }
+
+      const providerWallet = await tx.wallet.upsert({ 
+        where: { providerId: booking.providerId }, 
+        update: {}, 
+        create: { providerId: booking.providerId, type: 'USER' } 
+      });
+
+      let platformWallet = await tx.wallet.findFirst({ where: { type: 'PLATFORM' } });
+      if (!platformWallet) platformWallet = await tx.wallet.create({ data: { type: 'PLATFORM' } });
+
+      // 6. Verify sufficient funds
+      if (payerWallet.balance < booking.grossCost) {
+        throw new Error('Insufficient balance');
+      }
+
+      // 7. Post Ledger Entries
+      const reference = `TRANSPORT_SETTLEMENT:${booking.id}`;
+      
+      // Debit Payer
+      const payerBalanceAfter = payerWallet.balance - booking.grossCost;
+      await tx.ledgerEntry.create({
+        data: {
+          walletId: payerWallet.id,
+          type: 'DEBIT',
+          amount: booking.grossCost,
+          description: `Transport cost for Booking ${booking.id.substring(0, 8)}`,
+          reference,
+          balanceAfter: payerBalanceAfter,
+          relatedTransactionId: booking.transactionId ?? null,
+        }
+      });
+      await tx.wallet.update({ where: { id: payerWallet.id }, data: { balance: payerBalanceAfter } });
+
+      // Credit Provider
+      const providerBalanceAfter = providerWallet.balance + booking.providerPayout;
+      await tx.ledgerEntry.create({
+        data: {
+          walletId: providerWallet.id,
+          type: 'CREDIT',
+          amount: booking.providerPayout,
+          description: `Transport earnings for Booking ${booking.id.substring(0, 8)}`,
+          reference,
+          balanceAfter: providerBalanceAfter,
+          relatedTransactionId: booking.transactionId ?? null,
+        }
+      });
+      await tx.wallet.update({ where: { id: providerWallet.id }, data: { balance: providerBalanceAfter } });
+
+      // Credit Platform
+      if (booking.platformFee > 0) {
+        const platformBalanceAfter = platformWallet.balance + booking.platformFee;
+        await tx.ledgerEntry.create({
+          data: {
+            walletId: platformWallet.id,
+            type: 'CREDIT',
+            amount: booking.platformFee,
+            description: `Platform fee for Booking ${booking.id.substring(0, 8)}`,
+            reference,
+            balanceAfter: platformBalanceAfter,
+            relatedTransactionId: booking.transactionId ?? null,
+          }
+        });
+        await tx.wallet.update({ where: { id: platformWallet.id }, data: { balance: platformBalanceAfter } });
+      }
+
+      // Audit: Financial Settlement
+      await tx.auditLog.create({
+        data: {
+          action: 'TRANSPORT_FINANCIAL_SETTLED',
+          actorType: 'SYSTEM',
+          entityType: 'TransportBooking',
+          entityId: booking.id,
+          after: { payer: booking.bookedByType, grossCost: booking.grossCost, platformFee: booking.platformFee, providerPayout: booking.providerPayout }
+        }
+      });
+
+      return { success: true, message: 'Settlement successful' };
+    }, {
+      timeout: 15000 // 15 seconds
+    });
+  } catch (error: any) {
+    console.error('[LEDGER] Transport settlement failed:', error);
+    Sentry.captureException(error);
+    await Sentry.flush(2000);
+    throw error;
+  }
+}
+
+/**
  * Gets the current wallet balance for a user.
  */
 export async function getWalletBalance(userId: string, userType: string): Promise<number> {
@@ -94,7 +229,6 @@ export async function getWalletBalance(userId: string, userType: string): Promis
 
 /**
  * Processes the financial settlement for a standard Transaction.
- * Debits Escrow, Credits Farmer (98%), Credits Platform Revenue (2%).
  */
 export async function processTransactionSettlement(transactionId: string, totalValue: number, farmerId: string) {
   const PLATFORM_FEE_RATE = 0.02;
@@ -105,7 +239,6 @@ export async function processTransactionSettlement(transactionId: string, totalV
   const farmerWalletId = await getOrCreateWalletId(farmerId, 'FARMER');
   const platformWalletId = await getOrCreateWalletId(null, 'PLATFORM');
 
-  // 1. Debit Escrow Wallet
   await postLedgerEntry({
     walletId: escrowWalletId,
     transactionId,
@@ -115,7 +248,6 @@ export async function processTransactionSettlement(transactionId: string, totalV
     reference: `RELEASE-${transactionId.substring(0, 8)}`
   });
 
-  // 2. Credit Farmer's wallet
   await postLedgerEntry({
     walletId: farmerWalletId,
     transactionId,
@@ -125,7 +257,6 @@ export async function processTransactionSettlement(transactionId: string, totalV
     reference: `SETTLE-${transactionId.substring(0, 8)}`
   });
 
-  // 3. Credit Platform Revenue wallet
   if (platformFee > 0) {
     await postLedgerEntry({
       walletId: platformWalletId,
@@ -136,56 +267,4 @@ export async function processTransactionSettlement(transactionId: string, totalV
       reference: `FEE-${transactionId.substring(0, 8)}`
     });
   }
-}
-
-/**
- * Processes the financial settlement for a Group Transaction.
- */
-export async function processGroupSettlement(groupTxId: string, totalValue: number, groupMembers: { farmerId: string; bagsPledged: number }[], transportCost: number = 0) {
-  const PLATFORM_FEE_RATE = 0.02;
-  const totalBags = groupMembers.reduce((sum, m) => sum + m.bagsPledged, 0);
-  const netValue = totalValue - transportCost;
-  
-  const escrowWalletId = await getOrCreateWalletId(null, 'ESCROW');
-  const platformWalletId = await getOrCreateWalletId(null, 'PLATFORM');
-  
-  for (const member of groupMembers) {
-    if (member.bagsPledged === 0) continue;
-    
-    const shareRatio = member.bagsPledged / totalBags;
-    const grossShare = Math.round((netValue * shareRatio) * 100) / 100;
-    const platformFee = Math.round((grossShare * PLATFORM_FEE_RATE) * 100) / 100;
-    const farmerPayout = Math.round((grossShare - platformFee) * 100) / 100;
-    
-    const farmerWalletId = await getOrCreateWalletId(member.farmerId, 'FARMER');
-    
-    await postLedgerEntry({
-      walletId: farmerWalletId,
-      transactionId: groupTxId,
-      type: 'CREDIT',
-      amount: farmerPayout,
-      description: `Group sale proceeds (${member.bagsPledged} bags) for Tx ${groupTxId.substring(0, 8)}`,
-      reference: `GRP-SETTLE-${groupTxId.substring(0, 8)}`
-    });
-    
-    if (platformFee > 0) {
-      await postLedgerEntry({
-        walletId: platformWalletId,
-        transactionId: groupTxId,
-        type: 'CREDIT',
-        amount: platformFee,
-        description: `Platform fee (2%) for Group Tx ${groupTxId.substring(0, 8)}`,
-        reference: `GRP-FEE-${groupTxId.substring(0, 8)}`
-      });
-    }
-  }
-  
-  await postLedgerEntry({
-    walletId: escrowWalletId,
-    transactionId: groupTxId,
-    type: 'DEBIT',
-    amount: totalValue,
-    description: `Escrow release for Group Transaction ${groupTxId.substring(0, 8)}`,
-    reference: `GRP-RELEASE-${groupTxId.substring(0, 8)}`
-  });
 }
