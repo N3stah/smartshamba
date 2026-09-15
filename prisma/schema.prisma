@@ -898,6 +898,8 @@ model Staff {
   role         StaffRole
   passwordHash String
   active       Boolean    @default(true)
+  mfaEnabled   Boolean    @default(false)
+  totpSecret   String?    // Encrypted or plaintext TOTP secret
   createdAt    DateTime   @default(now())
   updatedAt    DateTime   @updatedAt
 
