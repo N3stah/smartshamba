@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { getFarmerSession, getBuyerSession, requireAdminAuth } from '@/lib/auth';
 import { sendNotification } from '@/lib/notifications';
+import { publishEvent } from '@/lib/core/event-bus';
 import { recordAuditLog } from '@/lib/auditLog';
 import { sendB2CPayout } from '@/lib/mpesa';
 import * as Sentry from '@sentry/nextjs';

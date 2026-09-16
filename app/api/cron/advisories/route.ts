@@ -2,6 +2,7 @@ import * as Sentry from '@sentry/nextjs';
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { sendNotification } from '@/lib/notifications';
+import { publishEvent } from '@/lib/core/event-bus';
 import { harvestAdvisoryTemplate } from '@/lib/notifications/templates';
 
 // Vercel Cron: runs daily at 07:00 EAT (04:00 UTC)

@@ -2,8 +2,6 @@ import * as Sentry from '@sentry/nextjs';
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { requireAdminAuth } from '@/lib/auth';
-import { sendNotification } from '@/lib/notifications';
-import { settlementTemplate } from '@/lib/notifications/templates';
 import { recordAuditLog } from '@/lib/auditLog';
 import { publishEvent } from '@/lib/core/event-bus';
 
@@ -74,23 +72,26 @@ export async function PUT(
       console.error('[EVENTS] Failed to publish transaction settled event:', e);
     }
 
-    let smsResult = null;
-    if (notifyFarmer && updated.farmer?.phone) {
-      const smsBody = settlementTemplate({
-        reference:  updated.reference,
-        buyerName:  updated.buyer.name,
-        totalValue: updated.totalValue,
-        mpesaRef:   mpesaRef.trim(),
-      });
-      smsResult = await sendNotification({
-        type:           'SETTLEMENT',
-        recipientPhone: updated.farmer.phone,
-        body:           smsBody,
-        farmerId:       updated.farmer.id,
-      });
+    // Publish event to notify farmer (async)
+    if (notifyFarmer && updated.farmerId) {
+      try {
+        await publishEvent({
+          eventType: 'NOTIFY_TRANSACTION_SETTLED',
+          aggregateId: updated.id,
+          eventKey: `NOTIFY_TRANSACTION_SETTLED:${updated.id}:FARMER_${updated.farmerId}`,
+          payload: {
+            recipientType: 'FARMER',
+            recipientId: updated.farmerId,
+            notificationType: 'SETTLEMENT',
+            context: { reference: updated.reference, totalValue: updated.totalValue, mpesaRef: mpesaRef.trim() }
+          }
+        });
+      } catch (e) {
+        console.error('[EVENTS] Failed to publish settlement notification:', e);
+      }
     }
 
-    return NextResponse.json({ transaction: updated, smsResult });
+    return NextResponse.json({ transaction: updated });
   } catch (error) {
     console.error('[ADMIN] Manual settlement error:', (error as Error).message);
     Sentry.captureException(error);

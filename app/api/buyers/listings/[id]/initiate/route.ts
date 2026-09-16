@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma, safeTransaction } from '@/lib/prisma';
 import { getBuyerSession } from '@/lib/auth';
 import { sendNotification } from '@/lib/notifications';
+import { publishEvent } from '@/lib/core/event-bus';
 import { assertUserCanTransact } from '@/lib/reputation/trust-guard';
 import * as Sentry from '@sentry/nextjs';
 
@@ -48,15 +49,21 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
       return newTx;
     });
 
-    // Notify the farmer
-    const farmer = await prisma.farmer.findUnique({ where: { id: listing.farmerId } });
-    if (farmer) {
-      await sendNotification({
-        type: 'TRANSACTION_CONFIRMATION',
-        recipientPhone: farmer.phone,
-        body: `SmartShamba: Buyer ${buyer.name} has initiated a transaction for your ${listing.product}. Ref: ${reference}. Check your web dashboard.`,
-        farmerId: farmer.id,
-      }).catch(err => console.error('[NOTIFICATIONS] Failed to send farmer notification:', err));
+    // Publish event to notify farmer (async)
+    try {
+      await publishEvent({
+        eventType: 'NOTIFY_TRANSACTION_CONFIRMED',
+        aggregateId: transaction.id,
+        eventKey: `NOTIFY_TRANSACTION_CONFIRMED:${transaction.id}:FARMER_${listing.farmerId}`,
+        payload: {
+          recipientType: 'FARMER',
+          recipientId: listing.farmerId,
+          notificationType: 'TRANSACTION_CONFIRMATION',
+          context: { reference, quantityBags: listing.quantityBags, product: listing.product }
+        }
+      });
+    } catch (e) {
+      console.error('[EVENTS] Failed to publish farmer notification:', e);
     }
 
     return NextResponse.json({ success: true, transaction });

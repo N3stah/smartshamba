@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { sendNotification } from '@/lib/notifications';
+import { publishEvent } from '@/lib/core/event-bus';
 import * as Sentry from '@sentry/nextjs';
 
 export async function GET(req: NextRequest) {

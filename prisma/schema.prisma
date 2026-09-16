@@ -85,6 +85,7 @@ model Buyer {
   contractsAsBuyer Contract[]  @relation("ContractBuyer")
   wallet           Wallet?     @relation("BuyerWallet")
   aiInsights       AIInsight[] @relation("BuyerAIInsights")
+  notificationPreference NotificationPreference?
   phone            String?     @unique // Added for USSD/OTP login
   password         String?
   language         String      @default("en") // i18n: "en" | "sw"
@@ -346,6 +347,7 @@ model Notification {
   status           NotificationStatus @default(PENDING)
   providerResponse String?
   retries          Int                @default(0)
+  deliveryKey      String?            @unique
   sentAt           DateTime?
   createdAt        DateTime           @default(now())
   updatedAt        DateTime           @updatedAt
@@ -361,7 +363,9 @@ model Notification {
 
 model NotificationPreference {
   id                 String   @id @default(cuid())
-  farmerId           String   @unique
+  farmerId           String?   @unique
+  buyerId            String?   @unique
+  providerId         String?   @unique
   transactionSms     Boolean  @default(true)
   weeklyMarketReport Boolean  @default(true)
   harvestTips        Boolean  @default(true)
@@ -370,7 +374,9 @@ model NotificationPreference {
   createdAt          DateTime @default(now())
   updatedAt          DateTime @updatedAt
 
-  farmer Farmer @relation(fields: [farmerId], references: [id])
+  farmer   Farmer?           @relation(fields: [farmerId], references: [id])
+  buyer    Buyer?            @relation(fields: [buyerId], references: [id])
+  provider TransportProvider? @relation(fields: [providerId], references: [id])
 }
 
 model Advisory {
@@ -765,6 +771,7 @@ model TransportProvider {
 
   county   County?            @relation(fields: [countyId], references: [id])
   wallet   Wallet?           @relation("ProviderWallet")
+  notificationPreference NotificationPreference?
   bookings TransportBooking[]
   vehicles TransportVehicle[]
   requests TransportRequest[]

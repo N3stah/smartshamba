@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma, withDatabaseRetry } from '@/lib/prisma';
 import { getFarmerSession, getBuyerSession } from '@/lib/auth';
 import { sendNotification } from '@/lib/notifications';
+import { publishEvent } from '@/lib/core/event-bus';
 import { sendPushNotification } from '@/lib/push';
 import { sanitizeInput } from '@/lib/sanitize';
 import * as Sentry from '@sentry/nextjs';

@@ -7,6 +7,7 @@ import { handleDisputeOpened } from './dispute-opened';
 import { handleDisputeResolved } from './dispute-resolved';
 import { handleAccountFrozen } from './account-frozen';
 import { handleAccountUnfrozen } from './account-unfrozen';
+import { handleNotificationSent } from './notification-sent';
 
 export type EventHandler = (event: EventOutbox) => Promise<void>;
 
@@ -33,6 +34,11 @@ const handlers: Record<string, EventHandler> = {
  * Throws if no handler is registered for the event type.
  */
 export async function dispatchEvent(event: EventOutbox): Promise<void> {
+  // Route all notification events to the notification handler
+  if (event.eventType.startsWith('NOTIFY_')) {
+    return handleNotificationSent(event);
+  }
+
   const handler = handlers[event.eventType];
   if (!handler) {
     throw new Error(`No handler registered for event type: ${event.eventType}`);
