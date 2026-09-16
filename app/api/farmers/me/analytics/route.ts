@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { getFarmerSession } from '@/lib/auth';
+import { getTrustScore } from '@/lib/reputation/reputation-service';
 import * as Sentry from '@sentry/nextjs';
 
 export async function GET(req: NextRequest) {
@@ -30,7 +31,8 @@ export async function GET(req: NextRequest) {
       totalBags, totalEarnings, avgRating, recentSales, cropPerformance,
       thisMonthEarnings, lastMonthEarnings,
       topBuyers, groupsJoined, groupEarnings, unreadNotifications, positiveRatings,
-      marketDemand
+      marketDemand,
+      trustScore
     ] = await Promise.all([
       prisma.transaction.count({ where: { farmerId: farmer.id } }),
       prisma.transaction.count({ where: { farmerId: farmer.id, status: 'SETTLED' } }),
@@ -55,7 +57,8 @@ export async function GET(req: NextRequest) {
       prisma.groupTransaction.aggregate({ _sum: { totalValue: true }, where: { group: { members: { some: { farmerId: farmer.id } } }, status: 'SETTLED' } }),
       prisma.notification.count({ where: { farmerId: farmer.id, status: 'SENT' } }),
       prisma.rating.count({ where: { farmerId: farmer.id, score: { gte: 4 } } }),
-      prisma.buyerDemand.groupBy({ by: ['product'], where: { status: 'ACTIVE' }, _sum: { quantityBags: true } })
+      prisma.buyerDemand.groupBy({ by: ['product'], where: { status: 'ACTIVE' }, _sum: { quantityBags: true } }),
+      getTrustScore(farmer.id, 'FARMER')
     ]);
 
     const buyerIds = topBuyers.map(t => t.buyerId);
@@ -126,7 +129,12 @@ export async function GET(req: NextRequest) {
         marketDemand: marketDemand.map(d => ({ name: d.product, bags: d._sum.quantityBags || 0 })),
         priceTrend: formattedPriceTrend
       },
-      insights
+      insights,
+      trust: {
+        score: trustScore?.score || 0,
+        level: trustScore?.level || 'NEW',
+        isFrozen: farmer.isFrozen
+      }
     });
   } catch (error) {
     console.error('[FARMER] Analytics error:', error);

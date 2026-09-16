@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { getBuyerSession } from '@/lib/auth';
 import { getOrCreateWalletId } from '@/lib/finance/ledger-service';
+import { getTrustScore } from '@/lib/reputation/reputation-service';
 import * as Sentry from '@sentry/nextjs';
 
 export async function GET(req: NextRequest) {
@@ -13,13 +14,14 @@ export async function GET(req: NextRequest) {
 
     const walletId = await getOrCreateWalletId(buyer.id, 'BUYER');
     
-    const [wallet, entries] = await Promise.all([
+    const [wallet, entries, trustScore] = await Promise.all([
       prisma.wallet.findUnique({ where: { id: walletId } }),
       prisma.ledgerEntry.findMany({
         where: { walletId: walletId },
         orderBy: { createdAt: 'desc' },
         take: 50
-      })
+      }),
+      getTrustScore(buyer.id, 'BUYER')
     ]);
 
     return NextResponse.json({ balance: wallet?.balance || 0, entries });

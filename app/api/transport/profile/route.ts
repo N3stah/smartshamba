@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { getTransportSession } from '@/lib/auth';
+import { getTrustScore } from '@/lib/reputation/reputation-service';
 import * as Sentry from '@sentry/nextjs';
 
 export async function GET(req: NextRequest) {
@@ -12,15 +13,20 @@ export async function GET(req: NextRequest) {
     if (!provider) return NextResponse.json({ error: 'Provider not found' }, { status: 404 });
 
     // Fetch stats
-    const [totalDeliveries, activeDeliveries, totalEarnings, completedBookings] = await Promise.all([
+    const [totalDeliveries, activeDeliveries, totalEarnings, completedBookings, trustScore] = await Promise.all([
       prisma.transportBooking.count({ where: { providerId: provider.id } }),
       prisma.transportBooking.count({ where: { providerId: provider.id, status: { in: ['REQUESTED', 'MATCHED', 'ACCEPTED', 'LOADED', 'IN_TRANSIT'] } } }),
       prisma.transportBooking.aggregate({ _sum: { cost: true }, where: { providerId: provider.id, status: 'DELIVERED' } }),
-      prisma.transportBooking.count({ where: { providerId: provider.id, status: 'DELIVERED' } })
+      prisma.transportBooking.count({ where: { providerId: provider.id, status: 'DELIVERED' } }),
+      getTrustScore(provider.id, 'TRANSPORT')
     ]);
 
     return NextResponse.json({
       provider,
+      trust: {
+        score: trustScore?.score || 0,
+        level: trustScore?.level || 'NEW'
+      },
       stats: {
         totalDeliveries,
         activeDeliveries,
