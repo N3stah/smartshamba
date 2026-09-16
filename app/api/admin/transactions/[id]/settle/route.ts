@@ -5,6 +5,8 @@ import { requireAdminAuth } from '@/lib/auth';
 import { sendNotification } from '@/lib/notifications';
 import { settlementTemplate } from '@/lib/notifications/templates';
 import { recordAuditLog } from '@/lib/auditLog';
+import { calculateAndSaveTrustScore } from '@/lib/reputation/reputation-service';
+import { recordTrustEvent } from '@/lib/reputation/trust-event-service';
 
 export async function PUT(
   req: NextRequest,
@@ -55,6 +57,30 @@ export async function PUT(
     });
 
     console.log(`[ADMIN] Manually settled transaction ${updated.reference} with ref ${mpesaRef}`);
+
+    // Trigger Trust Recalculation & Event
+    try {
+      await calculateAndSaveTrustScore(updated.farmerId, 'FARMER');
+      await calculateAndSaveTrustScore(updated.buyerId, 'BUYER');
+      await recordTrustEvent({
+        userId: updated.farmerId,
+        userType: 'FARMER',
+        eventType: 'TRANSACTION_SETTLED',
+        impact: 2,
+        description: `Transaction \${updated.reference} settled successfully`,
+        relatedId: updated.id,
+      });
+      await recordTrustEvent({
+        userId: updated.buyerId,
+        userType: 'BUYER',
+        eventType: 'TRANSACTION_SETTLED',
+        impact: 2,
+        description: `Transaction \${updated.reference} settled successfully`,
+        relatedId: updated.id,
+      });
+    } catch (e) {
+      console.error('[TRUST] Failed to process settlement event:', e);
+    }
 
     let smsResult = null;
     if (notifyFarmer && updated.farmer?.phone) {

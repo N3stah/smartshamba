@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { sanitizeInput } from '@/lib/sanitize';
 import { getFarmerSession } from '@/lib/auth';
+import { recordTrustEvent } from '@/lib/reputation/trust-event-service';
 import * as Sentry from '@sentry/nextjs';
 
 export async function POST(req: NextRequest) {
@@ -71,6 +72,28 @@ export async function POST(req: NextRequest) {
         data: { status: 'DISPUTED' },
       }),
     ]);
+
+    // Record Trust Event for Farmer and Buyer
+    try {
+      await recordTrustEvent({
+        userId: farmer.id,
+        userType: 'FARMER',
+        eventType: 'DISPUTE_OPENED',
+        impact: -2,
+        description: `Dispute opened for transaction \${transactionId}`,
+        relatedId: transactionId,
+      });
+      await recordTrustEvent({
+        userId: tx.buyerId,
+        userType: 'BUYER',
+        eventType: 'DISPUTE_OPENED',
+        impact: -2,
+        description: `Dispute opened for transaction \${transactionId}`,
+        relatedId: transactionId,
+      });
+    } catch (e) {
+      console.error('[TRUST] Failed to record dispute event:', e);
+    }
 
     console.log('[DISPUTES] Created dispute for transaction', transactionId);
     return NextResponse.json({ success: true });

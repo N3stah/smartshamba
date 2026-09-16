@@ -4,6 +4,8 @@ import { requireAdminAuth } from '@/lib/auth';
 import * as Sentry from '@sentry/nextjs';
 import { DisputeStatus, Prisma } from '@prisma/client';
 import { recordAuditLog } from '@/lib/auditLog';
+import { calculateAndSaveTrustScore } from '@/lib/reputation/reputation-service';
+import { recordTrustEvent } from '@/lib/reputation/trust-event-service';
 
 export async function PATCH(
   req: NextRequest,
@@ -30,7 +32,7 @@ export async function PATCH(
 
     const dispute = await prisma.dispute.findUnique({
       where: { id },
-      select: { transactionId: true, status: true, adminNote: true },
+      select: { id: true, transactionId: true, status: true, adminNote: true, farmerId: true, buyerId: true },
     });
 
     if (!dispute) {
@@ -61,6 +63,32 @@ export async function PATCH(
     }
 
     await prisma.$transaction(ops);
+
+    // Trigger Trust Recalculation & Event on Resolution
+    if (isTerminal) {
+      try {
+        await calculateAndSaveTrustScore(dispute.farmerId, 'FARMER');
+        await calculateAndSaveTrustScore(dispute.buyerId, 'BUYER');
+        await recordTrustEvent({
+          userId: dispute.farmerId,
+          userType: 'FARMER',
+          eventType: 'DISPUTE_RESOLVED',
+          impact: -5,
+          description: `Dispute resolved/closed for transaction \${dispute.transactionId}`,
+          relatedId: dispute.id,
+        });
+        await recordTrustEvent({
+          userId: dispute.buyerId,
+          userType: 'BUYER',
+          eventType: 'DISPUTE_RESOLVED',
+          impact: -5,
+          description: `Dispute resolved/closed for transaction \${dispute.transactionId}`,
+          relatedId: dispute.id,
+        });
+      } catch (e) {
+        console.error('[TRUST] Failed to process dispute resolution:', e);
+      }
+    }
 
     await recordAuditLog({
       action: 'UPDATE_DISPUTE_STATUS',
