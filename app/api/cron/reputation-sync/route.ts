@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { calculateAndSaveTrustScore } from '@/lib/reputation/reputation-service';
 import * as Sentry from '@sentry/nextjs';
 
 export async function GET(req: NextRequest) {
@@ -9,63 +10,47 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    console.log('[CRON] Syncing reputation scores...');
+    console.log('[CRON] Syncing reputation scores via canonical service...');
 
-    const [farmers, buyers] = await Promise.all([
+    const [farmers, buyers, providers] = await Promise.all([
       prisma.farmer.findMany({ select: { id: true } }),
-      prisma.buyer.findMany({ select: { id: true } })
+      prisma.buyer.findMany({ select: { id: true } }),
+      prisma.transportProvider.findMany({ select: { id: true } })
     ]);
 
     let syncedCount = 0;
 
+    // Calculate for Farmers
     for (const farmer of farmers) {
-      const [completedTx, totalTx] = await Promise.all([
-        prisma.transaction.count({ where: { farmerId: farmer.id, status: 'SETTLED' } }),
-        prisma.transaction.count({ where: { farmerId: farmer.id } })
-      ]);
-
-      const successRate = totalTx > 0 ? (completedTx / totalTx) * 100 : 0;
-      const score = Math.min(100, Math.round(successRate));
-      const level = score > 80 ? 'PLATINUM' : score > 60 ? 'GOLD' : score > 40 ? 'SILVER' : 'BRONZE';
-
-      await prisma.trustScore.upsert({
-        where: { userId_userType: { userId: farmer.id, userType: 'FARMER' } },
-        update: { score, level },
-        create: { 
-          userId: farmer.id, 
-          userType: 'FARMER', 
-          score, 
-          level,
-          breakdown: { successRate, totalTx, completedTx }
-        }
-      });
-      syncedCount++;
+      try {
+        await calculateAndSaveTrustScore(farmer.id, 'FARMER');
+        syncedCount++;
+      } catch (e) {
+        console.error(`[CRON] Failed to sync farmer ${farmer.id}:`, e);
+      }
     }
 
+    // Calculate for Buyers
     for (const buyer of buyers) {
-      const [completedTx, totalTx] = await Promise.all([
-        prisma.transaction.count({ where: { buyerId: buyer.id, status: 'SETTLED' } }),
-        prisma.transaction.count({ where: { buyerId: buyer.id } })
-      ]);
-
-      const successRate = totalTx > 0 ? (completedTx / totalTx) * 100 : 0;
-      const score = Math.min(100, Math.round(successRate));
-      const level = score > 80 ? 'PLATINUM' : score > 60 ? 'GOLD' : score > 40 ? 'SILVER' : 'BRONZE';
-
-      await prisma.trustScore.upsert({
-        where: { userId_userType: { userId: buyer.id, userType: 'BUYER' } },
-        update: { score, level },
-        create: { 
-          userId: buyer.id, 
-          userType: 'BUYER', 
-          score, 
-          level,
-          breakdown: { successRate, totalTx, completedTx }
-        }
-      });
-      syncedCount++;
+      try {
+        await calculateAndSaveTrustScore(buyer.id, 'BUYER');
+        syncedCount++;
+      } catch (e) {
+        console.error(`[CRON] Failed to sync buyer ${buyer.id}:`, e);
+      }
     }
 
+    // Calculate for Transport Providers
+    for (const provider of providers) {
+      try {
+        await calculateAndSaveTrustScore(provider.id, 'TRANSPORT');
+        syncedCount++;
+      } catch (e) {
+        console.error(`[CRON] Failed to sync provider ${provider.id}:`, e);
+      }
+    }
+
+    console.log(`[CRON] Reputation sync complete. Synced ${syncedCount} users.`);
     return NextResponse.json({ success: true, synced: syncedCount });
   } catch (error) {
     console.error('[CRON] Reputation sync error:', error);
