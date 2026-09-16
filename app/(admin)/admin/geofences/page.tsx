@@ -15,10 +15,6 @@ interface GoogleMaps {
   Map: new (el: HTMLElement, opts: object) => GoogleMap;
   Polygon: new (opts: object) => GooglePolygon;
 }
-interface Window {
-  google?: { maps: GoogleMaps };
-  initGeofenceMap?: () => void;
-}
 
 export default function GeofencesPage() {
   const [loading, setLoading] = useState(true);
@@ -30,29 +26,33 @@ export default function GeofencesPage() {
   useEffect(() => {
     if (!mapContainer.current) return;
 
+    const w = window as any;
     const loadMap = () => {
-      if (!window.google || !window.google.maps) {
+      if (!w.google || !w.google.maps) {
         setTimeout(loadMap, 100);
         return;
       }
 
-      mapRef.current = new window.google.maps.Map(mapContainer.current, {
-        center: { lat: 0.5143, lng: 35.2698 }, // Trans Nzoia
+      if (!mapContainer.current) return;
+      mapRef.current = new w.google.maps.Map(mapContainer.current, {
+        center: { lat: 0.5143, lng: 35.2698 },
         zoom: 9,
       });
 
-      mapRef.current.addListener('click', (e) => {
-        const newPoint = { lat: e.latLng.lat(), lng: e.latLng.lng() };
-        setPoints(prev => [...prev, newPoint]);
-      });
+      if (mapRef.current) {
+        mapRef.current.addListener('click', (e: { latLng: { lat: () => number; lng: () => number } }) => {
+          const newPoint = { lat: e.latLng.lat(), lng: e.latLng.lng() };
+          setPoints(prev => [...prev, newPoint]);
+        });
+      }
 
       setLoading(false);
     };
 
-    if (window.google && window.google.maps) {
+    if (w.google && w.google.maps) {
       loadMap();
     } else {
-      window.initGeofenceMap = loadMap;
+      w.initGeofenceMap = loadMap;
       if (!document.getElementById('google-maps-script')) {
         const script = document.createElement('script');
         script.id = 'google-maps-script';
@@ -64,19 +64,18 @@ export default function GeofencesPage() {
     }
 
     return () => {
-      if (window.initGeofenceMap) {
-        window.initGeofenceMap = () => {};
-      }
+      w.initGeofenceMap = undefined;
     };
   }, []);
 
   useEffect(() => {
-    if (!window.google || !window.google.maps || !mapRef.current || points.length === 0) return;
+    const w = window as any;
+    if (!w.google || !w.google.maps || !mapRef.current || points.length === 0) return;
 
     if (polygonRef.current) {
       polygonRef.current.setPath(points);
     } else if (points.length > 1) {
-      polygonRef.current = new window.google.maps.Polygon({
+      polygonRef.current = new w.google.maps.Polygon({
         path: points,
         strokeColor: '#FF0000',
         strokeOpacity: 0.8,
@@ -84,7 +83,9 @@ export default function GeofencesPage() {
         fillColor: '#FF0000',
         fillOpacity: 0.35,
       });
-      polygonRef.current.setMap(mapRef.current);
+      if (polygonRef.current) {
+        polygonRef.current.setMap(mapRef.current);
+      }
     }
   }, [points]);
 
@@ -101,7 +102,6 @@ export default function GeofencesPage() {
           {points.length > 2 && (
             <button 
               onClick={() => {
-                // Save logic here
                 console.log('Saving geofence:', points);
               }}
               className="w-full bg-[#00703C] text-white py-2 rounded-lg text-sm font-medium hover:bg-[#00582f]"
