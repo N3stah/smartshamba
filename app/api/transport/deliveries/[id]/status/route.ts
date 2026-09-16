@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { getTransportSession } from '@/lib/auth';
 import { processTransportSettlement, processGroupTransportSettlement } from '@/lib/finance/ledger-service';
+import { calculateAndSaveTrustScore } from '@/lib/reputation/reputation-service';
+import { recordTrustEvent } from '@/lib/reputation/trust-event-service';
 import * as Sentry from '@sentry/nextjs';
 
 const validTransitions: Record<string, string[]> = {
@@ -85,6 +87,62 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
         after: { status: newStatus }
       }
     });
+
+    // Trust Recalculation for Transport Provider
+    if (newStatus === 'COMPLETED' || newStatus === 'CANCELLED') {
+      try {
+        await calculateAndSaveTrustScore(provider.id, 'TRANSPORT');
+        if (newStatus === 'COMPLETED') {
+          await recordTrustEvent({
+            userId: provider.id,
+            userType: 'TRANSPORT',
+            eventType: 'TRANSPORT_COMPLETED',
+            impact: 2,
+            description: `Transport booking ${id.substring(0, 8)} completed successfully`,
+            relatedId: id,
+          });
+        } else if (newStatus === 'CANCELLED') {
+          await recordTrustEvent({
+            userId: provider.id,
+            userType: 'TRANSPORT',
+            eventType: 'TRANSPORT_CANCELLED',
+            impact: -3,
+            description: `Transport booking ${id.substring(0, 8)} was cancelled`,
+            relatedId: id,
+          });
+        }
+      } catch (e) {
+        console.error('[TRUST] Failed to process transport event:', e);
+      }
+    }
+
+    // Trust Recalculation for Transport Provider
+    if (newStatus === 'COMPLETED' || newStatus === 'CANCELLED') {
+      try {
+        await calculateAndSaveTrustScore(provider.id, 'TRANSPORT');
+        if (newStatus === 'COMPLETED') {
+          await recordTrustEvent({
+            userId: provider.id,
+            userType: 'TRANSPORT',
+            eventType: 'TRANSPORT_COMPLETED',
+            impact: 2,
+            description: `Transport booking ${id.substring(0, 8)} completed successfully`,
+            relatedId: id,
+          });
+        } else if (newStatus === 'CANCELLED') {
+          await recordTrustEvent({
+            userId: provider.id,
+            userType: 'TRANSPORT',
+            eventType: 'TRANSPORT_CANCELLED',
+            impact: -3,
+            description: `Transport booking ${id.substring(0, 8)} was cancelled`,
+            relatedId: id,
+          });
+        }
+      } catch (e) {
+        console.error('[TRUST] Failed to process transport event:', e);
+      }
+    }
 
     return NextResponse.json({ success: true, booking: updatedBooking });
   } catch (error) {

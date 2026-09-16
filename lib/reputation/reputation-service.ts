@@ -103,7 +103,7 @@ export async function calculateAndSaveTrustScore(userId: string, userType: 'FARM
       if (!provider) return null;
 
       breakdown.verification = provider.verificationStatus === "VERIFIED" ? 10 : 0;
-      const completedJobs = provider.bookings.filter((b: { id: string; status: string; createdAt: Date }) => b.status === 'DELIVERED');
+      const completedJobs = provider.bookings.filter((b: { id: string; status: string; createdAt: Date }) => b.status === 'DELIVERED' || b.status === 'COMPLETED');
       let txScore = 0;
       completedJobs.forEach((job: { id: string; status: string; createdAt: Date }) => { txScore += 4 * getTimeWeight(job.createdAt); });
       breakdown.transaction_volume = Math.min(txScore, 20);
