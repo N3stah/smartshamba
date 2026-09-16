@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma, safeTransaction } from '@/lib/prisma';
 import { getBuyerSession } from '@/lib/auth';
 import { sendNotification } from '@/lib/notifications';
+import { assertUserCanTransact } from '@/lib/reputation/trust-guard';
 import * as Sentry from '@sentry/nextjs';
 
 export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
@@ -12,6 +13,10 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
     const { id: listingId } = await params;
     const buyer = await prisma.buyer.findFirst({ where: { phone } });
     if (!buyer) return NextResponse.json({ error: 'Buyer not found' }, { status: 404 });
+
+    // Freeze Guard
+    const freezeError = await assertUserCanTransact(buyer.id, 'BUYER');
+    if (freezeError) return freezeError;
 
     const listing = await prisma.produceListing.findUnique({ where: { id: listingId } });
     if (!listing || listing.status !== 'ACTIVE') {
