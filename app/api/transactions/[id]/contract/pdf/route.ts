@@ -21,6 +21,21 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
     const contract = await prisma.contract.findUnique({ where: { transactionId: id } });
     if (!contract) return NextResponse.json({ error: 'Contract not found' }, { status: 404 });
 
+    // IDOR Protection: Verify ownership of the contract
+    if (!isAdmin) {
+      if (farmerPhone) {
+        const farmer = await prisma.farmer.findUnique({ where: { phone: farmerPhone } });
+        if (!farmer || contract.sellerId !== farmer.id) {
+          return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+        }
+      } else if (buyerPhone) {
+        const buyer = await prisma.buyer.findFirst({ where: { phone: buyerPhone } });
+        if (!buyer || contract.buyerId !== buyer.id) {
+          return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+        }
+      }
+    }
+
     const pdfBuffer = await generateContractPdf(contract.id);
     const uint8Array = new Uint8Array(pdfBuffer);
 
@@ -33,6 +48,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
   } catch (error) {
     console.error('[API] PDF Generation error:', error);
     Sentry.captureException(error);
+    await Sentry.flush(2000);
     return NextResponse.json({ error: 'Failed to generate PDF' }, { status: 500 });
   }
 }
