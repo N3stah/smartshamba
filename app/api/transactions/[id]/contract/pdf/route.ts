@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { getFarmerSession, getBuyerSession, requireAdminAuth } from '@/lib/auth';
+import { getFarmerSession, getBuyerSession, requireRoleAuth } from '@/lib/auth';
+import { StaffRole } from '@prisma/client';
 import { generateContractPdf } from '@/lib/contracts/pdf-service';
 import * as Sentry from '@sentry/nextjs';
 
@@ -11,7 +12,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
     // Auth check: Only parties involved or admin can download
     const farmerPhone = getFarmerSession(req);
     const buyerPhone = getBuyerSession(req);
-    const isAdmin = !await requireAdminAuth(req);
+    const isAdmin = !await requireRoleAuth(req, [StaffRole.CEO, StaffRole.CTO, StaffRole.CFO, StaffRole.PM]);
     
     if (!farmerPhone && !buyerPhone && !isAdmin) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });

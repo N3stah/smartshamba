@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { requireAdminAuth } from '@/lib/auth';
+import { requireRoleAuth } from '@/lib/auth';
+import { StaffRole } from '@prisma/client';
 import { recordAuditLog } from '@/lib/auditLog';
 import { sanitizeInput } from '@/lib/sanitize';
 
@@ -8,7 +9,7 @@ export async function PUT(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const authError = await requireAdminAuth(req);
+  const authError = await requireRoleAuth(req, [StaffRole.CEO, StaffRole.CTO, StaffRole.CFO, StaffRole.PM]);
   if (authError) return authError;
 
   try {
@@ -62,7 +63,7 @@ export async function PATCH(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const authError = await requireAdminAuth(req);
+  const authError = await requireRoleAuth(req, [StaffRole.CEO, StaffRole.CTO, StaffRole.CFO, StaffRole.PM]);
   if (authError) return authError;
 
   try {

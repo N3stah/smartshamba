@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { requireAdminAuth } from '@/lib/auth';
+import { requireRoleAuth } from '@/lib/auth';
+import { StaffRole } from '@prisma/client';
 import * as Sentry from '@sentry/nextjs';
 import { DisputeStatus } from '@prisma/client';
 
@@ -8,7 +9,7 @@ const VALID_STATUSES: DisputeStatus[] = ['OPEN', 'UNDER_REVIEW', 'RESOLVED', 'CL
 
 export async function GET(req: NextRequest) {
   try {
-    const auth = await requireAdminAuth(req);
+    const auth = await requireRoleAuth(req, [StaffRole.CEO, StaffRole.CTO, StaffRole.CFO, StaffRole.PM]);
     if (auth) return auth;
 
     const url = new URL(req.url);

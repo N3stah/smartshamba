@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getFarmerSession, getBuyerSession, requireAdminAuth } from '@/lib/auth';
+import { getFarmerSession, getBuyerSession, requireRoleAuth } from '@/lib/auth';
+import { StaffRole } from '@prisma/client';
 import { generateDailyBrief } from '@/lib/ai/brief-service';
 import * as Sentry from '@sentry/nextjs';
 
@@ -10,7 +11,7 @@ export async function GET(req: NextRequest) {
 
     const farmerPhone = getFarmerSession(req);
     const buyerPhone = getBuyerSession(req);
-    const isAdmin = !await requireAdminAuth(req);
+    const isAdmin = !await requireRoleAuth(req, [StaffRole.CEO, StaffRole.CTO, StaffRole.CFO, StaffRole.PM]);
 
     if (farmerPhone) { role = 'FARMER'; phone = farmerPhone; }
     else if (buyerPhone) { role = 'BUYER'; phone = buyerPhone; }

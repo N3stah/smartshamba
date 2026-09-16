@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { getFarmerSession, getBuyerSession, requireAdminAuth } from '@/lib/auth';
+import { getFarmerSession, getBuyerSession, requireRoleAuth } from '@/lib/auth';
+import { StaffRole } from '@prisma/client';
 import * as Sentry from '@sentry/nextjs';
 
 export async function POST(req: NextRequest) {
@@ -11,7 +12,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Basic auth check
-    if (!getFarmerSession(req) && !getBuyerSession(req) && await requireAdminAuth(req)) {
+    if (!getFarmerSession(req) && !getBuyerSession(req) && await requireRoleAuth(req, [StaffRole.CEO, StaffRole.CTO, StaffRole.CFO, StaffRole.PM])) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 

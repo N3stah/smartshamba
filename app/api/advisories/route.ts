@@ -1,7 +1,8 @@
 import * as Sentry from '@sentry/nextjs';
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { requireAdminAuth } from '@/lib/auth';
+import { requireRoleAuth } from '@/lib/auth';
+import { StaffRole } from '@prisma/client';
 
 // GET /api/advisories — public, returns active advisories
 export async function GET(req: NextRequest) {
@@ -32,7 +33,7 @@ export async function GET(req: NextRequest) {
 
 // POST /api/advisories — admin creates an advisory
 export async function POST(req: NextRequest) {
-  const auth = await requireAdminAuth(req);
+  const auth = await requireRoleAuth(req, [StaffRole.CEO, StaffRole.CTO, StaffRole.CFO, StaffRole.PM]);
   if (auth) return auth;
 
   try {

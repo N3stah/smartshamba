@@ -43,9 +43,13 @@ export async function POST(req: NextRequest) {
 
     // 1.5 AI Rate Limiting (Check before expensive AI work)
     const isStaff = role === 'STAFF';
-    const limit = isStaff ? parseInt(process.env.AI_CHAT_LIMIT_STAFF || '100') : parseInt(process.env.AI_CHAT_LIMIT_USER || '20');
-    const windowMs = parseInt(process.env.AI_CHAT_WINDOW_MS || '3600000'); // 1 hour default
+    const limit = isStaff ? parseInt(process.env.AI_CHAT_LIMIT_STAFF || '') : parseInt(process.env.AI_CHAT_LIMIT_USER || '');
+    const windowMs = parseInt(process.env.AI_CHAT_WINDOW_MS || '');
     
+    if (!limit || limit <= 0 || !windowMs || windowMs <= 0) {
+      return NextResponse.json({ error: 'AI rate limit configuration error.' }, { status: 500 });
+    }
+
     if (limit > 0 && windowMs > 0) {
       const identifier = isStaff ? `ai:chat:staff:${userId}` : `ai:chat:user:${userId}`;
       const rateLimit = await checkApiRateLimit(identifier, limit, windowMs);

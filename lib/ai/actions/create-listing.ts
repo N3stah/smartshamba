@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import { prisma } from '@/lib/prisma';
 import { AIAction, AIActionContext } from './types';
+import * as Sentry from '@sentry/nextjs';
 
 const CreateListingSchema = z.object({
   crop: z.string().min(1, "Crop is required"),
@@ -40,6 +41,8 @@ export const createListingHandler = async (context: AIActionContext, params: unk
     return "✅ Done! I've created the produce listing for you. You can view it in your 'Sell Produce' dashboard.";
   } catch (error) {
     console.error('[AI_ACTION] Create listing error:', error);
+    Sentry.captureException(error);
+    await Sentry.flush(2000);
     return "I encountered an error while creating the listing. Please try again or use the 'Sell Produce' page.";
   }
 };

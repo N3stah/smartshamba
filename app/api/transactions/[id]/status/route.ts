@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { getFarmerSession, getBuyerSession, requireAdminAuth } from '@/lib/auth';
+import { getFarmerSession, getBuyerSession, requireRoleAuth } from '@/lib/auth';
+import { StaffRole } from '@prisma/client';
 import { sendNotification } from '@/lib/notifications';
 import { publishEvent } from '@/lib/core/event-bus';
 import { recordAuditLog } from '@/lib/auditLog';
@@ -31,7 +32,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
 
     const farmerPhone = getFarmerSession(req);
     const buyerPhone = getBuyerSession(req);
-    const isAdmin = !await requireAdminAuth(req);
+    const isAdmin = !await requireRoleAuth(req, [StaffRole.CEO, StaffRole.CTO, StaffRole.CFO, StaffRole.PM]);
 
     if (!farmerPhone && !buyerPhone && !isAdmin) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -43,6 +44,19 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
     });
 
     if (!transaction) return NextResponse.json({ error: 'Transaction not found' }, { status: 404 });
+
+    // IDOR Protection: Verify ownership before allowing status transitions
+    if (!isAdmin) {
+      if (farmerPhone) {
+        const farmer = await prisma.farmer.findUnique({ where: { phone: farmerPhone } });
+        if (!farmer || transaction.farmerId !== farmer.id) return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+      } else if (buyerPhone) {
+        const buyer = await prisma.buyer.findFirst({ where: { phone: buyerPhone } });
+        if (!buyer || transaction.buyerId !== buyer.id) return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+      } else {
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      }
+    }
 
     const allowedNext = validTransitions[transaction.status] || [];
     if (!allowedNext.includes(status)) {

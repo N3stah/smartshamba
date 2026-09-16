@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { requireAdminAuth } from '@/lib/auth';
+import { requireRoleAuth } from '@/lib/auth';
+import { StaffRole } from '@prisma/client';
 import * as Sentry from '@sentry/nextjs';
 import { DisputeStatus, Prisma } from '@prisma/client';
 import { recordAuditLog } from '@/lib/auditLog';
@@ -10,7 +11,7 @@ export async function PATCH(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const auth = await requireAdminAuth(req);
+  const auth = await requireRoleAuth(req, [StaffRole.CEO, StaffRole.CTO, StaffRole.CFO, StaffRole.PM]);
   if (auth) return auth;
 
   try {

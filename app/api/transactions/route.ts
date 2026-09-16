@@ -1,7 +1,8 @@
 import * as Sentry from '@sentry/nextjs';
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { requireAdminAuth } from '@/lib/auth';
+import { requireRoleAuth } from '@/lib/auth';
+import { StaffRole } from '@prisma/client';
 import { sendNotification } from '@/lib/notifications';
 import { publishEvent } from '@/lib/core/event-bus';
 import { transactionConfirmationTemplate } from '@/lib/notifications/templates';
@@ -15,7 +16,7 @@ function generateReference(): string {
 }
 
 export async function GET(req: NextRequest) {
-  const authError = await requireAdminAuth(req);
+  const authError = await requireRoleAuth(req, [StaffRole.CEO, StaffRole.CTO, StaffRole.CFO, StaffRole.PM]);
   if (authError) return authError;
 
   try {

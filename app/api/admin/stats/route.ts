@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { requireAdminAuth } from '@/lib/auth';
+import { requireRoleAuth } from '@/lib/auth';
+import { StaffRole } from '@prisma/client';
 import * as Sentry from '@sentry/nextjs';
 import { unstable_cache } from 'next/cache';
 
@@ -44,7 +45,7 @@ const getStats = unstable_cache(
 
 export async function GET(req: NextRequest) {
   try {
-    const authError = await requireAdminAuth(req);
+    const authError = await requireRoleAuth(req, [StaffRole.CEO, StaffRole.CTO, StaffRole.CFO, StaffRole.PM]);
     if (authError) return authError;
 
     const stats = await getStats();

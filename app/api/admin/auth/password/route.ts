@@ -1,12 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { requireAdminAuth, getStaffSession } from '@/lib/auth';
+import { requireRoleAuth, getStaffSession } from '@/lib/auth';
+import { StaffRole } from '@prisma/client';
 import bcrypt from 'bcryptjs';
 import * as Sentry from '@sentry/nextjs';
 
 export async function POST(req: NextRequest) {
   try {
-    const authError = await requireAdminAuth(req);
+    const authError = await requireRoleAuth(req, [StaffRole.CEO, StaffRole.CTO, StaffRole.CFO, StaffRole.PM]);
     if (authError) return authError;
 
     const session = await getStaffSession(req);

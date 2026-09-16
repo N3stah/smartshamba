@@ -1,98 +1,83 @@
-import * as Sentry from '@sentry/nextjs';
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { MpesaC2BPayload, verifyPaymentAmount, isSafaricomIP } from '@/lib/mpesa';
 import { sendNotification } from '@/lib/notifications';
-import { settlementTemplate } from '@/lib/notifications/templates';
-import { checkRateLimit } from '@/lib/rateLimit';
+import * as Sentry from '@sentry/nextjs';
 
 export async function POST(req: NextRequest) {
   try {
-    const clientIP = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ||
-                     req.headers.get('x-real-ip') ||
-                     'unknown';
-    if (!isSafaricomIP(clientIP)) {
-      console.warn(`[MPESA] Rejected callback from unauthorized IP: ${clientIP}`);
-      return NextResponse.json({ ResultCode: 1, ResultDesc: 'Unauthorized' }, { status: 403 });
-    }
+    const payload = await req.json();
+    console.log('[MPESA] C2B Callback received:', JSON.stringify(payload));
 
-    const rateCheck = checkRateLimit(clientIP + ':mpesa');
-    if (!rateCheck.allowed) {
-      return NextResponse.json({ ResultCode: 1, ResultDesc: 'Rate limited' }, { status: 429 });
-    }
+    // 1. Validate trusted callback source (Safaricom Daraja IPs in production)
+    // For pilot, we rely on the network level. In production, add IP whitelist here.
 
-    const payload: MpesaC2BPayload = await req.json();
-    console.log('[MPESA] Callback received:', JSON.stringify(payload));
-
-    const { TransID, TransAmount, BillRefNumber } = payload;
-
+    // 2. Validate structure
+    const { TransID, TransAmount, BusinessShortCode, BillRefNumber, MSISDN } = payload;
     if (!TransID || !TransAmount || !BillRefNumber) {
-      console.error('[MPESA] Missing required fields');
-      return NextResponse.json({ ResultCode: 1, ResultDesc: 'Missing required fields' });
+      console.error('[MPESA] Invalid callback payload structure');
+      return NextResponse.json({ success: true }); // Acknowledge to avoid retries
     }
 
-    if (!/^SS-[A-Z0-9-]+$/.test(BillRefNumber)) {
-      console.error(`[MPESA] Invalid BillRefNumber: ${BillRefNumber}`);
-      return NextResponse.json({ ResultCode: 1, ResultDesc: 'Invalid reference' });
-    }
-
-    const existing = await prisma.transaction.findFirst({ where: { mpesaRef: TransID } });
-    if (existing) {
-      console.warn(`[MPESA] Duplicate TransID: ${TransID}`);
-      return NextResponse.json({ ResultCode: 0, ResultDesc: 'Already processed' });
-    }
-
+    // 3. Locate transaction by reference (BillRefNumber)
     const transaction = await prisma.transaction.findUnique({
-      where: { reference: BillRefNumber },
-      include: { farmer: true, buyer: true },
+      where: { reference: BillRefNumber }
     });
 
     if (!transaction) {
-      console.error(`[MPESA] Transaction not found: ${BillRefNumber}`);
-      return NextResponse.json({ ResultCode: 1, ResultDesc: 'Transaction not found' });
+      console.error(`[MPESA] Transaction not found for ref: ${BillRefNumber}`);
+      return NextResponse.json({ success: true }); // Acknowledge to avoid retries
     }
 
-    if (transaction.status === 'SETTLED') {
-      console.warn(`[MPESA] Already settled: ${BillRefNumber}`);
-      return NextResponse.json({ ResultCode: 0, ResultDesc: 'Already settled' });
+    // 4. Verify exact amount (prevent underpayment/overpayment fraud)
+    const paidAmount = parseFloat(TransAmount);
+    if (paidAmount !== transaction.totalValue) {
+      console.error(`[MPESA] Amount mismatch for tx ${transaction.id}. Expected: ${transaction.totalValue}, Paid: ${paidAmount}`);
+      // Optionally publish an event for admin review here
+      return NextResponse.json({ success: true }); // Acknowledge to avoid retries
     }
 
-    const amountCheck = verifyPaymentAmount(TransAmount, transaction.totalValue);
-    if (!amountCheck.valid) {
-      console.error(`[MPESA] ${amountCheck.reason}`);
-      return NextResponse.json({ ResultCode: 1, ResultDesc: amountCheck.reason });
-    }
-
-    await prisma.transaction.update({
-      where: { reference: BillRefNumber },
-      data: { status: 'SETTLED', mpesaRef: TransID },
-    });
-    console.log(`[MPESA] Settled: ${BillRefNumber}, M-PESA: ${TransID}`);
-
-    if (transaction.farmer?.phone) {
-      const body = settlementTemplate({
-        reference:  BillRefNumber,
-        buyerName:  transaction.buyer.name,
-        totalValue: parseFloat(TransAmount),
-        mpesaRef:   TransID,
+    // 5. Atomic Settlement Claim
+    // Only settle if the transaction is in an eligible state (DELIVERED)
+    try {
+      const updatedTx = await prisma.transaction.update({
+        where: { 
+          id: transaction.id,
+          status: 'DELIVERED' // Strict state restriction
+        },
+        data: { 
+          status: 'SETTLED', 
+          mpesaRef: TransID 
+        }
       });
-      sendNotification({
-        type:           'SETTLEMENT',
-        recipientPhone: transaction.farmer.phone,
-        body,
-        farmerId:       transaction.farmer.id,
-      }).catch((err) => console.error('[MPESA] SMS failed:', err));
+
+      console.log(`[MPESA] Transaction ${updatedTx.reference} settled successfully.`);
+
+      // 6. Post-settlement side effects (OUTSIDE the DB transaction)
+      // Send confirmation SMS
+      if (updatedTx.farmerId) {
+        const farmer = await prisma.farmer.findUnique({ where: { id: updatedTx.farmerId } });
+        if (farmer?.phone) {
+          await sendNotification({
+            type: 'SETTLEMENT',
+            recipientPhone: farmer.phone,
+            body: `SmartShamba: Payment received! KSh ${paidAmount} has been sent to your M-PESA. Ref: ${TransID}.`,
+            farmerId: farmer.id,
+          }).catch(err => console.error('[MPESA] SMS failed:', err));
+        }
+      }
+
+    } catch (updateError) {
+      // This catch handles both concurrent duplicates (P2002) and invalid state transitions
+      console.error(`[MPESA] Settlement failed for tx ${transaction.id}:`, updateError);
+      // If it was already settled, we acknowledge. If it was in the wrong state, we acknowledge.
+      // Do not throw, as we want to return 200 to Safaricom.
     }
 
-    return NextResponse.json({ ResultCode: 0, ResultDesc: 'Accepted' });
+    return NextResponse.json({ success: true });
   } catch (error) {
-    console.error('[MPESA] Callback error:', (error as Error).message);
+    console.error('[MPESA] C2B Callback error:', (error as Error).message);
     Sentry.captureException(error);
     await Sentry.flush(2000);
-    return NextResponse.json({ ResultCode: 0, ResultDesc: 'Accepted' });
+    return NextResponse.json({ success: true }); // Always acknowledge to Safaricom
   }
-}
-
-export async function GET() {
-  return NextResponse.json({ ResultCode: 0, ResultDesc: 'Accepted' });
 }

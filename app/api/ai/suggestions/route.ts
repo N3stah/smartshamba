@@ -1,12 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { getFarmerSession, getBuyerSession, requireAdminAuth } from '@/lib/auth';
+import { getFarmerSession, getBuyerSession, requireRoleAuth } from '@/lib/auth';
+import { StaffRole } from '@prisma/client';
 
 export async function GET(req: NextRequest) {
   try {
     const farmerPhone = getFarmerSession(req);
     const buyerPhone = getBuyerSession(req);
-    const isAdmin = !await requireAdminAuth(req);
+    const isAdmin = !await requireRoleAuth(req, [StaffRole.CEO, StaffRole.CTO, StaffRole.CFO, StaffRole.PM]);
 
     let suggestions: string[] = [];
 
