@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { getBuyerSession } from '@/lib/auth';
-import { } from '@prisma/client';
+import { calculateDistance } from '@/lib/transport/transport-service';
+import * as Sentry from '@sentry/nextjs';
 
 export async function GET(req: NextRequest) {
   try {
@@ -15,28 +16,34 @@ export async function GET(req: NextRequest) {
 
     const { searchParams } = new URL(req.url);
     const radiusKm = parseInt(searchParams.get('radius') || '50');
-    const radiusMeters = radiusKm * 1000;
 
-    // V2.0 Stage 7: Use PostGIS ST_DWithin for scalable spatial query
-    const farmers = await prisma.$queryRaw`
-      SELECT 
-        f.id, f.name, f.village, f.latitude, f.longitude,
-        ST_Distance(f.location, ST_MakePoint(${buyer.longitude}, ${buyer.latitude})::geography) / 1000 as distance_km
-      FROM "Farmer" f
-      JOIN "ProduceListing" pl ON pl.farmerId = f.id AND pl.status = 'ACTIVE'
-      WHERE f.location IS NOT NULL 
-        AND ST_DWithin(
-          f.location, 
-          ST_MakePoint(${buyer.longitude}, ${buyer.latitude})::geography, 
-          ${radiusMeters}
-        )
-      ORDER BY distance_km ASC
-      LIMIT 50;
-    `;
+    // Fetch active farmers with coordinates
+    const farmers = await prisma.farmer.findMany({
+      where: { 
+        latitude: { not: null }, 
+        longitude: { not: null },
+        ProduceListing: { some: { status: 'ACTIVE' } }
+      },
+      select: { id: true, name: true, village: true, latitude: true, longitude: true }
+    });
 
-    return NextResponse.json({ farmers });
+    // Filter by radius using Haversine
+    const nearbyFarmers = farmers
+      .map(f => {
+        const distance = calculateDistance(
+          `${f.latitude},${f.longitude}`, 
+          `${buyer.latitude},${buyer.longitude}`
+        );
+        return { ...f, distance_km: distance };
+      })
+      .filter(f => f.distance_km <= radiusKm)
+      .sort((a, b) => a.distance_km - b.distance_km)
+      .slice(0, 50);
+
+    return NextResponse.json({ farmers: nearbyFarmers });
   } catch (error) {
     console.error('[API] Nearby suppliers error:', error);
+    Sentry.captureException(error);
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
 }
