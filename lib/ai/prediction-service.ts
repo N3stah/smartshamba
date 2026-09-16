@@ -1,10 +1,7 @@
 import { prisma } from '@/lib/prisma';
 import type { AIRecommendation } from '@prisma/client';
 import * as Sentry from '@sentry/nextjs';
-
-const AI_PROVIDER = process.env.AI_PROVIDER || 'gemini';
-const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
-const NVIDIA_API_KEY = process.env.NVIDIA_API_KEY;
+import { getAnalyticalProvider } from '@/lib/ai/providers';
 
 interface PredictionResult {
   predictedPrice: number;
@@ -13,21 +10,13 @@ interface PredictionResult {
   explanation: string;
 }
 
-/**
- * Collects historical marketplace data to feed to the AI.
- */
 async function collectMarketData(crop: string) {
   const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
-  
   const transactions = await prisma.transaction.findMany({
-    where: {
-      status: 'SETTLED',
-      createdAt: { gte: thirtyDaysAgo },
-    },
+    where: { status: 'SETTLED', createdAt: { gte: thirtyDaysAgo } },
     select: { pricePerBag: true, quantityBags: true, createdAt: true }
   });
-
-  const activeListings = await prisma.produceListing.count({ where: { status: 'ACTIVE', product: crop } });
+  const activeListings = await prisma.produceListing.count({ where: { status: 'ACTIVE', product: crop }});
   const activeDemands = await prisma.buyerDemand.count({ where: { status: 'ACTIVE', product: crop } });
 
   const dailyData = transactions.reduce((acc: Record<string, { date: string; totalValue: number; totalBags: number }>, tx) => {
@@ -49,42 +38,6 @@ async function collectMarketData(crop: string) {
     : 4000; 
 
   return { historicalSummary, currentAvgPrice, activeListings, activeDemands };
-}
-
-async function callAIProvider(prompt: string): Promise<string | null> {
-  try {
-    if (NVIDIA_API_KEY) {
-      console.log('[AI] Calling NVIDIA (GPT-OSS-20B) for prediction...');
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 60000); // 60s timeout
-      
-      const res = await fetch('https://integrate.api.nvidia.com/v1/chat/completions', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${NVIDIA_API_KEY}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          model: "openai/gpt-oss-20b",
-          messages: [{ role: "user", content: prompt }],
-          temperature: 0.7,
-          max_tokens: 1000
-        }),
-        signal: controller.signal
-      });
-      
-      clearTimeout(timeoutId);
-      const data = await res.json();
-      const content = data.choices?.[0]?.message?.content || null;
-      console.log('[AI] Raw NVIDIA response:', content);
-      return content;
-    } 
-    return null;
-  } catch (error) {
-    console.error('[AI] NVIDIA prediction request failed:', error);
-    Sentry.captureException(error);
-    return null;
-  }
 }
 
 export async function generateAndCachePrediction(crop: string, horizon: string) {
@@ -109,15 +62,18 @@ export async function generateAndCachePrediction(crop: string, horizon: string) 
     "explanation": "<string: 1-2 sentence natural language explanation>"
   }`;
 
-  const aiResponse = await callAIProvider(prompt);
-  console.log('[AI] Parsed response:', aiResponse);
-  if (!aiResponse) return;
-
   try {
+    const provider = getAnalyticalProvider();
+    const aiResponse = await provider.generateResponse(prompt, { temperature: 0.7, maxTokens: 1000, jsonMode: true });
+    
+    if (!aiResponse) {
+      console.log(`[AI] No response from provider for ${crop}.`);
+      return;
+    }
+
     const cleanJson = aiResponse.replace(/```json/g, '').replace(/```/g, '').trim();
     const parsed: PredictionResult = JSON.parse(cleanJson);
 
-    // Uppercase and validate recommendation against enum
     const rec = (parsed.recommendation || 'WAIT').toUpperCase();
     const validRecs = ['SELL', 'WAIT', 'BUY', 'HOLD'];
     const recommendation = validRecs.includes(rec) ? rec : 'WAIT';
@@ -133,9 +89,7 @@ export async function generateAndCachePrediction(crop: string, horizon: string) 
         generatedAt: new Date()
       },
       create: {
-        crop,
-        region: 'National',
-        horizon,
+        crop, region: 'National', horizon,
         currentPrice: currentAvgPrice,
         predictedPrice: parsed.predictedPrice,
         confidenceScore: parsed.confidenceScore,
@@ -145,7 +99,7 @@ export async function generateAndCachePrediction(crop: string, horizon: string) 
     });
     console.log(`[AI] Successfully cached prediction for ${crop} (${horizon})`);
   } catch (error) {
-    console.error(`[AI] Failed to parse AI response for ${crop}:`, aiResponse);
+    console.error(`[AI] Failed to parse AI response for ${crop}:`, error);
     Sentry.captureException(error);
   }
 }

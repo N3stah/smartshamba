@@ -1,75 +1,26 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { getAnalyticalProvider } from '@/lib/ai/providers';
 import * as Sentry from '@sentry/nextjs';
-
-const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
-const NVIDIA_API_KEY = process.env.NVIDIA_API_KEY;
-
-async function callEnsemble(prompt: string): Promise<string | null> {
-  try {
-    // Use Gemini for weather advisory synthesis
-    if (GEMINI_API_KEY) {
-      const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`;
-      const res = await fetch(url, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          contents: [{ parts: [{ text: prompt }] }],
-          generationConfig: { temperature: 0.6, maxOutputTokens: 400 }
-        })
-      });
-      if (res.ok) {
-        const data = await res.json();
-        return data.candidates?.[0]?.content?.parts?.[0]?.text || null;
-      }
-    }
-    // Fallback to NVIDIA if Gemini fails
-    if (NVIDIA_API_KEY) {
-      const res = await fetch('https://integrate.api.nvidia.com/v1/chat/completions', {
-        method: 'POST',
-        headers: { 'Authorization': `Bearer ${NVIDIA_API_KEY}`, 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          model: "nvidia/llama-3.1-nemotron-70b-instruct",
-          messages: [{ role: "user", content: prompt }],
-          temperature: 0.6,
-          max_tokens: 400
-        })
-      });
-      if (res.ok) {
-        const data = await res.json();
-        return data.choices?.[0]?.message?.content || null;
-      }
-    }
-    return null;
-  } catch (e) {
-    console.error('[AI Advisory] Ensemble call failed:', e);
-    return null;
-  }
-}
 
 export async function POST(req: NextRequest) {
   try {
-    const { temperature, precipitation, windSpeed, humidity, description, county } = await req.json();
+    const { county, condition } = await req.json();
+    if (!county || !condition) return NextResponse.json({ error: 'County and condition are required' }, { status: 400 });
 
-    const prompt = `SYSTEM: You are the Precision Agronomy AI for SmartShamba Kenya. 
-    Analyze the following hyper-local climate data (downscaled using NVIDIA Earth-2 models) and provide a concise, actionable agricultural advisory for farmers in ${county}.
-    Keep it under 3 sentences. Focus on immediate actions (e.g., harvest timing, drainage, pest risk, windbreaks).
+    const prompt = `Generate a brief agricultural advisory for farmers in ${county} given the current weather condition: ${condition}.`;
     
-    Climate Data:
-    - Temp: ${temperature}°C
-    - Rainfall: ${precipitation}mm
-    - Wind: ${windSpeed}km/h
-    - Humidity: ${humidity}%
-    - Condition: ${description}`;
+    const provider = getAnalyticalProvider();
+    const aiResponse = await provider.generateResponse(prompt, { temperature: 0.7, maxTokens: 1000 });
 
-    const advisory = await callEnsemble(prompt);
-    
-    if (!advisory) {
-      return NextResponse.json({ advisory: "Agronomy AI advisory temporarily unavailable. Please monitor fields manually." }, { status: 200 });
+    if (!aiResponse) {
+      return NextResponse.json({ error: 'Failed to generate advisory' }, { status: 500 });
     }
 
-    return NextResponse.json({ advisory });
+    return NextResponse.json({ advisory: aiResponse });
   } catch (error) {
+    console.error('[API] Weather advisory error:', error);
     Sentry.captureException(error);
-    return NextResponse.json({ error: 'Server Error' }, { status: 500 });
+    await Sentry.flush(2000);
+    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
 }
