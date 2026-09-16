@@ -9,7 +9,7 @@ interface Message {
   feedback?: string | null;
 }
 
-export default function FullPageAssistant({ role }: { role: 'FARMER' | 'BUYER' | 'ADMIN' }) {
+export default function FullPageAssistant({ role }: { role: 'FARMER' | 'BUYER' | 'STAFF' }) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);

@@ -8,5 +8,5 @@ export default async function AdminAssistantPage() {
   const session = await getAdminSession();
   if (!session) redirect('/admin/login');
 
-  return <FullPageAssistant role="ADMIN" />;
+  return <FullPageAssistant role="STAFF" />;
 }
