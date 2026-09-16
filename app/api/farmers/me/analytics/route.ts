@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
+import { prisma, withDatabaseRetry } from '@/lib/prisma';
 import { getFarmerSession } from '@/lib/auth';
 import { getTrustScore } from '@/lib/reputation/reputation-service';
 import * as Sentry from '@sentry/nextjs';
@@ -26,6 +26,7 @@ export async function GET(req: NextRequest) {
     const startOfLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
     const endOfLastMonth = new Date(now.getFullYear(), now.getMonth(), 0);
 
+    // Wrap heavy queries in withDatabaseRetry to prevent cold-start drops
     const [
       totalTransactions, settledTransactions, activeListings, pendingTransactions,
       totalBags, totalEarnings, avgRating, recentSales, cropPerformance,
@@ -33,7 +34,7 @@ export async function GET(req: NextRequest) {
       topBuyers, groupsJoined, groupEarnings, unreadNotifications, positiveRatings,
       marketDemand,
       trustScore
-    ] = await Promise.all([
+    ] = await withDatabaseRetry(() => Promise.all([
       prisma.transaction.count({ where: { farmerId: farmer.id } }),
       prisma.transaction.count({ where: { farmerId: farmer.id, status: 'SETTLED' } }),
       prisma.produceListing.count({ where: { farmerId: farmer.id, status: 'ACTIVE' } }),
@@ -59,7 +60,7 @@ export async function GET(req: NextRequest) {
       prisma.rating.count({ where: { farmerId: farmer.id, score: { gte: 4 } } }),
       prisma.buyerDemand.groupBy({ by: ['product'], where: { status: 'ACTIVE' }, _sum: { quantityBags: true } }),
       getTrustScore(farmer.id, 'FARMER')
-    ]);
+    ]));
 
     const buyerIds = topBuyers.map(t => t.buyerId);
     const buyers = await prisma.buyer.findMany({ where: { id: { in: buyerIds } }, select: { id: true, name: true } });
@@ -81,7 +82,6 @@ export async function GET(req: NextRequest) {
       return acc;
     }, {});
 
-    // Calculate Price Trend (Average price per bag per day)
     const priceTrend = recentSales.reduce((acc: any, tx) => {
       const date = new Date(tx.createdAt).toISOString().split('T')[0];
       if (!acc[date]) acc[date] = { date, totalValue: 0, totalBags: 0 };
