@@ -2,19 +2,30 @@
 import { useState, useEffect, useRef } from 'react';
 import { Loader2, MapPin } from 'lucide-react';
 
-declare global {
-  interface Window {
-    google: any;
-    initGeofenceMap: () => void;
-  }
+interface GoogleMap {
+  setCenter: (pos: object) => void;
+  setZoom: (n: number) => void;
+  addListener: (event: string, cb: (e: { latLng: { lat: () => number; lng: () => number } }) => void) => void;
+}
+interface GooglePolygon {
+  setPath: (path: object[]) => void;
+  setMap: (map: GoogleMap | null) => void;
+}
+interface GoogleMaps {
+  Map: new (el: HTMLElement, opts: object) => GoogleMap;
+  Polygon: new (opts: object) => GooglePolygon;
+}
+interface Window {
+  google?: { maps: GoogleMaps };
+  initGeofenceMap?: () => void;
 }
 
 export default function GeofencesPage() {
   const [loading, setLoading] = useState(true);
   const [points, setPoints] = useState<{ lat: number; lng: number }[]>([]);
   const mapContainer = useRef<HTMLDivElement>(null);
-  const mapRef = useRef<any>(null);
-  const polygonRef = useRef<any>(null);
+  const mapRef = useRef<GoogleMap | null>(null);
+  const polygonRef = useRef<GooglePolygon | null>(null);
 
   useEffect(() => {
     if (!mapContainer.current) return;
@@ -30,13 +41,9 @@ export default function GeofencesPage() {
         zoom: 9,
       });
 
-      mapRef.current.addListener('click', (e: any) => {
+      mapRef.current.addListener('click', (e) => {
         const newPoint = { lat: e.latLng.lat(), lng: e.latLng.lng() };
-        setPoints(prev => {
-          const updated = [...prev, newPoint];
-          drawPolygon(updated);
-          return updated;
-        });
+        setPoints(prev => [...prev, newPoint]);
       });
 
       setLoading(false);
@@ -63,12 +70,14 @@ export default function GeofencesPage() {
     };
   }, []);
 
-  const drawPolygon = (path: { lat: number; lng: number }[]) => {
+  useEffect(() => {
+    if (!window.google || !window.google.maps || !mapRef.current || points.length === 0) return;
+
     if (polygonRef.current) {
-      polygonRef.current.setPath(path);
-    } else if (mapRef.current && path.length > 1) {
+      polygonRef.current.setPath(points);
+    } else if (points.length > 1) {
       polygonRef.current = new window.google.maps.Polygon({
-        path: path,
+        path: points,
         strokeColor: '#FF0000',
         strokeOpacity: 0.8,
         strokeWeight: 2,
@@ -77,7 +86,7 @@ export default function GeofencesPage() {
       });
       polygonRef.current.setMap(mapRef.current);
     }
-  };
+  }, [points]);
 
   return (
     <div className="space-y-6">
@@ -101,7 +110,7 @@ export default function GeofencesPage() {
             </button>
           )}
         </div>
-        <div className="lg:col-span-2 bg-white rounded-xl border p-2 shadow-sm h-[500px] relative">
+        <div className="lg:col-span-2 bg-white rounded-xl border p-2 shadow-sm h-125 relative">
           {loading && <div className="absolute inset-0 flex items-center justify-center z-10"><Loader2 className="w-6 h-6 animate-spin text-gray-400" /></div>}
           <div ref={mapContainer} className="w-full h-full rounded-lg" />
         </div>
