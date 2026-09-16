@@ -2,6 +2,7 @@ import { prisma } from '@/lib/prisma';
 import type { TrustUserType } from '@prisma/client';
 import type { Prisma } from '@prisma/client';
 import * as Sentry from '@sentry/nextjs';
+import { recordTrustEvent } from '@/lib/reputation/trust-event-service';
 
 interface ScoreBreakdown {
   verification: number;
@@ -14,6 +15,7 @@ interface ScoreBreakdown {
 }
 
 const MAX_SCORE = 100;
+const RISK_THRESHOLD = 30; // Below this score, accounts are automatically frozen
 
 function getTimeWeight(date: Date, halfLifeDays: number = 90): number {
   const daysOld = (Date.now() - date.getTime()) / (1000 * 60 * 60 * 24);
@@ -149,6 +151,34 @@ export async function calculateAndSaveTrustScore(userId: string, userType: 'FARM
       update: { score: totalScore, level, breakdown: breakdown as unknown as Prisma.InputJsonValue },
       create: { userId, userType, score: totalScore, level, breakdown: breakdown as unknown as Prisma.InputJsonValue }
     });
+
+    // Automatic Freeze Policy
+    if (totalScore < RISK_THRESHOLD && (userType === 'FARMER' || userType === 'BUYER')) {
+      const model = userType === 'FARMER' ? prisma.farmer : prisma.buyer;
+      // @ts-expect-error -- Prisma dynamic model
+      const user = await model.findUnique({ where: { id: userId }, select: { isFrozen: true } });
+      
+      if (user && !user.isFrozen) {
+        // @ts-expect-error -- Prisma dynamic model
+        await model.update({
+          where: { id: userId },
+          data: {
+            isFrozen: true,
+            frozenReason: `Account automatically frozen due to low trust score (${totalScore})`,
+            frozenAt: new Date()
+          }
+        });
+        await recordTrustEvent({
+          userId,
+          userType: userType as TrustUserType,
+          eventType: 'ACCOUNT_FROZEN',
+          impact: -10,
+          description: `Account automatically frozen. Trust score dropped to ${totalScore}.`,
+          relatedId: userId,
+        });
+        console.log(`[TRUST ENGINE] User ${userId} (${userType}) automatically frozen. Score: ${totalScore}`);
+      }
+    }
 
     return trustScore;
   } catch (error) {
