@@ -1,8 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { getFarmerSession } from '@/lib/auth';
-import { calculateAndSaveTrustScore } from '@/lib/reputation/reputation-service';
-import { recordTrustEvent } from '@/lib/reputation/trust-event-service';
+import { publishEvent } from '@/lib/core/event-bus';
 
 export async function POST(req: NextRequest) {
   try {
@@ -75,19 +74,21 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    // Trigger Trust Recalculation & Event for Buyer
+    // Publish event for trust recalculation (async)
     try {
-      await calculateAndSaveTrustScore(tx.buyerId, 'BUYER');
-      await recordTrustEvent({
-        userId: tx.buyerId,
-        userType: 'BUYER',
+      await publishEvent({
         eventType: 'RATING_RECEIVED',
-        impact: scoreNum - 3, // 1=-2, 3=0, 5=+2
-        description: `Received a rating of \${scoreNum}/5 from farmer for transaction \${transactionId}`,
-        relatedId: transactionId,
+        aggregateId: tx.buyerId,
+        eventKey: `RATING_RECEIVED:${rating.id}`,
+        payload: {
+          buyerId: tx.buyerId,
+          score: scoreNum,
+          transactionId,
+          ratingId: rating.id
+        }
       });
     } catch (e) {
-      console.error('[TRUST] Failed to process rating event:', e);
+      console.error('[EVENTS] Failed to publish rating event:', e);
     }
 
     // Return the buyer's updated average score

@@ -2,8 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { getTransportSession } from '@/lib/auth';
 import { processTransportSettlement, processGroupTransportSettlement } from '@/lib/finance/ledger-service';
-import { calculateAndSaveTrustScore } from '@/lib/reputation/reputation-service';
-import { recordTrustEvent } from '@/lib/reputation/trust-event-service';
+import { publishEvent } from '@/lib/core/event-bus';
 import * as Sentry from '@sentry/nextjs';
 
 const validTransitions: Record<string, string[]> = {
@@ -88,59 +87,39 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
       }
     });
 
-    // Trust Recalculation for Transport Provider
+    // Publish event for trust recalculation (async)
     if (newStatus === 'COMPLETED' || newStatus === 'CANCELLED') {
       try {
-        await calculateAndSaveTrustScore(provider.id, 'TRANSPORT');
-        if (newStatus === 'COMPLETED') {
-          await recordTrustEvent({
-            userId: provider.id,
-            userType: 'TRANSPORT',
-            eventType: 'TRANSPORT_COMPLETED',
-            impact: 2,
-            description: `Transport booking ${id.substring(0, 8)} completed successfully`,
-            relatedId: id,
-          });
-        } else if (newStatus === 'CANCELLED') {
-          await recordTrustEvent({
-            userId: provider.id,
-            userType: 'TRANSPORT',
-            eventType: 'TRANSPORT_CANCELLED',
-            impact: -3,
-            description: `Transport booking ${id.substring(0, 8)} was cancelled`,
-            relatedId: id,
-          });
-        }
+        const eventType = newStatus === 'COMPLETED' ? 'TRANSPORT_COMPLETED' : 'TRANSPORT_CANCELLED';
+        await publishEvent({
+          eventType,
+          aggregateId: id,
+          eventKey: `${eventType}:${id}`,
+          payload: {
+            providerId: provider.id,
+            bookingId: id
+          }
+        });
       } catch (e) {
-        console.error('[TRUST] Failed to process transport event:', e);
+        console.error('[EVENTS] Failed to publish transport event:', e);
       }
     }
 
-    // Trust Recalculation for Transport Provider
+    // Publish event for trust recalculation (async)
     if (newStatus === 'COMPLETED' || newStatus === 'CANCELLED') {
       try {
-        await calculateAndSaveTrustScore(provider.id, 'TRANSPORT');
-        if (newStatus === 'COMPLETED') {
-          await recordTrustEvent({
-            userId: provider.id,
-            userType: 'TRANSPORT',
-            eventType: 'TRANSPORT_COMPLETED',
-            impact: 2,
-            description: `Transport booking ${id.substring(0, 8)} completed successfully`,
-            relatedId: id,
-          });
-        } else if (newStatus === 'CANCELLED') {
-          await recordTrustEvent({
-            userId: provider.id,
-            userType: 'TRANSPORT',
-            eventType: 'TRANSPORT_CANCELLED',
-            impact: -3,
-            description: `Transport booking ${id.substring(0, 8)} was cancelled`,
-            relatedId: id,
-          });
-        }
+        const eventType = newStatus === 'COMPLETED' ? 'TRANSPORT_COMPLETED' : 'TRANSPORT_CANCELLED';
+        await publishEvent({
+          eventType,
+          aggregateId: id,
+          eventKey: `${eventType}:${id}`,
+          payload: {
+            providerId: provider.id,
+            bookingId: id
+          }
+        });
       } catch (e) {
-        console.error('[TRUST] Failed to process transport event:', e);
+        console.error('[EVENTS] Failed to publish transport event:', e);
       }
     }
 

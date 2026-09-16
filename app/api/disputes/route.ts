@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { sanitizeInput } from '@/lib/sanitize';
 import { getFarmerSession } from '@/lib/auth';
-import { recordTrustEvent } from '@/lib/reputation/trust-event-service';
+import { publishEvent } from '@/lib/core/event-bus';
 import * as Sentry from '@sentry/nextjs';
 
 export async function POST(req: NextRequest) {
@@ -73,26 +73,25 @@ export async function POST(req: NextRequest) {
       }),
     ]);
 
-    // Record Trust Event for Farmer and Buyer
+    // Publish event for trust recording (async)
     try {
-      await recordTrustEvent({
-        userId: farmer.id,
-        userType: 'FARMER',
-        eventType: 'DISPUTE_OPENED',
-        impact: -2,
-        description: `Dispute opened for transaction \${transactionId}`,
-        relatedId: transactionId,
-      });
-      await recordTrustEvent({
-        userId: tx.buyerId,
-        userType: 'BUYER',
-        eventType: 'DISPUTE_OPENED',
-        impact: -2,
-        description: `Dispute opened for transaction \${transactionId}`,
-        relatedId: transactionId,
-      });
+      // Fetch the created dispute to get its ID
+      const createdDispute = await prisma.dispute.findUnique({ where: { transactionId } });
+      if (createdDispute) {
+        await publishEvent({
+          eventType: 'DISPUTE_OPENED',
+          aggregateId: transactionId,
+          eventKey: `DISPUTE_OPENED:${createdDispute.id}`,
+          payload: {
+            farmerId: farmer.id,
+            buyerId: tx.buyerId,
+            transactionId,
+            disputeId: createdDispute.id
+          }
+        });
+      }
     } catch (e) {
-      console.error('[TRUST] Failed to record dispute event:', e);
+      console.error('[EVENTS] Failed to publish dispute event:', e);
     }
 
     console.log('[DISPUTES] Created dispute for transaction', transactionId);

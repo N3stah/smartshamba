@@ -972,15 +972,18 @@ enum EventOutboxStatus {
 }
 
 model EventOutbox {
-  id          String            @id @default(cuid())
-  eventType   String
-  aggregateId String
-  payload     Json
-  status      EventOutboxStatus @default(PENDING)
-  attempts    Int               @default(0)
-  lastError   String?           @db.Text
-  processedAt DateTime?
-  createdAt   DateTime          @default(now())
+  id            String            @id @default(cuid())
+  eventType     String
+  aggregateId   String
+  payload       Json
+  status        EventOutboxStatus @default(PENDING)
+  attempts      Int               @default(0)
+  lastError     String?           @db.Text
+  processedAt   DateTime?
+  createdAt     DateTime          @default(now())
+  eventKey      String?           @unique
+  version       Int               @default(1)
+  nextAttemptAt DateTime?
 
   @@index([status, createdAt])
 }
