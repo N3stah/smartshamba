@@ -5,7 +5,6 @@ import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import { prisma } from '@/lib/prisma';
 import { ArrowLeft, CloudRain, AlertTriangle, MapPin } from 'lucide-react';
-import RefreshWeatherButton from '@/components/admin/RefreshWeatherButton';
 
 
 interface WeatherCurrent {
@@ -42,7 +41,7 @@ prisma.weatherAlert.findMany({ orderBy: { createdAt: 'desc' } })
           </div>
         </div>
         <div className="flex items-center gap-4">
-          <RefreshWeatherButton />
+          
           <Link href="/admin" className="text-sm text-gray-500 hover:text-gray-900 flex items-center gap-1 bg-white px-3 py-2 rounded-lg border border-gray-200 shadow-sm">
             <ArrowLeft className="w-4 h-4" /> Back
           </Link>
