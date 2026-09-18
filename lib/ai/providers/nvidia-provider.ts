@@ -10,6 +10,9 @@ export class NvidiaProvider implements AIProvider {
   }
 
   async generateResponse(prompt: string, options?: GenerateOptions): Promise<string | null> {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 8000); // 8s timeout
+
     try {
       const res = await fetch('https://integrate.api.nvidia.com/v1/chat/completions', {
         method: 'POST',
@@ -23,7 +26,8 @@ export class NvidiaProvider implements AIProvider {
           temperature: options?.temperature ?? 0.4,
           max_tokens: options?.maxTokens ?? 1024,
           response_format: options?.jsonMode ? { type: "json_object" } : undefined
-        })
+        }),
+        signal: controller.signal
       });
       
       if (!res.ok) {
@@ -33,10 +37,17 @@ export class NvidiaProvider implements AIProvider {
 
       const data = await res.json();
       return data.choices?.[0]?.message?.content || null;
-    } catch (error) {
-      console.error('[AI_PROVIDER] NVIDIA generateResponse error:', error);
-      Sentry.captureException(error);
+    } catch (error: any) {
+      if (error.name === 'AbortError') {
+        console.error('[AI_PROVIDER] NVIDIA request timed out after 8s');
+        Sentry.captureException(new Error('NVIDIA request timed out'));
+      } else {
+        console.error('[AI_PROVIDER] NVIDIA generateResponse error:', error);
+        Sentry.captureException(error);
+      }
       return null;
+    } finally {
+      clearTimeout(timeoutId);
     }
   }
 }
