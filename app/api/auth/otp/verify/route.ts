@@ -31,7 +31,7 @@ export async function POST(req: NextRequest) {
       redirectTo = '/dashboard';
     } else if (buyer) {
       cookieName = 'smartshamba_buyer';
-      redirectTo = '/buyer';
+      redirectTo = '/buyer/dashboard';
     } else {
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
