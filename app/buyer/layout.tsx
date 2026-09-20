@@ -75,7 +75,7 @@ export default function BuyerLayout({ children }: { children: React.ReactNode })
             <div key={section.title}>
               <button 
                 onClick={() => toggleSection(section.title)}
-                className="w-full flex items-center justify-between px-3 py-2 text-xs font-bold uppercase tracking-wider text-green-200 hover:text-white transition-colors"
+                className="w-full flex items-center justify-between px-3 py-2 text-xs font-bold uppercase tracking-wider text-green-50 hover:text-white transition-colors"
               >
                 <span>{section.title}</span>
                 <ChevronDown className={`w-4 h-4 transition-transform ${openSections[section.title] ? 'rotate-180' : ''}`} />
@@ -90,7 +90,7 @@ export default function BuyerLayout({ children }: { children: React.ReactNode })
                         href={item.href}
                         onClick={() => setSidebarOpen(false)}
                         className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors focus:outline-none focus:ring-2 focus:ring-white/50
-                        ${isActive ? 'bg-white/15 text-white font-semibold' : 'text-green-100 hover:bg-white/10 hover:text-white'}`}
+                        ${isActive ? 'bg-white/15 text-white font-bold' : 'text-white/90 hover:bg-white/10 hover:text-white font-medium'}`}
                       >
                         <item.icon className="w-5 h-5" />
                         <span>{item.label}</span>
