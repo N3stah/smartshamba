@@ -16,6 +16,12 @@ interface GoogleMaps {
   Polygon: new (opts: object) => GooglePolygon;
 }
 
+// Define a specific interface for the window properties we use
+interface GeofenceWindow {
+  google?: { maps: GoogleMaps };
+  initGeofenceMap?: () => void;
+}
+
 export default function GeofencesPage() {
   const [loading, setLoading] = useState(true);
   const [points, setPoints] = useState<{ lat: number; lng: number }[]>([]);
@@ -26,8 +32,9 @@ export default function GeofencesPage() {
   useEffect(() => {
     if (!mapContainer.current) return;
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const w = window as any;
+    // Cast window to our specific interface
+    const w = window as unknown as GeofenceWindow;
+    
     const loadMap = () => {
       if (!w.google || !w.google.maps) {
         setTimeout(loadMap, 100);
@@ -70,8 +77,7 @@ export default function GeofencesPage() {
   }, []);
 
   useEffect(() => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const w = window as any;
+    const w = window as unknown as GeofenceWindow;
     if (!w.google || !w.google.maps || !mapRef.current || points.length === 0) return;
 
     if (polygonRef.current) {
@@ -96,24 +102,24 @@ export default function GeofencesPage() {
       <h1 className="text-2xl font-bold text-gray-900">GIS Geofencing</h1>
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-1 bg-white rounded-xl border p-6 shadow-sm space-y-4">
-          <h2 className="font-bold text-lg flex items-center gap-2"><MapPin className="w-5 h-5 text-[#00703C]" /> Draw New Zone</h2>
-          <div className="bg-gray-50 p-3 rounded-lg text-sm text-gray-600">
+          <h2 className="font-bold text-lg flex items-center gap-2 text-gray-900"><MapPin className="w-5 h-5 text-[#00703C]" /> Draw New Zone</h2>
+          <div className="bg-gray-50 p-3 rounded-lg text-sm text-gray-700 font-medium">
             <p>Click on the map to add points.</p>
-            <p className="font-medium mt-1">{points.length} points added.</p>
+            <p className="mt-1">{points.length} points added.</p>
           </div>
           {points.length > 2 && (
             <button 
               onClick={() => {
                 console.log('Saving geofence:', points);
               }}
-              className="w-full bg-[#00703C] text-white py-2 rounded-lg text-sm font-medium hover:bg-[#00582f]"
+              className="w-full bg-[#00703C] text-white py-2 rounded-lg text-sm font-bold hover:bg-[#00582f]"
             >
               Save Geofence
             </button>
           )}
         </div>
-        <div className="lg:col-span-2 bg-white rounded-xl border p-2 shadow-sm h-[500px] relative">
-          {loading && <div className="absolute inset-0 flex items-center justify-center z-10"><Loader2 className="w-6 h-6 animate-spin text-gray-400" /></div>}
+        <div className="lg:col-span-2 bg-white rounded-xl border p-2 shadow-sm h-125 relative">
+          {loading && <div className="absolute inset-0 flex items-center justify-center z-10"><Loader2 className="w-6 h-6 animate-spin text-gray-500" /></div>}
           <div ref={mapContainer} className="w-full h-full rounded-lg" />
         </div>
       </div>

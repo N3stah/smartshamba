@@ -24,3 +24,40 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+/* ==========================================
+   GLOBAL TEXT CONTRAST & READABILITY IMPROVEMENTS
+   ========================================== */
+
+/* Darken default body text */
+body {
+  color: #1f2937; /* gray-800 */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Ensure headings are always dark and bold */
+h1, h2, h3, h4, h5, h6 {
+  color: #111827; /* gray-900 */
+  font-weight: 700;
+}
+
+/* Darken paragraph and list text */
+p, li, span, label {
+  color: #374151; /* gray-700 */
+}
+
+/* Ensure text inside white cards is readable */
+.bg-white p, .bg-white li, .bg-white span, .bg-white label {
+  color: #374151; /* gray-700 */
+}
+
+/* Make small text more visible */
+.text-xs, .text-sm {
+  color: #4b5563; /* gray-600 */
+  font-weight: 500;
+}
+
+/* Darken muted text classes globally for better contrast */
+.text-gray-400 { color: #6b7280 !important; } /* gray-500 */
+.text-gray-500 { color: #4b5563 !important; } /* gray-600 */
