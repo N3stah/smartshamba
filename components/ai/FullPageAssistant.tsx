@@ -33,8 +33,17 @@ export default function FullPageAssistant({ role }: { role: 'FARMER' | 'BUYER' |
     // Load dynamic suggestions
     fetch('/api/ai/suggestions')
       .then(res => res.json())
-      .then(setQuickPrompts)
-      .catch(console.error);
+      .then(data => {
+        if (Array.isArray(data)) {
+          setQuickPrompts(data);
+        } else {
+          setQuickPrompts([]);
+        }
+      })
+      .catch(err => {
+        console.error(err);
+        setQuickPrompts([]);
+      });
   }, []);
 
   useEffect(() => {
