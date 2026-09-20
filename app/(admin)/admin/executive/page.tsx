@@ -128,16 +128,16 @@ export default function ExecutiveDashboardPage() {
             <p className="text-2xl font-bold text-gray-900">{data.ceo.totalBuyers}</p>
             <p className="text-xs text-gray-400 mt-1">+{data.ceo.buyerGrowth} new (30d)</p>
           </div>
-          <div className="bg-white rounded-xl border p-5 shadow-sm">
+          <Link href="/admin/ai-dashboard" className="bg-white rounded-xl border p-5 shadow-sm hover:border-[#00703C] transition-colors cursor-pointer">
             <div className="flex justify-between mb-2"><p className="text-xs text-gray-500 uppercase">AI Predictions</p><Brain className="w-5 h-5 text-green-600" /></div>
             <p className="text-2xl font-bold text-gray-900">{data.ceo.aiPredictions}</p>
             <p className="text-xs text-gray-400 mt-1">Market models generated</p>
-          </div>
-          <div className="bg-white rounded-xl border p-5 shadow-sm">
+          </Link>
+          <Link href="/admin/weather-dashboard" className="bg-white rounded-xl border p-5 shadow-sm hover:border-[#00703C] transition-colors cursor-pointer">
             <div className="flex justify-between mb-2"><p className="text-xs text-gray-500 uppercase">Weather Alerts</p><CloudRain className="w-5 h-5 text-blue-400" /></div>
             <p className="text-2xl font-bold text-gray-900">{data.agintel.weatherAlerts}</p>
             <p className="text-xs text-gray-400 mt-1">Sent to farmers (30d)</p>
-          </div>
+          </Link>
         </div>
       )}
 

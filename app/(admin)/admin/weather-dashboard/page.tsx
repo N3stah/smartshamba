@@ -6,23 +6,16 @@ import Link from 'next/link';
 import { prisma } from '@/lib/prisma';
 import { ArrowLeft, CloudRain, AlertTriangle, MapPin } from 'lucide-react';
 
-
-interface WeatherCurrent {
-  temp: number;
-  rainProbability: number;
-  windSpeed: number;
-  humidity: number;
-}
 export default async function AdminWeatherDashboard() {
   const session = await getAdminSession();
   if (!session) redirect('/admin/login');
 
-  let weatherData: Awaited<ReturnType<typeof prisma.weatherData.findMany>> = [];
-  let activeAlerts: Awaited<ReturnType<typeof prisma.weatherAlert.findMany>> = [];
+  let weatherData: any[] = [];
+  let activeAlerts: any[] = [];
   try {
     [weatherData, activeAlerts] = await Promise.all([
       prisma.weatherData.findMany(),
-prisma.weatherAlert.findMany({ orderBy: { createdAt: 'desc' } })
+      prisma.weatherAlert.findMany({ orderBy: { createdAt: 'desc' } })
     ]);
   } catch (err) {
     console.error('Failed to fetch admin weather data:', err);
@@ -40,12 +33,9 @@ prisma.weatherAlert.findMany({ orderBy: { createdAt: 'desc' } })
             <p className="text-sm text-gray-500">Monitor weather impacts and alerts across all regions</p>
           </div>
         </div>
-        <div className="flex items-center gap-4">
-          
-          <Link href="/admin" className="text-sm text-gray-500 hover:text-gray-900 flex items-center gap-1 bg-white px-3 py-2 rounded-lg border border-gray-200 shadow-sm">
-            <ArrowLeft className="w-4 h-4" /> Back
-          </Link>
-        </div>
+        <Link href="/admin" className="text-sm text-gray-500 hover:text-gray-900 flex items-center gap-1 bg-white px-3 py-2 rounded-lg border border-gray-200 shadow-sm">
+          <ArrowLeft className="w-4 h-4" /> Back
+        </Link>
       </div>
 
       {/* Active Alerts Banner */}
@@ -80,35 +70,39 @@ prisma.weatherAlert.findMany({ orderBy: { createdAt: 'desc' } })
           <h2 className="font-semibold text-gray-900">Regional Weather Status</h2>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 p-6">
-          {weatherData.map(w => (
-            <div key={w.id} className="border border-gray-100 rounded-lg p-4 bg-gray-50">
-              <h3 className="font-bold text-gray-900 text-sm mb-2">{w.county} County</h3>
-              <div className="flex justify-between text-xs text-gray-600 mb-1">
-                <span>Temp: {(w.data as unknown as { current: WeatherCurrent }).current.temp}°C</span>
-                <span>Rain: {(w.data as unknown as { current: WeatherCurrent }).current.rainProbability}%</span>
+          {weatherData.map(w => {
+            const data = w.data as any;
+            const current = data?.current || {};
+            return (
+              <div key={w.id} className="border border-gray-100 rounded-lg p-4 bg-gray-50">
+                <h3 className="font-bold text-gray-900 text-sm mb-2">{w.county} County</h3>
+                <div className="flex justify-between text-xs text-gray-600 mb-1">
+                  <span>Temp: {current.temp ?? 'N/A'}°C</span>
+                  <span>Rain: {current.rainProbability ?? 'N/A'}%</span>
+                </div>
+                <div className="flex justify-between text-xs text-gray-600 mb-2">
+                  <span>Wind: {current.windSpeed ?? 'N/A'} km/h</span>
+                  <span>Humidity: {current.humidity ?? 'N/A'}%</span>
+                </div>
+                <div className="text-xs text-gray-600 mt-2 pt-2 border-t border-gray-200 space-y-1">
+                  {(() => {
+                    try {
+                      const advisory = JSON.parse(w.advisory ?? '{}');
+                      return (
+                        <>
+                          {advisory.agronomy && <p><span className="font-semibold text-gray-700">Agronomy:</span> {advisory.agronomy}</p>}
+                          {advisory.disease_risk && <p><span className="font-semibold text-gray-700">Disease Risk:</span> {advisory.disease_risk}</p>}
+                          {advisory.logistics && <p><span className="font-semibold text-gray-700">Logistics:</span> {advisory.logistics}</p>}
+                        </>
+                      );
+                    } catch {
+                      return <p>{w.advisory}</p>;
+                    }
+                  })()}
+                </div>
               </div>
-              <div className="flex justify-between text-xs text-gray-600 mb-2">
-                <span>Wind: {(w.data as unknown as { current: WeatherCurrent }).current.windSpeed} km/h</span>
-                <span>Humidity: {(w.data as unknown as { current: WeatherCurrent }).current.humidity}%</span>
-              </div>
-              <div className="text-xs text-gray-600 mt-2 pt-2 border-t border-gray-200 space-y-1">
-                {(() => {
-                  try {
-                    const advisory = JSON.parse(w.advisory ?? '{}');
-                    return (
-                      <>
-                        {advisory.agronomy && <p><span className="font-semibold text-gray-700">Agronomy:</span> {advisory.agronomy}</p>}
-                        {advisory.disease_risk && <p><span className="font-semibold text-gray-700">Disease Risk:</span> {advisory.disease_risk}</p>}
-                        {advisory.logistics && <p><span className="font-semibold text-gray-700">Logistics:</span> {advisory.logistics}</p>}
-                      </>
-                    );
-                  } catch {
-                    return <p>{w.advisory}</p>;
-                  }
-                })()}
-              </div>
-            </div>
-          ))}
+            );
+          })}
           {weatherData.length === 0 && <p className="text-gray-400 text-sm col-span-full text-center py-4">No weather data cached yet. Run cron job.</p>}
         </div>
       </div>

@@ -26,6 +26,7 @@ export default function GeofencesPage() {
   useEffect(() => {
     if (!mapContainer.current) return;
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const w = window as any;
     const loadMap = () => {
       if (!w.google || !w.google.maps) {
@@ -69,6 +70,7 @@ export default function GeofencesPage() {
   }, []);
 
   useEffect(() => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const w = window as any;
     if (!w.google || !w.google.maps || !mapRef.current || points.length === 0) return;
 
@@ -110,7 +112,7 @@ export default function GeofencesPage() {
             </button>
           )}
         </div>
-        <div className="lg:col-span-2 bg-white rounded-xl border p-2 shadow-sm h-125 relative">
+        <div className="lg:col-span-2 bg-white rounded-xl border p-2 shadow-sm h-[500px] relative">
           {loading && <div className="absolute inset-0 flex items-center justify-center z-10"><Loader2 className="w-6 h-6 animate-spin text-gray-400" /></div>}
           <div ref={mapContainer} className="w-full h-full rounded-lg" />
         </div>
