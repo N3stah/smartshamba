@@ -1,514 +1,361 @@
-import Image from "next/image";
-
+import PublicHeader from "@/components/PublicHeader";
+import PublicFooter from "@/components/PublicFooter";
+import ImageCrossfade from "@/components/ImageCrossfade";
+import Link from "next/link";
+import { ArrowRight, Phone, Globe, ShieldCheck, Truck, Users, TrendingUp, CheckCircle2 } from "lucide-react";
+import { IMAGES } from "@/lib/image-constants";
 
 export default function Home() {
   return (
-    <main className="min-h-screen bg-green-50">
+    <div className="min-h-screen bg-white flex flex-col">
+      <PublicHeader />
+      <main className="flex-1">
 
-      {/* ── 1. HERO ── */}
-      <section className="px-6 py-20 flex flex-col items-center text-center">
-        <div className="inline-block bg-green-100 text-green-800 text-sm font-semibold px-4 py-1.5 rounded-full mb-6 border border-green-200">
-          Pilot Preparation Stage · Trans Nzoia County · 2026
+        {/* ANNOUNCEMENT BAR */}
+        <div className="bg-gray-900 text-white text-xs py-2 px-4 text-center font-medium">
+          <span className="inline-flex items-center gap-2">
+            Serving farmers and buyers across Rift Valley & Western Kenya
+            <span className="opacity-60">&middot;</span>
+            <span className="font-mono font-bold">Dial *384*53374#</span>
+          </span>
         </div>
-        <h1 className="text-4xl md:text-6xl font-bold text-green-800 max-w-5xl leading-tight">
-          Farmers Should Know the Buyer Offer Before Transporting Their Harvest
-        </h1>
-        <p className="mt-8 text-lg md:text-2xl text-gray-700 max-w-3xl leading-relaxed">
-          SmartShamba helps maize farmers in Trans Nzoia pre-confirm buyer offers through USSD before transport begins.
-        </p>
-        <div className="flex flex-col md:flex-row gap-4 mt-10 w-full max-w-md">
-          <a href="/ussd" className="bg-green-700 text-white px-6 py-4 rounded-xl text-lg hover:bg-green-800 transition text-center">
-            Launch USSD Demo
-          </a>
-          <a href="/market" className="border border-green-700 text-green-700 px-6 py-4 rounded-xl text-lg hover:bg-green-100 transition text-center">
-            View Market Prices
-          </a>
-        </div>
-      </section>
 
-      {/* ── FARMER IMAGE ── */}
-      <section className="px-6 pb-10">
-        <div className="max-w-5xl mx-auto">
-          <Image
-            src="/farmer-maize.jpg"
-            alt="Maize transport in Trans Nzoia"
-            width={1200}
-            height={800}
-            className="w-full rounded-3xl shadow-xl object-cover h-96"
-          />
-          <p className="text-center text-sm text-gray-500 mt-4">
-            Maize transport and buyer coordination in Trans Nzoia County.
-          </p>
-        </div>
-      </section>
-
-      {/* ── 2. PROBLEM ── */}
-      <section className="bg-white px-6 py-20">
-        <div className="max-w-5xl mx-auto">
-          <p className="text-green-700 font-semibold text-sm uppercase tracking-wider mb-3">The Problem</p>
-          <h2 className="text-3xl md:text-5xl font-bold text-gray-900">
-            What Happens Without Price Transparency
-          </h2>
-          <p className="mt-8 text-xl text-gray-700 leading-relaxed max-w-3xl">
-            Many maize farmers transport harvests without a pre-confirmed buyer agreement — discovering the real price only after the truck is loaded.
-          </p>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-10">
-            <div className="bg-red-50 border border-red-100 p-6 rounded-2xl">
-              <div className="text-2xl mb-3">📉</div>
-              <h3 className="font-bold text-xl text-red-700">Price Manipulation</h3>
-              <p className="mt-4 text-gray-700">Brokers exploit information gaps because farmers lack trusted market visibility before committing to transport.</p>
-            </div>
-            <div className="bg-red-50 border border-red-100 p-6 rounded-2xl">
-              <div className="text-2xl mb-3">🚛</div>
-              <h3 className="font-bold text-xl text-red-700">No Confirmed Buyer</h3>
-              <p className="mt-4 text-gray-700">Farmers transport produce without a recorded buyer agreement or price commitment.</p>
-            </div>
-            <div className="bg-red-50 border border-red-100 p-6 rounded-2xl">
-              <div className="text-2xl mb-3">💸</div>
-              <h3 className="font-bold text-xl text-red-700">Payment Uncertainty</h3>
-              <p className="mt-4 text-gray-700">Delayed payments and buyer unreliability create serious financial exposure for smallholder farmers.</p>
-            </div>
-          </div>
-
-          <div className="mt-10 bg-green-800 text-white rounded-3xl p-10 shadow-lg">
-            <p className="text-2xl md:text-3xl italic leading-relaxed">
-              "I loaded 40 bags expecting one price. After delivery, the buyer reduced the offer."
-            </p>
-            <p className="mt-6 text-green-100 text-sm">
-              — Illustrative farmer transaction scenario from Trans Nzoia County
-            </p>
-          </div>
-        </div>
-      </section>
-
-      {/* ── 3. CUSTOMER DISCOVERY ── */}
-      <section className="px-6 py-20 bg-green-50">
-        <div className="max-w-5xl mx-auto">
-          <p className="text-green-700 font-semibold text-sm uppercase tracking-wider mb-3">Customer Discovery & Validation</p>
-          <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-            We Interviewed Real Farmers and Buyers First
-          </h2>
-          <p className="text-lg text-gray-600 mb-10 max-w-3xl">
-            Before writing a single line of production code, the SmartShamba team conducted field interviews in Trans Nzoia County to understand the real problem.
-          </p>
-
-          {/* Stats */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-12">
-            {[
-              { number: "19", label: "Maize Farmers Interviewed" },
-              { number: "4", label: "Maize Buyers Interviewed" },
-              { number: "1", label: "County Focused" },
-              { number: "2", label: "Discovery Team Members" },
-            ].map((s) => (
-              <div key={s.label} className="bg-white rounded-2xl border border-green-100 p-6 text-center shadow-sm">
-                <p className="text-4xl font-bold text-green-700">{s.number}</p>
-                <p className="text-sm text-gray-600 mt-2">{s.label}</p>
-              </div>
-            ))}
-          </div>
-
-          {/* Discovery team */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-10">
-            <div className="bg-white rounded-2xl border border-green-100 p-6 flex items-center gap-4 shadow-sm">
-              <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center text-green-800 font-bold text-lg">GA</div>
-              <div>
-                <p className="font-bold text-gray-900">Grace Akomo</p>
-                <p className="text-sm text-green-700">CFO · Customer Discovery Lead</p>
-              </div>
-            </div>
-            <div className="bg-white rounded-2xl border border-green-100 p-6 flex items-center gap-4 shadow-sm">
-              <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center text-green-800 font-bold text-lg">EC</div>
-              <div>
-                <p className="font-bold text-gray-900">Eva Chepchumba</p>
-                <p className="text-sm text-green-700">PM · Product & UX Research</p>
-              </div>
-            </div>
-          </div>
-
-          {/* What they told us */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-            <div className="bg-white rounded-2xl border border-orange-100 p-8 shadow-sm">
-              <h3 className="font-bold text-lg text-orange-700 mb-4">👨‍🌾 Farmers Told Us</h3>
-              <ul className="space-y-3">
-                {[
-                  "Losing negotiating power after harvest",
-                  "Lack of real price transparency",
-                  "Payment uncertainty after delivery",
-                  "Transporting without a confirmed buyer",
-                ].map((item) => (
-                  <li key={item} className="flex items-start gap-2 text-gray-700 text-sm">
-                    <span className="text-orange-500 mt-0.5">•</span> {item}
-                  </li>
-                ))}
-              </ul>
-            </div>
-            <div className="bg-white rounded-2xl border border-blue-100 p-8 shadow-sm">
-              <h3 className="font-bold text-lg text-blue-700 mb-4">🏢 Buyers Told Us</h3>
-              <ul className="space-y-3">
-                {[
-                  "Fake quantity information from farmers",
-                  "Delivery delays causing warehouse issues",
-                  "Farmers not always ready to sell",
-                  "Trust concerns in transactions",
-                ].map((item) => (
-                  <li key={item} className="flex items-start gap-2 text-gray-700 text-sm">
-                    <span className="text-blue-500 mt-0.5">•</span> {item}
-                  </li>
-                ))}
-              </ul>
-            </div>
-          </div>
-
-          <div className="bg-green-800 text-white rounded-2xl p-8 text-center shadow-sm">
-            <p className="text-xl font-semibold leading-relaxed">
-              💡 "Our interviews revealed that <span className="underline decoration-green-300">trust — not production</span> — was the biggest challenge in maize transactions."
-            </p>
-          </div>
-        </div>
-      </section>
-
-      {/* ── 4. THE PIVOT ── */}
-      <section className="bg-white px-6 py-20">
-        <div className="max-w-5xl mx-auto">
-          <p className="text-green-700 font-semibold text-sm uppercase tracking-wider mb-3">Product Pivot</p>
-          <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-            How Customer Feedback Changed SmartShamba
-          </h2>
-          <p className="text-lg text-gray-600 mb-12 max-w-3xl">
-            Rather than continuing to build features we assumed farmers needed, customer interviews helped us focus on the problem they repeatedly described — selling maize safely after harvest.
-          </p>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-center">
-            {/* Original */}
-            <div className="bg-gray-50 rounded-2xl border border-gray-200 p-8">
-              <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-4">Original SmartShamba</p>
-              <ul className="space-y-3">
-                {[
-                  "🌦️ AI Weather Prediction",
-                  "🔬 Crop Disease Detection",
-                  "📡 IoT Sensors",
-                  "🌱 Soil Monitoring",
-                  "🧠 Climate Intelligence",
-                  "📲 SMS Advisory",
-                ].map((item) => (
-                  <li key={item} className="text-gray-500 text-sm line-through">{item}</li>
-                ))}
-              </ul>
-            </div>
-
-            {/* Arrow */}
-            <div className="flex flex-col items-center text-center">
-              <div className="w-16 h-16 bg-green-700 rounded-full flex items-center justify-center text-white text-2xl shadow-lg mb-3">→</div>
-              <p className="text-sm font-bold text-green-700 uppercase tracking-wider">Customer Discovery</p>
-              <p className="text-xs text-gray-500 mt-1">Changed everything</p>
-            </div>
-
-            {/* Today */}
-            <div className="bg-green-50 rounded-2xl border border-green-200 p-8">
-              <p className="text-xs font-bold text-green-600 uppercase tracking-wider mb-4">Today's SmartShamba</p>
-              <ul className="space-y-3">
-                {[
-                  "📱 USSD Transaction Coordination",
-                  "✅ Verified Buyer Directory",
-                  "🤝 Buyer-Farmer Matching",
-                  "💰 Price Transparency",
-                  "📋 Transaction References",
-                  "💳 M-PESA Integration",
-                ].map((item) => (
-                  <li key={item} className="text-gray-800 text-sm font-medium">{item}</li>
-                ))}
-              </ul>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ── 5. FROM ASSUMPTIONS TO EVIDENCE ── */}
-      <section className="bg-green-50 px-6 py-20">
-        <div className="max-w-5xl mx-auto">
-          <p className="text-green-700 font-semibold text-sm uppercase tracking-wider mb-3">Evidence-Based Product Evolution</p>
-          <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-12">From Assumptions to Evidence</h2>
-
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            {[
-              {
-                step: "01",
-                title: "Hypothesis",
-                color: "border-gray-200 bg-white",
-                text: "Farmers need AI, weather data, and IoT sensors to improve yields.",
-              },
-              {
-                step: "02",
-                title: "Customer Interviews",
-                color: "border-orange-200 bg-orange-50",
-                text: "19 farmers and 4 buyers told us the real problem was trust and price uncertainty at the point of sale.",
-              },
-              {
-                step: "03",
-                title: "Product Changes",
-                color: "border-blue-200 bg-blue-50",
-                text: "We dropped IoT and AI features. We focused entirely on USSD-based buyer matching and price pre-confirmation.",
-              },
-              {
-                step: "04",
-                title: "Current Prototype",
-                color: "border-green-200 bg-green-50",
-                text: "USSD flow, SMS notifications, M-PESA integration, admin dashboard — all built and deployed.",
-              },
-            ].map((card) => (
-              <div key={card.step} className={`rounded-2xl border p-6 ${card.color} shadow-sm`}>
-                <p className="text-3xl font-bold text-gray-300 mb-3">{card.step}</p>
-                <h3 className="font-bold text-gray-900 mb-3">{card.title}</h3>
-                <p className="text-gray-600 text-sm leading-relaxed">{card.text}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ── 6. HOW IT WORKS ── */}
-      <section className="bg-white px-6 py-20">
-        <div className="max-w-5xl mx-auto">
-          <p className="text-green-700 font-semibold text-sm uppercase tracking-wider mb-3">Current Solution</p>
-          <h2 className="text-3xl font-bold text-center text-green-800 mb-12">How SmartShamba Works</h2>
-          <div className="grid grid-cols-1 md:grid-cols-5 gap-6">
-            {[
-              { step: "1", title: "Dial *384*53374#", desc: "Farmers access SmartShamba using any mobile phone through USSD — no smartphone or internet needed." },
-              { step: "2", title: "Enter Quantity", desc: "Farmers enter the number of maize bags ready for sale." },
-              { step: "3", title: "View Offers", desc: "Farmers see verified buyer offers and current prices before transport." },
-              { step: "4", title: "Confirm Offer", desc: "The selected buyer offer is recorded and an SMS confirmation is sent." },
-              { step: "5", title: "Receive Payment", desc: "Payment is processed through M-PESA after delivery confirmation." },
-            ].map((s) => (
-              <div key={s.step} className="bg-white rounded-2xl p-6 shadow-sm border border-green-100">
-                <div className="w-8 h-8 bg-green-700 text-white rounded-full flex items-center justify-center text-sm font-bold mb-4">{s.step}</div>
-                <h3 className="text-lg font-bold text-green-700 mb-2">{s.title}</h3>
-                <p className="text-gray-600 text-sm">{s.desc}</p>
-              </div>
-            ))}
-          </div>
-          <div className="text-center mt-10">
-            <a href="/ussd" className="bg-green-700 text-white px-8 py-4 rounded-xl text-lg hover:bg-green-800 transition inline-block">
-              Try the USSD Demo →
-            </a>
-          </div>
-        </div>
-      </section>
-
-      {/* ── 7. WHY USSD ── */}
-      <section className="bg-green-50 px-6 py-20">
-        <div className="max-w-5xl mx-auto">
-          <p className="text-green-700 font-semibold text-sm uppercase tracking-wider mb-3">Design Decision</p>
-          <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">Why We Chose USSD</h2>
-          <p className="text-lg text-gray-600 mb-10 max-w-3xl">
-            Accessibility first. Every technology decision in SmartShamba starts with one question: can a farmer in rural Trans Nzoia use this without a smartphone or internet connection?
-          </p>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {[
-              { icon: "📱", title: "Feature Phone Compatible", desc: "Farmers already own and use feature phones. No new device required." },
-              { icon: "🌐", title: "No Internet Required", desc: "USSD works on 2G networks. It functions anywhere there is a mobile signal." },
-              { icon: "🔒", title: "Familiar Experience", desc: "Farmers already use USSD for M-PESA. The interaction model is already trusted." },
-              { icon: "💳", title: "M-PESA Native", desc: "USSD integrates naturally with Safaricom M-PESA for payment settlement." },
-              { icon: "♿", title: "Accessibility First", desc: "Works for farmers regardless of literacy level or smartphone access." },
-              { icon: "⚡", title: "Instant Response", desc: "USSD sessions are real-time — no loading screens, no app downloads." },
-            ].map((item) => (
-              <div key={item.title} className="bg-white rounded-2xl border border-green-100 p-6 shadow-sm">
-                <div className="text-2xl mb-3">{item.icon}</div>
-                <h3 className="font-bold text-gray-900 mb-2">{item.title}</h3>
-                <p className="text-gray-600 text-sm">{item.desc}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ── 8. TECHNICAL ROADMAP (honest) ── */}
-      <section className="bg-white px-6 py-20">
-        <div className="max-w-5xl mx-auto">
-          <p className="text-green-700 font-semibold text-sm uppercase tracking-wider mb-3">Technical Roadmap</p>
-          <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">What We've Built. What Comes Next.</h2>
-          <p className="text-lg text-gray-600 mb-12 max-w-3xl">
-            SmartShamba has moved from prototype to a deployed pilot-ready system. Here is the honest current state.
-          </p>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            {/* Built */}
-            <div className="bg-green-50 rounded-2xl border border-green-200 p-8">
-              <p className="text-xs font-bold text-green-600 uppercase tracking-wider mb-6">✅ Already Built & Deployed</p>
-              <ul className="space-y-4">
-                {[
-                  { label: "Next.js 16 on Vercel", sub: "Production deployment, App Router, TypeScript" },
-                  { label: "USSD Integration", sub: "Africa's Talking · *384*53374# · 5-step flow" },
-                  { label: "SMS Notifications", sub: "Offer confirmation and settlement SMS to farmers" },
-                  { label: "PostgreSQL Database", sub: "Supabase · Farmers, Buyers, Transactions" },
-                  { label: "M-PESA Daraja C2B", sub: "Callback handler, amount verification, idempotency" },
-                  { label: "Admin Dashboard", sub: "Login, KPI cards, buyer CRUD, manual settlement" },
-                  { label: "Error Monitoring", sub: "Sentry · all business routes instrumented" },
-                ].map((item) => (
-                  <li key={item.label} className="flex items-start gap-3">
-                    <span className="text-green-600 mt-0.5 shrink-0">✓</span>
-                    <div>
-                      <p className="font-semibold text-gray-900 text-sm">{item.label}</p>
-                      <p className="text-xs text-gray-500">{item.sub}</p>
-                    </div>
-                  </li>
-                ))}
-              </ul>
-            </div>
-
-            {/* Next */}
-            <div className="bg-gray-50 rounded-2xl border border-gray-200 p-8">
-              <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-6">🗺️ Next — Pilot & Scale</p>
-              <ul className="space-y-4">
-                {[
-                  { label: "Safaricom Production Credentials", sub: "C2B URL registration pending Safaricom approval" },
-                  { label: "Real Pilot Users", sub: "5–10 farmers, 2–5 buyers in Trans Nzoia" },
-                  { label: "Farmer Verification Workflow", sub: "Identity and phone verification at onboarding" },
-                  { label: "Audit Logs", sub: "Admin action recording for all settlements" },
-                  { label: "Analytics Dashboard", sub: "Volume trends, settlement rates, county metrics" },
-                  { label: "Fraud Prevention", sub: "Duplicate submissions, anomaly detection" },
-                  { label: "Multi-county Expansion", sub: "After Trans Nzoia pilot validation" },
-                ].map((item) => (
-                  <li key={item.label} className="flex items-start gap-3">
-                    <span className="text-gray-300 mt-0.5 shrink-0">○</span>
-                    <div>
-                      <p className="font-semibold text-gray-600 text-sm">{item.label}</p>
-                      <p className="text-xs text-gray-400">{item.sub}</p>
-                    </div>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ── 9. LESSONS LEARNED ── */}
-      <section className="bg-green-50 px-6 py-20">
-        <div className="max-w-5xl mx-auto">
-          <p className="text-green-700 font-semibold text-sm uppercase tracking-wider mb-3">Reflection</p>
-          <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-12">Lessons We Learned</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {[
-              { num: "01", lesson: "Customers don't always want what founders initially think.", icon: "🔍" },
-              { num: "02", lesson: "Trust creates more value than additional technology.", icon: "🤝" },
-              { num: "03", lesson: "Technology should adapt to farmers — not farmers to technology.", icon: "♿" },
-              { num: "04", lesson: "Solving one problem exceptionally well is better than solving many.", icon: "🎯" },
-              { num: "05", lesson: "Customer discovery changed how our entire team builds products.", icon: "💡" },
-            ].map((item) => (
-              <div key={item.num} className="bg-white rounded-2xl border border-green-100 p-6 shadow-sm">
-                <div className="flex items-center gap-3 mb-4">
-                  <span className="text-2xl">{item.icon}</span>
-                  <span className="text-xs font-bold text-gray-300">{item.num}</span>
+        {/* HERO */}
+        <section className="bg-white overflow-hidden">
+          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pt-12 pb-16 lg:pt-20 lg:pb-24">
+            <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
+              <div className="flex flex-col justify-center">
+                <p className="text-[#00703C] font-semibold text-xs uppercase tracking-[0.15em] mb-5">Rift Valley & Western Kenya &middot; 2026</p>
+                <h1 className="text-4xl sm:text-5xl lg:text-[3.5rem] font-bold text-gray-900 leading-[1.1] tracking-tight mb-6">
+                  Direct, Transparent Maize Trading for Kenya&rsquo;s Farmers & Buyers
+                </h1>
+                <p className="text-lg text-gray-600 leading-relaxed max-w-xl mb-8">
+                  SmartShamba connects farmers and buyers across Rift Valley & Western Kenya through coordinated transactions, USSD and web access, transport coordination, and settlement workflows.
+                </p>
+                <div className="flex flex-col sm:flex-row gap-4">
+                  <Link href="/ussd" className="inline-flex items-center justify-center gap-2 bg-[#00703C] text-white px-7 py-3.5 rounded-lg text-sm font-semibold hover:bg-[#00582f] transition-colors shadow-sm">
+                    Launch USSD Demo <ArrowRight className="w-4 h-4" />
+                  </Link>
+                  <Link href="/buyers" className="inline-flex items-center justify-center gap-2 border border-gray-300 text-gray-700 px-7 py-3.5 rounded-lg text-sm font-semibold hover:border-[#00703C] hover:text-[#00703C] transition-colors">
+                    View Verified Buyers
+                  </Link>
                 </div>
-                <p className="text-gray-800 font-medium leading-relaxed">{item.lesson}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ── 10. TEAM ── */}
-      <section className="bg-white px-6 py-20">
-        <div className="max-w-5xl mx-auto">
-          <p className="text-green-700 font-semibold text-sm uppercase tracking-wider mb-3">The Team</p>
-          <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-12">Meet SmartShamba</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {[
-              {
-                initials: "DA", name: "Daisy Ayuma", role: "CEO",
-                responsibilities: ["Business Strategy", "Partnerships", "Buyer Onboarding", "Investor Relations"],
-              },
-              {
-                initials: "MM", name: "Mark Manoti", role: "CTO",
-                responsibilities: ["Platform Architecture", "USSD Engineering", "API Development", "Infrastructure"],
-              },
-              {
-                initials: "GA", name: "Grace Akomo", role: "CFO",
-                responsibilities: ["Farmer Operations", "Pilot Coordination", "Customer Discovery", "Field Research"],
-              },
-              {
-                initials: "EC", name: "Eva Chepchumba", role: "PM",
-                responsibilities: ["UX Design", "Product Iteration", "Customer Feedback", "Sprint Planning"],
-              },
-            ].map((member) => (
-              <div key={member.name} className="bg-green-50 rounded-2xl border border-green-100 p-6 shadow-sm text-center">
-                <div className="w-16 h-16 bg-green-700 rounded-full flex items-center justify-center text-white font-bold text-xl mx-auto mb-4">
-                  {member.initials}
+                <div className="flex flex-wrap items-center gap-x-6 gap-y-3 mt-10 pt-8 border-t border-gray-100">
+                  <div className="flex items-center gap-2 text-sm text-gray-600"><ShieldCheck className="w-4 h-4 text-[#00703C]" /><span className="font-medium">Verified Buyers</span></div>
+                  <div className="flex items-center gap-2 text-sm text-gray-600"><Phone className="w-4 h-4 text-[#00703C]" /><span className="font-medium">USSD + M-PESA</span></div>
+                  <div className="flex items-center gap-2 text-sm text-gray-600"><Truck className="w-4 h-4 text-[#00703C]" /><span className="font-medium">Transport Coordination</span></div>
                 </div>
-                <p className="font-bold text-gray-900 text-lg">{member.name}</p>
-                <p className="text-green-700 font-semibold text-sm mb-4">{member.role}</p>
-                <ul className="text-left space-y-1">
-                  {member.responsibilities.map((r) => (
-                    <li key={r} className="text-xs text-gray-600 flex items-start gap-1.5">
-                      <span className="text-green-500 shrink-0">·</span> {r}
-                    </li>
+              </div>
+              <div className="relative">
+                <div className="relative aspect-4/5 sm:aspect-5/4 lg:aspect-4/5 rounded-2xl overflow-hidden shadow-xl">
+                  <img src={IMAGES["hero-maize-field"]} alt="Maize field with dirt path in rural Kenya" className="w-full h-full object-cover" />
+                  <div className="absolute bottom-5 left-5 bg-black/60 backdrop-blur-sm rounded-lg px-4 py-2.5">
+                    <p className="text-xs font-bold text-white tracking-wide">Rift Valley & Western Kenya</p>
+                    <p className="text-[10px] text-gray-200 mt-0.5">Maize Trade &middot; USSD + Web</p>
+                  </div>
+                </div>
+                {/* Secondary rotating image panel */}
+                <div className="absolute -bottom-6 -left-6 w-32 h-32 rounded-xl overflow-hidden shadow-xl border-4 border-white hidden sm:block">
+                  <ImageCrossfade
+                    images={[
+                      { src: IMAGES["corn-closeup"], alt: "Close-up of corn on the cob" },
+                      { src: IMAGES["green-corn-plant"], alt: "Green corn plant" },
+                      { src: IMAGES["corn-hanging"], alt: "Ears of corn hanging under a straw hat" },
+                    ]}
+                    interval={3500}
+                    className="w-full h-full"
+                    imgClassName="object-cover"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* TRUST STRIP */}
+        <section className="border-y border-gray-100 bg-gray-50/50">
+          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-6">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
+              <div><p className="text-xl font-bold text-[#00703C]">USSD Access</p><p className="text-xs text-gray-500 mt-1 font-medium">No Internet Needed</p></div>
+              <div><p className="text-xl font-bold text-[#00703C]">M-PESA</p><p className="text-xs text-gray-500 mt-1 font-medium">Integrated Settlement</p></div>
+              <div><p className="text-xl font-bold text-[#00703C]">Verified</p><p className="text-xs text-gray-500 mt-1 font-medium">Buyer Directory</p></div>
+              <div><p className="text-xl font-bold text-[#00703C]">Transport</p><p className="text-xs text-gray-500 mt-1 font-medium">Coordination Layer</p></div>
+            </div>
+          </div>
+        </section>
+
+        {/* FARM TO MARKET */}
+        <section className="bg-white py-20 lg:py-28">
+          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <div className="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center">
+              <div className="relative order-2 lg:order-1">
+                <div className="relative aspect-4/3 rounded-2xl overflow-hidden shadow-lg">
+                  <img src={IMAGES["market-produce"]} alt="Variety of produce in a market building" className="w-full h-full object-cover" />
+                </div>
+              </div>
+              <div className="order-1 lg:order-2">
+                <p className="text-[#00703C] font-semibold text-xs uppercase tracking-[0.15em] mb-4">Farm to Market</p>
+                <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 leading-tight mb-6">
+                  What happens when farmers and buyers can coordinate before the harvest moves?
+                </h2>
+                <p className="text-lg text-gray-600 leading-relaxed mb-6">
+                  SmartShamba is a transaction coordination layer that ensures farmers know the buyer, the price, and the payment mechanism before the truck is loaded.
+                </p>
+                <p className="text-lg text-gray-600 leading-relaxed">
+                  We connect physical agriculture with digital market infrastructure, reducing information asymmetry and post-harvest transaction uncertainty.
+                </p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* HOW IT WORKS */}
+        <section className="bg-gray-50 py-20 lg:py-28">
+          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <div className="text-center mb-16">
+              <p className="text-[#00703C] font-semibold text-xs uppercase tracking-[0.15em] mb-4">Current Solution</p>
+              <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">How SmartShamba Works</h2>
+              <p className="text-lg text-gray-600 max-w-2xl mx-auto">From registration to settlement &mdash; a complete coordination workflow accessible on any phone.</p>
+            </div>
+            <div className="relative mb-16">
+              <div className="hidden lg:block absolute top-12 left-[10%] right-[10%] h-px bg-gray-200"></div>
+              <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-8 lg:gap-4">
+                {[
+                  { step: "01", title: "Farmer", desc: "Dials *384*53374# and registers via USSD on any phone." },
+                  { step: "02", title: "Buyer", desc: "Lists demand and verified offers on the web portal." },
+                  { step: "03", title: "Confirm", desc: "Transaction recorded and SMS confirmation sent." },
+                  { step: "04", title: "Transport", desc: "Providers matched. Delivery tracked end-to-end." },
+                  { step: "05", title: "Settlement", desc: "M-PESA settlement after delivery confirmation." },
+                ].map((s) => (
+                  <div key={s.step} className="relative text-center lg:text-left">
+                    <div className="w-24 h-24 mx-auto lg:mx-0 bg-white rounded-full border-2 border-[#00703C] flex items-center justify-center mb-4 shadow-sm relative z-10">
+                      <span className="text-xl font-bold text-[#00703C]">{s.step}</span>
+                    </div>
+                    <h3 className="font-bold text-gray-900 text-sm mb-2">{s.title}</h3>
+                    <p className="text-xs text-gray-600 leading-relaxed">{s.desc}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+            <div className="grid lg:grid-cols-2 gap-12 items-center">
+              <div className="relative">
+                <div className="relative aspect-4/3 rounded-2xl overflow-hidden shadow-lg max-w-sm mx-auto">
+                  <img src={IMAGES["feature-phone"]} alt="Feature phone representing USSD accessibility" className="w-full h-full object-cover object-center" />
+                </div>
+              </div>
+              <div>
+                <h3 className="text-2xl sm:text-3xl font-bold text-gray-900 leading-tight mb-6">
+                  USSD for farmers. Web for buyers. One coordinated system.
+                </h3>
+                <p className="text-lg text-gray-600 leading-relaxed mb-8">
+                  Every technology decision starts with one question: can a farmer in rural Kenya use this without a smartphone or internet connection? USSD works on 2G networks, on any phone, anywhere there is a signal.
+                </p>
+                <div className="grid sm:grid-cols-2 gap-5">
+                  <div className="border border-gray-200 rounded-xl p-5">
+                    <div className="flex items-center gap-2 mb-2"><Phone className="w-5 h-5 text-[#00703C]" /><h4 className="font-bold text-gray-900 text-sm">Feature Phones (USSD)</h4></div>
+                    <p className="text-xs text-gray-600 leading-relaxed">Dial *384*53374#. No app, no internet. Works on any Safaricom SIM.</p>
+                  </div>
+                  <div className="border border-gray-200 rounded-xl p-5">
+                    <div className="flex items-center gap-2 mb-2"><Globe className="w-5 h-5 text-[#00703C]" /><h4 className="font-bold text-gray-900 text-sm">Smartphones & Web</h4></div>
+                    <p className="text-xs text-gray-600 leading-relaxed">Buyers manage procurement, demands, and transactions through a web dashboard.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* AGRICULTURE RAIL */}
+        <section className="bg-white py-20 lg:py-28">
+          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <div className="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center">
+              <div>
+                <p className="text-[#00703C] font-semibold text-xs uppercase tracking-[0.15em] mb-4">From cultivation to market</p>
+                <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 leading-tight mb-6">
+                  Connecting the physical farm with digital trade coordination.
+                </h2>
+                <p className="text-lg text-gray-600 leading-relaxed mb-8">
+                  SmartShamba connects harvest production at scale with verified market demand. We ensure that agricultural output meets real buyer needs, coordinating the physical movement of maize with digital transaction references.
+                </p>
+              </div>
+              <div className="relative">
+                <div className="relative aspect-4/3 rounded-2xl overflow-hidden shadow-lg">
+                  <ImageCrossfade
+                    images={[
+                      { src: IMAGES["corn-harvest"], alt: "Corn harvest with green forage harvester" },
+                      { src: IMAGES["watering-plant"], alt: "Person watering a plant" },
+                      { src: IMAGES["planting-vegetables"], alt: "People planting vegetables during daytime" },
+                    ]}
+                    interval={3500}
+                    className="w-full h-full"
+                    imgClassName="object-cover"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* MARKET INTELLIGENCE + GROUP SELLING */}
+        <section className="bg-gray-50 py-20 lg:py-28">
+          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <div className="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center mb-24">
+              <div>
+                <p className="text-[#00703C] font-semibold text-xs uppercase tracking-[0.15em] mb-4">Market Intelligence</p>
+                <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 leading-tight mb-6">
+                  Real maize prices. Verified buyer demand. Before the harvest moves.
+                </h2>
+                <p className="text-lg text-gray-600 leading-relaxed mb-8">
+                  SmartShamba provides transparent market pricing and verified buyer demand data &mdash; so farmers can make informed decisions about when and where to sell, and buyers can coordinate procurement at scale.
+                </p>
+                <Link href="/market-prices" className="inline-flex items-center gap-2 text-[#00703C] font-semibold text-sm hover:underline">
+                  View Current Market Prices <ArrowRight className="w-4 h-4" />
+                </Link>
+              </div>
+              <div className="relative">
+                <div className="relative aspect-4/3 rounded-2xl overflow-hidden shadow-lg">
+                  <ImageCrossfade
+                    images={[
+                      { src: IMAGES["market-produce"], alt: "Variety of produce in a market building" },
+                      { src: IMAGES["corn-on-table"], alt: "Pile of corn on a table" },
+                      { src: IMAGES["corn-pile"], alt: "Pile of corn" },
+                    ]}
+                    interval={3500}
+                    className="w-full h-full"
+                    imgClassName="object-cover"
+                  />
+                </div>
+              </div>
+            </div>
+            <div className="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center">
+              <div className="relative order-2 lg:order-1">
+                <div className="relative aspect-4/3 rounded-2xl overflow-hidden shadow-lg">
+                  <ImageCrossfade
+                    images={[
+                      { src: IMAGES["corn-pile-2"], alt: "Pile of corn" },
+                      { src: IMAGES["colorful-corn-ears"], alt: "Pile of colorful dried corn ears" },
+                      { src: IMAGES["corn-on-table"], alt: "Pile of corn on a table" },
+                    ]}
+                    interval={3500}
+                    className="w-full h-full"
+                    imgClassName="object-cover"
+                  />
+                </div>
+              </div>
+              <div className="order-1 lg:order-2">
+                <p className="text-[#00703C] font-semibold text-xs uppercase tracking-[0.15em] mb-4">Group Selling</p>
+                <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 leading-tight mb-6">
+                  Individual farmers. Collective volume. Coordinated commerce.
+                </h2>
+                <p className="text-lg text-gray-600 leading-relaxed mb-8">
+                  Smallholder farmers pool their harvest to meet institutional buyer demand &mdash; with shared transport coordination and transparent, proportional settlement.
+                </p>
+                <div className="grid sm:grid-cols-2 gap-5">
+                  <div className="border border-gray-200 rounded-xl p-5 bg-white">
+                    <Users className="w-6 h-6 text-[#00703C] mb-3" />
+                    <h3 className="font-bold text-gray-900 text-sm mb-1">Collective Volume</h3>
+                    <p className="text-xs text-gray-600">Farmers pool bags to meet institutional buyer demand thresholds.</p>
+                  </div>
+                  <div className="border border-gray-200 rounded-xl p-5 bg-white">
+                    <TrendingUp className="w-6 h-6 text-[#00703C] mb-3" />
+                    <h3 className="font-bold text-gray-900 text-sm mb-1">Transparent Settlement</h3>
+                    <p className="text-xs text-gray-600">Proportional M-PESA payouts based on bags contributed.</p>
+                  </div>
+                </div>
+                <Link href="/group-selling" className="inline-flex items-center gap-2 mt-8 text-[#00703C] font-semibold text-sm hover:underline">
+                  Learn About Group Selling <ArrowRight className="w-4 h-4" />
+                </Link>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* TRANSPORT */}
+        <section className="bg-gray-900 text-white py-20 lg:py-28">
+          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <div className="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center">
+              <div>
+                <p className="text-green-400 font-semibold text-xs uppercase tracking-[0.15em] mb-4">Transport Marketplace</p>
+                <h2 className="text-3xl sm:text-4xl font-bold leading-tight mb-6">From confirmed transaction to coordinated delivery.</h2>
+                <p className="text-lg text-gray-300 leading-relaxed mb-8">
+                  SmartShamba connects verified transport providers with confirmed transactions &mdash; matching capacity to demand, coordinating pickup and delivery, and settling payment through the same platform.
+                </p>
+                <div className="flex flex-wrap items-center gap-2 text-sm mb-8">
+                  {["Request", "Match", "Accept", "Load", "Transit", "Delivery"].map((step, i) => (
+                    <div key={step} className="flex items-center gap-2">
+                      <span className="bg-white/10 border border-white/20 rounded-lg px-3 py-1.5 font-medium">{step}</span>
+                      {i < 5 && <span className="text-gray-500">&rarr;</span>}
+                    </div>
                   ))}
-                </ul>
+                </div>
+                <Link href="/transport/login" className="inline-flex items-center gap-2 bg-white text-gray-900 px-7 py-3.5 rounded-lg text-sm font-semibold hover:bg-gray-100 transition-colors">
+                  Transport Portal Login <ArrowRight className="w-4 h-4" />
+                </Link>
               </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ── 11. WHY TRANS NZOIA ── */}
-      <section className="bg-green-50 px-6 py-20">
-        <div className="max-w-5xl mx-auto text-center">
-          <p className="text-green-700 font-semibold text-sm uppercase tracking-wider mb-3">Pilot Focus</p>
-          <h2 className="text-3xl md:text-5xl font-bold text-green-900 mb-6">Why Trans Nzoia?</h2>
-          <p className="text-xl text-gray-700 leading-relaxed max-w-3xl mx-auto mb-14">
-            SmartShamba is intentionally focused on one county during the pilot stage to improve operational coordination, farmer onboarding, and buyer verification before expanding.
-          </p>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {[
-              { title: "Major Maize-Producing Region", desc: "Trans Nzoia is one of Kenya's largest maize-producing regions, making it operationally suitable for an early coordination pilot." },
-              { title: "Dense Farmer Activity", desc: "High farmer concentration improves onboarding efficiency and simplifies field coordination during early deployment." },
-              { title: "Existing Grain Logistics", desc: "Existing grain transport and aggregation workflows make buyer coordination easier during pilot operations." },
-              { title: "Controlled Expansion Strategy", desc: "SmartShamba is intentionally starting with one crop and one geographic region before broader expansion." },
-            ].map((item) => (
-              <div key={item.title} className="rounded-3xl border border-green-100 bg-white p-8 text-left shadow-sm">
-                <h3 className="text-xl font-bold text-green-800 mb-3">{item.title}</h3>
-                <p className="text-gray-700 leading-relaxed text-sm">{item.desc}</p>
+              <div className="relative">
+                <div className="relative aspect-4/3 rounded-2xl overflow-hidden shadow-2xl">
+                  <ImageCrossfade
+                    images={[
+                      { src: IMAGES["white-truck"], alt: "White truck on road during daytime" },
+                      { src: IMAGES["cargo-crates"], alt: "Aerial photo of cargo crates" },
+                    ]}
+                    interval={4000}
+                    className="w-full h-full"
+                    imgClassName="object-cover"
+                  />
+                </div>
               </div>
-            ))}
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
 
-      {/* ── 12. CALL TO ACTION ── */}
-      <section className="bg-green-800 text-white px-6 py-20">
-        <div className="max-w-5xl mx-auto text-center">
-          <h2 className="text-3xl md:text-5xl font-bold mb-6">
-            Building Trust Infrastructure for Farmers
-          </h2>
-          <p className="text-xl leading-relaxed text-green-100 max-w-3xl mx-auto mb-12">
-            SmartShamba is not just a marketplace. It is a transaction coordination and trust layer designed to reduce post-harvest transaction uncertainty in Trans Nzoia County.
-          </p>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
-            {[
-              { title: "Pilot Preparation Stage", desc: "Focused operational prototype for maize farmers in Trans Nzoia County." },
-              { title: "USSD + M-PESA Workflow", desc: "Live USSD coordination with M-PESA settlement integration." },
-              { title: "Admin Operations Live", desc: "Full admin dashboard for transaction management and buyer coordination." },
-            ].map((item) => (
-              <div key={item.title} className="rounded-2xl border border-green-200 bg-white/10 p-6 backdrop-blur-sm text-left">
-                <h3 className="text-lg font-bold mb-2">{item.title}</h3>
-                <p className="text-green-100 text-sm">{item.desc}</p>
-              </div>
-            ))}
+        {/* TRUST */}
+        <section className="bg-white py-20 lg:py-28">
+          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <div className="text-center mb-16">
+              <p className="text-[#00703C] font-semibold text-xs uppercase tracking-[0.15em] mb-4">Trust Infrastructure</p>
+              <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">Not a marketplace. A coordination layer.</h2>
+              <p className="text-lg text-gray-600 max-w-2xl mx-auto">SmartShamba reduces post-harvest transaction uncertainty &mdash; the moment a farmer loads the truck without a confirmed buyer.</p>
+            </div>
+            <div className="grid md:grid-cols-3 gap-6">
+              {[
+                { title: "Verified Buyer Directory", desc: "Every buyer is vetted by the SmartShamba team before listing. Capacity, location, and price offers are confirmed.", icon: ShieldCheck },
+                { title: "Transaction References", desc: "Every confirmed offer generates a unique reference number (SS-2026-XXXXX) sent via SMS to both parties.", icon: CheckCircle2 },
+                { title: "M-PESA Settlement", desc: "Payment is released through M-PESA after delivery confirmation. The platform never holds farmer funds.", icon: TrendingUp },
+              ].map((item) => (
+                <div key={item.title} className="border border-gray-200 rounded-xl p-8 hover:border-[#00703C] transition-colors">
+                  <item.icon className="w-8 h-8 text-[#00703C] mb-4" />
+                  <h3 className="font-bold text-gray-900 text-lg mb-3">{item.title}</h3>
+                  <p className="text-sm text-gray-600 leading-relaxed">{item.desc}</p>
+                </div>
+              ))}
+            </div>
           </div>
-          <div className="flex flex-col md:flex-row gap-4 justify-center">
-            <a href="/ussd" className="bg-white text-green-800 px-8 py-4 rounded-xl text-lg font-semibold hover:bg-green-50 transition">
-              Try USSD Demo
-            </a>
-            <a href="/buyer" className="border border-white text-white px-8 py-4 rounded-xl text-lg hover:bg-white/10 transition">
-              View Verified Buyers
-            </a>
-          </div>
-          <p className="mt-16 text-2xl italic text-green-200">
-            "A farmer should not discover the real price after the truck is loaded."
-          </p>
-        </div>
-      </section>
+        </section>
 
-    </main>
+        {/* FINAL CTA */}
+        <section className="relative bg-gray-900 text-white py-20 lg:py-28 overflow-hidden">
+          <div className="absolute inset-0 opacity-30">
+            <img src={IMAGES["sunset-corn-field"]} alt="Open corn field at sunset" className="w-full h-full object-cover" />
+          </div>
+          <div className="relative mx-auto max-w-4xl px-4 sm:px-6 lg:px-8 text-center">
+            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold leading-tight mb-6">Build a more connected agricultural market.</h2>
+            <p className="text-lg text-gray-200 leading-relaxed max-w-2xl mx-auto mb-10">
+              SmartShamba is a transaction coordination platform designed to reduce post-harvest transaction uncertainty in Rift Valley & Western Kenya.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <Link href="/ussd" className="inline-flex items-center justify-center gap-2 bg-[#00703C] text-white px-8 py-3.5 rounded-lg text-sm font-bold hover:bg-[#00582f] transition-colors">
+                Try USSD Demo <ArrowRight className="w-4 h-4" />
+              </Link>
+              <Link href="/buyer/login" className="inline-flex items-center justify-center gap-2 border border-white/40 text-white px-8 py-3.5 rounded-lg text-sm font-bold hover:bg-white/10 transition-colors">
+                Buyer Portal Login
+              </Link>
+            </div>
+          </div>
+        </section>
+
+      </main>
+      <PublicFooter />
+    </div>
   );
 }

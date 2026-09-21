@@ -61,3 +61,22 @@ p, li, span, label {
 /* Darken muted text classes globally for better contrast */
 .text-gray-400 { color: #6b7280 !important; } /* gray-500 */
 .text-gray-500 { color: #4b5563 !important; } /* gray-600 */
+
+/* ── COUNTY TICKER MARQUEE ── */
+@keyframes marquee {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+.animate-marquee {
+  animation: marquee 40s linear infinite;
+}
+.animate-marquee:hover {
+  animation-play-state: paused;
+}
+@media (prefers-reduced-motion: reduce) {
+  .animate-marquee {
+    animation: none;
+    overflow-x: auto;
+    scrollbar-width: thin;
+  }
+}
