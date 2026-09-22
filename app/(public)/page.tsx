@@ -1,4 +1,6 @@
 import PublicHeader from "@/components/PublicHeader";
+import HeroSection from "@/components/HeroSection";
+import CountyTicker from "@/components/CountyTicker";
 import PublicFooter from "@/components/PublicFooter";
 import ImageCrossfade from "@/components/ImageCrossfade";
 import Link from "next/link";
@@ -21,65 +23,17 @@ export default function Home() {
         </div>
 
         {/* HERO */}
-        <section className="bg-white overflow-hidden">
-          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pt-12 pb-16 lg:pt-20 lg:pb-24">
-            <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
-              <div className="flex flex-col justify-center">
-                <p className="text-[#00703C] font-semibold text-xs uppercase tracking-[0.15em] mb-5">Rift Valley & Western Kenya &middot; 2026</p>
-                <h1 className="text-4xl sm:text-5xl lg:text-[3.5rem] font-bold text-gray-900 leading-[1.1] tracking-tight mb-6">
-                  Direct, Transparent Maize Trading for Kenya&rsquo;s Farmers & Buyers
-                </h1>
-                <p className="text-lg text-gray-600 leading-relaxed max-w-xl mb-8">
-                  SmartShamba connects farmers and buyers across Rift Valley & Western Kenya through coordinated transactions, USSD and web access, transport coordination, and settlement workflows.
-                </p>
-                <div className="flex flex-col sm:flex-row gap-4">
-                  <Link href="/ussd" className="inline-flex items-center justify-center gap-2 bg-[#00703C] text-white px-7 py-3.5 rounded-lg text-sm font-semibold hover:bg-[#00582f] transition-colors shadow-sm">
-                    Launch USSD Demo <ArrowRight className="w-4 h-4" />
-                  </Link>
-                  <Link href="/buyers" className="inline-flex items-center justify-center gap-2 border border-gray-300 text-gray-700 px-7 py-3.5 rounded-lg text-sm font-semibold hover:border-[#00703C] hover:text-[#00703C] transition-colors">
-                    View Verified Buyers
-                  </Link>
-                </div>
-                <div className="flex flex-wrap items-center gap-x-6 gap-y-3 mt-10 pt-8 border-t border-gray-100">
-                  <div className="flex items-center gap-2 text-sm text-gray-600"><ShieldCheck className="w-4 h-4 text-[#00703C]" /><span className="font-medium">Verified Buyers</span></div>
-                  <div className="flex items-center gap-2 text-sm text-gray-600"><Phone className="w-4 h-4 text-[#00703C]" /><span className="font-medium">USSD + M-PESA</span></div>
-                  <div className="flex items-center gap-2 text-sm text-gray-600"><Truck className="w-4 h-4 text-[#00703C]" /><span className="font-medium">Transport Coordination</span></div>
-                </div>
-              </div>
-              <div className="relative">
-                <div className="relative aspect-4/5 sm:aspect-5/4 lg:aspect-4/5 rounded-2xl overflow-hidden shadow-xl">
-                  <img src={IMAGES["hero-maize-field"]} alt="Maize field with dirt path in rural Kenya" className="w-full h-full object-cover" />
-                  <div className="absolute bottom-5 left-5 bg-black/60 backdrop-blur-sm rounded-lg px-4 py-2.5">
-                    <p className="text-xs font-bold text-white tracking-wide">Rift Valley & Western Kenya</p>
-                    <p className="text-[10px] text-gray-200 mt-0.5">Maize Trade &middot; USSD + Web</p>
-                  </div>
-                </div>
-                {/* Secondary rotating image panel */}
-                <div className="absolute -bottom-6 -left-6 w-32 h-32 rounded-xl overflow-hidden shadow-xl border-4 border-white hidden sm:block">
-                  <ImageCrossfade
-                    images={[
-                      { src: IMAGES["corn-closeup"], alt: "Close-up of corn on the cob" },
-                      { src: IMAGES["green-corn-plant"], alt: "Green corn plant" },
-                      { src: IMAGES["corn-hanging"], alt: "Ears of corn hanging under a straw hat" },
-                    ]}
-                    interval={3500}
-                    className="w-full h-full"
-                    imgClassName="object-cover"
-                  />
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
+        <HeroSection />
+        <CountyTicker />
 
         {/* TRUST STRIP */}
         <section className="border-y border-gray-100 bg-gray-50/50">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-6">
             <div className="grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
-              <div><p className="text-xl font-bold text-[#00703C]">USSD Access</p><p className="text-xs text-gray-500 mt-1 font-medium">No Internet Needed</p></div>
-              <div><p className="text-xl font-bold text-[#00703C]">M-PESA</p><p className="text-xs text-gray-500 mt-1 font-medium">Integrated Settlement</p></div>
-              <div><p className="text-xl font-bold text-[#00703C]">Verified</p><p className="text-xs text-gray-500 mt-1 font-medium">Buyer Directory</p></div>
-              <div><p className="text-xl font-bold text-[#00703C]">Transport</p><p className="text-xs text-gray-500 mt-1 font-medium">Coordination Layer</p></div>
+              <div><p className="text-xl font-bold text-[#00703C]">USSD Access</p><p className="text-xs text-gray-600 mt-1 font-medium">No Internet Needed</p></div>
+              <div><p className="text-xl font-bold text-[#00703C]">M-PESA</p><p className="text-xs text-gray-600 mt-1 font-medium">Integrated Settlement</p></div>
+              <div><p className="text-xl font-bold text-[#00703C]">Verified</p><p className="text-xs text-gray-600 mt-1 font-medium">Buyer Directory</p></div>
+              <div><p className="text-xl font-bold text-[#00703C]">Transport</p><p className="text-xs text-gray-600 mt-1 font-medium">Coordination Layer</p></div>
             </div>
           </div>
         </section>
@@ -90,6 +44,7 @@ export default function Home() {
             <div className="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center">
               <div className="relative order-2 lg:order-1">
                 <div className="relative aspect-4/3 rounded-2xl overflow-hidden shadow-lg">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img src={IMAGES["market-produce"]} alt="Variety of produce in a market building" className="w-full h-full object-cover" />
                 </div>
               </div>
@@ -140,6 +95,7 @@ export default function Home() {
             <div className="grid lg:grid-cols-2 gap-12 items-center">
               <div className="relative">
                 <div className="relative aspect-4/3 rounded-2xl overflow-hidden shadow-lg max-w-sm mx-auto">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img src={IMAGES["feature-phone"]} alt="Feature phone representing USSD accessibility" className="w-full h-full object-cover object-center" />
                 </div>
               </div>
@@ -276,15 +232,15 @@ export default function Home() {
             <div className="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center">
               <div>
                 <p className="text-green-400 font-semibold text-xs uppercase tracking-[0.15em] mb-4">Transport Marketplace</p>
-                <h2 className="text-3xl sm:text-4xl font-bold leading-tight mb-6">From confirmed transaction to coordinated delivery.</h2>
-                <p className="text-lg text-gray-300 leading-relaxed mb-8">
+                <h2 className="text-3xl sm:text-4xl font-bold text-white leading-tight mb-6">From confirmed transaction to coordinated delivery.</h2>
+                <p className="text-lg text-gray-200 leading-relaxed mb-8">
                   SmartShamba connects verified transport providers with confirmed transactions &mdash; matching capacity to demand, coordinating pickup and delivery, and settling payment through the same platform.
                 </p>
                 <div className="flex flex-wrap items-center gap-2 text-sm mb-8">
                   {["Request", "Match", "Accept", "Load", "Transit", "Delivery"].map((step, i) => (
                     <div key={step} className="flex items-center gap-2">
-                      <span className="bg-white/10 border border-white/20 rounded-lg px-3 py-1.5 font-medium">{step}</span>
-                      {i < 5 && <span className="text-gray-500">&rarr;</span>}
+                      <span className="bg-white/10 border border-white/20 rounded-lg px-3 py-1.5 font-medium text-white">{step}</span>
+                      {i < 5 && <span className="text-gray-300">&rarr;</span>}
                     </div>
                   ))}
                 </div>
@@ -335,19 +291,21 @@ export default function Home() {
 
         {/* FINAL CTA */}
         <section className="relative bg-gray-900 text-white py-20 lg:py-28 overflow-hidden">
-          <div className="absolute inset-0 opacity-30">
-            <img src={IMAGES["sunset-corn-field"]} alt="Open corn field at sunset" className="w-full h-full object-cover" />
+          <div className="absolute inset-0 opacity-40">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={IMAGES["sunset-corn-field"]} alt="Open corn field at sunset" className="w-full h-full object-cover" />
           </div>
+          <div className="absolute inset-0 bg-gradient-to-t from-gray-900 via-gray-900/80 to-transparent"></div>
           <div className="relative mx-auto max-w-4xl px-4 sm:px-6 lg:px-8 text-center">
-            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold leading-tight mb-6">Build a more connected agricultural market.</h2>
-            <p className="text-lg text-gray-200 leading-relaxed max-w-2xl mx-auto mb-10">
+            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-white leading-tight mb-6 drop-shadow-lg">Build a more connected agricultural market.</h2>
+            <p className="text-lg text-gray-100 leading-relaxed max-w-2xl mx-auto mb-10 drop-shadow-md">
               SmartShamba is a transaction coordination platform designed to reduce post-harvest transaction uncertainty in Rift Valley & Western Kenya.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link href="/ussd" className="inline-flex items-center justify-center gap-2 bg-[#00703C] text-white px-8 py-3.5 rounded-lg text-sm font-bold hover:bg-[#00582f] transition-colors">
+              <Link href="/ussd" className="inline-flex items-center justify-center gap-2 bg-[#00703C] text-white px-8 py-3.5 rounded-lg text-sm font-bold hover:bg-[#00582f] transition-colors shadow-lg">
                 Try USSD Demo <ArrowRight className="w-4 h-4" />
               </Link>
-              <Link href="/buyer/login" className="inline-flex items-center justify-center gap-2 border border-white/40 text-white px-8 py-3.5 rounded-lg text-sm font-bold hover:bg-white/10 transition-colors">
+              <Link href="/buyer/login" className="inline-flex items-center justify-center gap-2 border-2 border-white/40 text-white px-8 py-3.5 rounded-lg text-sm font-bold hover:bg-white/10 transition-colors backdrop-blur-sm">
                 Buyer Portal Login
               </Link>
             </div>

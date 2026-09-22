@@ -80,3 +80,12 @@ p, li, span, label {
     scrollbar-width: thin;
   }
 }
+
+/* Premium County Ticker Marquee */
+@keyframes marquee {
+  0% { transform: translateX(0%); }
+  100% { transform: translateX(-50%); }
+}
+.animate-marquee {
+  animation: marquee 45s linear infinite;
+}
