@@ -109,7 +109,7 @@ export default function AIChatWidget({ role }: { role: 'FARMER' | 'BUYER' | 'STA
     <>
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="fixed bottom-6 right-6 z-50 bg-[#00703C] text-white p-4 rounded-full shadow-lg hover:bg-[#00582f] transition-transform active:scale-95 flex items-center justify-center"
+        className="fixed bottom-6 right-6 z-50 bg-public-primary text-white p-4 rounded-full shadow-lg hover:bg-public-primary/90 transition-transform active:scale-95 flex items-center justify-center"
         aria-label="Open AI Chat"
       >
         {isOpen ? <X className="w-6 h-6" /> : <Brain className="w-6 h-6" />}
@@ -118,7 +118,7 @@ export default function AIChatWidget({ role }: { role: 'FARMER' | 'BUYER' | 'STA
 
       {isOpen && (
         <div className="fixed bottom-24 right-6 z-50 w-[calc(100vw-3rem)] sm:w-96 h-[500px] bg-white rounded-2xl shadow-2xl border border-gray-200 flex flex-col overflow-hidden">
-          <div className="bg-[#00703C] text-white p-4 flex items-center gap-3">
+          <div className="bg-public-primary text-white p-4 flex items-center gap-3">
             <div className="relative">
               <Brain className="w-6 h-6" />
               <span className="absolute bottom-0 right-0 block h-2 w-2 rounded-full bg-green-400 ring-2 ring-[#00703C]"></span>
@@ -139,7 +139,7 @@ export default function AIChatWidget({ role }: { role: 'FARMER' | 'BUYER' | 'STA
               <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
                 <div className={`max-w-[80%] p-3 rounded-2xl text-sm shadow-sm ${
                   msg.role === 'user'
-                    ? 'bg-[#00703C] text-white rounded-br-none'
+                    ? 'bg-public-primary text-white rounded-br-none'
                     : 'bg-white border border-gray-100 text-gray-900 rounded-bl-none'
                 }`}>
                   {msg.text}
@@ -163,13 +163,13 @@ export default function AIChatWidget({ role }: { role: 'FARMER' | 'BUYER' | 'STA
               value={input}
               onChange={(e) => setInput(e.target.value)}
               placeholder="Ask about market prices..."
-              className="flex-1 border border-gray-300 rounded-full px-4 py-2 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:border-[#00703C] transition-colors"
+              className="flex-1 border border-gray-300 rounded-full px-4 py-2 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:border-public-primary transition-colors"
               disabled={loading}
             />
             <button
               type="submit"
               disabled={loading || !input.trim()}
-              className="bg-[#00703C] text-white p-2.5 rounded-full hover:bg-[#00582f] disabled:opacity-50 transition-colors"
+              className="bg-public-primary text-white p-2.5 rounded-full hover:bg-public-primary/90 disabled:opacity-50 transition-colors"
             >
               <Send className="w-4 h-4" />
             </button>

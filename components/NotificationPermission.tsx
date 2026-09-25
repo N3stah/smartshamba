@@ -49,7 +49,7 @@ export default function NotificationPermission() {
   if (status === 'granted') {
     return (
       <div className="flex items-center gap-2 text-xs text-gray-400 px-3 py-1">
-        <BellRing className="w-4 h-4 text-[#00703C]" /> Notifications On
+        <BellRing className="w-4 h-4 text-public-primary" /> Notifications On
       </div>
     );
   }

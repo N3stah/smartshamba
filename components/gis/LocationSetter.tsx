@@ -76,14 +76,14 @@ export default function LocationSetter({ hasLocation }: { hasLocation: boolean }
   return (
     <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6 mb-6">
       <div className="flex items-center gap-2 mb-4">
-        <MapPin className="w-5 h-5 text-[#00703C]" />
+        <MapPin className="w-5 h-5 text-public-primary" />
         <h3 className="font-bold text-gray-900">Farm Location (GIS)</h3>
       </div>
       
       <MapSearch onPlaceSelected={handlePlaceSelected} />
 
       {status === 'success' ? (
-        <div className="flex items-center gap-2 text-green-700 bg-green-50 p-3 rounded-lg">
+        <div className="flex items-center gap-2 text-public-primary bg-green-50 p-3 rounded-lg">
           <CheckCircle className="w-5 h-5" />
           <p className="text-sm">{message}</p>
         </div>
@@ -98,7 +98,7 @@ export default function LocationSetter({ hasLocation }: { hasLocation: boolean }
           <button 
             onClick={setLocation}
             disabled={loading}
-            className="bg-[#00703C] text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-[#00582f] disabled:opacity-50 flex items-center gap-2"
+            className="bg-public-primary text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-public-primary/90 disabled:opacity-50 flex items-center gap-2"
           >
             {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <MapPin className="w-4 h-4" />}
             {hasLocation ? 'Update My GPS Location' : 'Use My Current GPS'}

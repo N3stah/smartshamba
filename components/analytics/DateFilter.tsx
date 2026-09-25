@@ -29,7 +29,7 @@ export default function DateFilter() {
           key={r.value}
           onClick={() => handleRangeChange(r.value)}
           className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${
-            currentRange === r.value ? 'bg-[#00703C] text-white' : 'text-gray-600 hover:bg-gray-100'
+            currentRange === r.value ? 'bg-public-primary text-white' : 'text-gray-600 hover:bg-gray-100'
           }`}
         >
           {r.label}

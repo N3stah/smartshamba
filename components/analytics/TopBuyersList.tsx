@@ -21,7 +21,7 @@ export default function TopBuyersList({ buyers }: Props) {
         {buyers.map((buyer, i) => (
           <div key={i} className="flex items-center justify-between border-b border-gray-100 pb-3 last:border-0">
             <div className="flex items-center gap-3">
-              <span className="w-6 h-6 rounded-full bg-green-100 text-[#00703C] flex items-center justify-center text-xs font-bold">
+              <span className="w-6 h-6 rounded-full bg-public-secondary text-public-primary flex items-center justify-center text-xs font-bold">
                 {i + 1}
               </span>
               <div>
@@ -29,7 +29,7 @@ export default function TopBuyersList({ buyers }: Props) {
                 <p className="text-xs text-gray-500">{buyer.txs} transactions</p>
               </div>
             </div>
-            <p className="text-sm font-bold text-[#00703C]">KSh {buyer.spent.toLocaleString()}</p>
+            <p className="text-sm font-bold text-public-primary">KSh {buyer.spent.toLocaleString()}</p>
           </div>
         ))}
       </div>

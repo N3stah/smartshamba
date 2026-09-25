@@ -124,6 +124,7 @@ export default function AdminSettingsPage() {
               ) : (
                 <form onSubmit={handleVerifyMFA} className="space-y-3">
                   <div className="flex justify-center bg-gray-50 p-2 rounded-lg border">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img src={qrCode} alt="MFA QR Code" className="w-48 h-48" />
                   </div>
                   <div>

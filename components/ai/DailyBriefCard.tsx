@@ -23,14 +23,14 @@ export default function DailyBriefCard({ role }: { role: 'FARMER' | 'BUYER' | 'A
   if (loading) {
     return (
       <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-4 flex items-center gap-3 mb-6">
-        <Loader2 className="w-5 h-5 animate-spin text-[#00703C]" />
+        <Loader2 className="w-5 h-5 animate-spin text-public-primary" />
         <p className="text-sm text-gray-500">Generating your AI daily brief...</p>
       </div>
     );
   }
 
   return (
-    <div className="bg-gradient-to-r from-[#00703C] to-[#004d29] rounded-xl shadow-lg p-4 flex items-start gap-3 mb-6 text-white">
+    <div className="bg-gradient-to-r from-public-primary to-public-primary/80 rounded-xl shadow-lg p-4 flex items-start gap-3 mb-6 text-white">
       <Sun className="w-6 h-6 flex-shrink-0 mt-1" />
       <div>
         <h3 className="text-sm font-bold uppercase tracking-wider mb-1">AI Daily Brief</h3>

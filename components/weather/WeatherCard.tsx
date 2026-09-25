@@ -46,7 +46,7 @@ export default function WeatherCard({ county }: { county: string }) {
   if (loading) {
     return (
       <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6 flex items-center justify-center h-48">
-        <Loader2 className="w-6 h-6 animate-spin text-[#00703C]" />
+        <Loader2 className="w-6 h-6 animate-spin text-public-primary" />
       </div>
     );
   }

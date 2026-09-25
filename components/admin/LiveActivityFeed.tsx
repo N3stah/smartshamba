@@ -32,8 +32,8 @@ export default function LiveActivityFeed() {
   return (
     <div className="bg-white rounded-xl border shadow-sm p-5 h-full flex flex-col">
       <div className="flex justify-between items-center mb-4">
-        <h3 className="font-bold text-gray-900 flex items-center gap-2"><Activity className="w-4 h-4 text-[#00703C]" /> Live Platform Activity</h3>
-        <span className={`text-xs px-2 py-1 rounded-full ${connected ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}`}>
+        <h3 className="font-bold text-gray-900 flex items-center gap-2"><Activity className="w-4 h-4 text-public-primary" /> Live Platform Activity</h3>
+        <span className={`text-xs px-2 py-1 rounded-full ${connected ? 'bg-public-secondary text-public-primary' : 'bg-gray-100 text-gray-500'}`}>
           {connected ? 'Live' : 'Connecting...'}
         </span>
       </div>

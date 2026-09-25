@@ -125,7 +125,7 @@ export default function FullPageAssistant({ role }: { role: 'FARMER' | 'BUYER' |
   return (
     <div className="flex flex-col h-[calc(100vh-12rem)] bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
       {/* Header */}
-      <div className="bg-[#00703C] text-white p-4 flex items-center justify-between border-b border-gray-200">
+      <div className="bg-public-primary text-white p-4 flex items-center justify-between border-b border-gray-200">
         <div className="flex items-center gap-2">
           <Brain className="w-6 h-6" />
           <div>
@@ -150,7 +150,7 @@ export default function FullPageAssistant({ role }: { role: 'FARMER' | 'BUYER' |
           <div key={i} className={`flex flex-col ${msg.role === 'user' ? 'items-end' : 'items-start'}`}>
             <div className={`max-w-[70%] p-3 rounded-2xl text-sm shadow-sm ${
               msg.role === 'user' 
-                ? 'bg-[#00703C] text-white rounded-br-none' 
+                ? 'bg-public-primary text-white rounded-br-none' 
                 : 'bg-white border border-gray-200 text-gray-900 rounded-bl-none'
             }`}>
               {msg.content}
@@ -189,7 +189,7 @@ export default function FullPageAssistant({ role }: { role: 'FARMER' | 'BUYER' |
           <button 
             key={prompt}
             onClick={() => handleSend(prompt)}
-            className="flex items-center gap-1 bg-green-50 text-[#00703C] px-3 py-1.5 rounded-full text-xs font-medium hover:bg-green-100 transition-colors border border-green-200"
+            className="flex items-center gap-1 bg-green-50 text-public-primary px-3 py-1.5 rounded-full text-xs font-medium hover:bg-public-secondary transition-colors border border-public-primary/20"
           >
             <Sparkles className="w-3 h-3" />
             {prompt}
@@ -204,10 +204,10 @@ export default function FullPageAssistant({ role }: { role: 'FARMER' | 'BUYER' |
           value={input}
           onChange={(e) => setInput(e.target.value)}
           placeholder="Ask anything about your farm, market, or transactions..."
-          className="flex-1 border border-gray-300 rounded-full px-4 py-2.5 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:border-[#00703C]"
+          className="flex-1 border border-gray-300 rounded-full px-4 py-2.5 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:border-public-primary"
           disabled={loading}
         />
-        <button type="submit" disabled={loading || !input.trim()} className="bg-[#00703C] text-white p-2.5 rounded-full hover:bg-[#00582f] disabled:opacity-50">
+        <button type="submit" disabled={loading || !input.trim()} className="bg-public-primary text-white p-2.5 rounded-full hover:bg-public-primary/90 disabled:opacity-50">
           {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Send className="w-5 h-5" />}
         </button>
       </form>

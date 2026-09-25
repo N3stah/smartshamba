@@ -43,9 +43,9 @@ export default function MapSearch({ onPlaceSelected }: MapSearchProps) {
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder="Search address, town, or landmark..."
-          className="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-sm text-gray-900 focus:ring-1 focus:ring-[#00703C] focus:border-[#00703C] shadow-sm"
+          className="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-sm text-gray-900 focus:ring-1 focus:ring-public-primary focus:border-public-primary shadow-sm"
         />
-        <button type="submit" disabled={loading} className="bg-[#00703C] text-white p-2 rounded-lg hover:bg-[#00582f] disabled:opacity-50">
+        <button type="submit" disabled={loading} className="bg-public-primary text-white p-2 rounded-lg hover:bg-public-primary/90 disabled:opacity-50">
           {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Search className="w-4 h-4" />}
         </button>
       </div>

@@ -50,7 +50,7 @@ export default function WhatsAppGroupManager({ groupId, initialLink, isCreator }
             />
             {error && <p className="text-red-500 text-xs">{error}</p>}
             {success && <p className="text-green-600 text-xs">Link saved successfully!</p>}
-            <button type="submit" disabled={loading} className="bg-green-700 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-green-600 disabled:opacity-50 flex items-center gap-2">
+            <button type="submit" disabled={loading} className="bg-public-primary text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-public-primary/90 disabled:opacity-50 flex items-center gap-2">
               {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <LinkIcon className="w-4 h-4" />}
               Save Link
             </button>
@@ -58,7 +58,7 @@ export default function WhatsAppGroupManager({ groupId, initialLink, isCreator }
         ) : (
           <div>
             {link ? (
-              <a href={link} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 bg-[#25D366] text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-green-600">
+              <a href={link} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 bg-[#25D366] text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-public-primary/90">
                 <LinkIcon className="w-4 h-4" /> Join WhatsApp Group
               </a>
             ) : (

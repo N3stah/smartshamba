@@ -36,7 +36,7 @@ export default function ArrangeTransportButton({ transactionId, userRole, existi
 
   if (existingBooking) {
     return (
-      <div className="bg-green-50 border border-green-200 rounded-lg p-4 mt-6">
+      <div className="bg-green-50 border border-public-primary/20 rounded-lg p-4 mt-6">
         <div className="flex items-center justify-between mb-2">
           <h3 className="text-sm font-bold text-green-800 flex items-center gap-2"><Truck className="w-4 h-4" /> Transport Booked</h3>
           <span className={`text-xs font-bold px-2 py-1 rounded-full ${existingBooking.status === 'IN_TRANSIT' ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-600'}`}>
@@ -72,7 +72,7 @@ export default function ArrangeTransportButton({ transactionId, userRole, existi
       <button 
         onClick={handleArrange} 
         disabled={loading}
-        className="w-full bg-[#00703C] text-white py-2.5 rounded-lg text-sm font-semibold hover:bg-[#00582f] disabled:opacity-50 flex items-center justify-center gap-2"
+        className="w-full bg-public-primary text-white py-2.5 rounded-lg text-sm font-semibold hover:bg-public-primary/90 disabled:opacity-50 flex items-center justify-center gap-2"
       >
         {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Truck className="w-4 h-4" />}
         Arrange Transport

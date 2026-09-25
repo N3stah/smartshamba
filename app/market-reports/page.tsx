@@ -28,8 +28,8 @@ export default async function MarketReportsPage() {
       <div className="max-w-6xl mx-auto space-y-8">
       <div className="flex items-center justify-between border-b border-gray-200 pb-4">
           <div className="flex items-center gap-3">
-            <div className="p-2 bg-green-100 rounded-lg">
-              <Brain className="w-6 h-6 text-[#00703C]" />
+            <div className="p-2 bg-public-secondary rounded-lg">
+              <Brain className="w-6 h-6 text-public-primary" />
             </div>
             <div>
               <h1 className="text-2xl font-bold text-gray-900">AI Market Reports</h1>
@@ -65,7 +65,7 @@ export default async function MarketReportsPage() {
                     <td className="p-4">
                       <div className="flex items-center gap-2">
                         <div className="w-16 bg-gray-200 rounded-full h-1.5">
-                          <div className="bg-[#00703C] h-1.5 rounded-full" style={{ width: `${p.confidenceScore}%` }}></div>
+                          <div className="bg-public-primary h-1.5 rounded-full" style={{ width: `${p.confidenceScore}%` }}></div>
                         </div>
                         <span className="text-xs text-gray-500">{p.confidenceScore}%</span>
                       </div>

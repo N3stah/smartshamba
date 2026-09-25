@@ -149,7 +149,7 @@ export default function ChatWindow({ transactionId, currentUserId, viewerRole }:
                 }`}
               >
                 {!isOutgoing && (
-                  <p className="text-[11px] font-bold text-[#00703C] mb-0.5 capitalize">
+                  <p className="text-[11px] font-bold text-public-primary mb-0.5 capitalize">
                     {msg.senderName || msg.senderType.toLowerCase()}
                   </p>
                 )}
@@ -184,12 +184,12 @@ export default function ChatWindow({ transactionId, currentUserId, viewerRole }:
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={(e) => e.key === 'Enter' && handleSend(e)}
           placeholder="Type a message..."
-          className="flex-1 bg-white px-4 py-2.5 rounded-full text-sm border border-gray-200 focus:outline-none focus:border-[#00703C] text-gray-900"
+          className="flex-1 bg-white px-4 py-2.5 rounded-full text-sm border border-gray-200 focus:outline-none focus:border-public-primary text-gray-900"
         />
         <button
           type="submit"
           disabled={sending || !input.trim()}
-          className="bg-[#00703C] hover:bg-[#00582f] text-white p-2.5 rounded-full shadow-md transition-transform active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+          className="bg-public-primary hover:bg-public-primary/90 text-white p-2.5 rounded-full shadow-md transition-transform active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
         >
           {sending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
         </button>

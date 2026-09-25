@@ -25,7 +25,7 @@ export default function ErrorUI({ error, reset, title }: { error: Error & { dige
         )}
         <button
           onClick={reset}
-          className="bg-[#00703C] text-white px-6 py-2 rounded-lg text-sm font-medium hover:bg-[#00582f] inline-flex items-center gap-2"
+          className="bg-public-primary text-white px-6 py-2 rounded-lg text-sm font-medium hover:bg-public-primary/90 inline-flex items-center gap-2"
         >
           <RefreshCw className="w-4 h-4" />
           Try Again

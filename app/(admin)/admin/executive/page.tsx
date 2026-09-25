@@ -88,7 +88,7 @@ export default function ExecutiveDashboardPage() {
 
       {/* AI Brief & Alert Center */}
       <div className="grid lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2 bg-linear-to-br from-[#00703C] to-[#004d29] rounded-xl shadow-lg p-6 text-white flex flex-col justify-between">
+        <div className="lg:col-span-2 bg-linear-to-br from-public-primary to-public-primary/80 rounded-xl shadow-lg p-6 text-white flex flex-col justify-between">
           <div className="flex items-center gap-2 mb-2">
             <Sparkles className="w-5 h-5" />
             <h2 className="text-sm font-bold uppercase tracking-wider">AI Executive Brief</h2>

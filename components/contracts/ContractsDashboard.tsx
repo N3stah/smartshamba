@@ -42,7 +42,7 @@ export default function ContractsDashboard({ role }: { role: 'FARMER' | 'BUYER' 
       .finally(() => setLoading(false));
   }, [role]);
 
-  if (loading) return <div className="flex justify-center p-8"><Loader2 className="w-6 h-6 animate-spin text-[#00703C]" /></div>;
+  if (loading) return <div className="flex justify-center p-8"><Loader2 className="w-6 h-6 animate-spin text-public-primary" /></div>;
 
   const filtered = filter === 'ALL' ? contracts : contracts.filter(c => c.status === filter);
 
@@ -59,7 +59,7 @@ export default function ContractsDashboard({ role }: { role: 'FARMER' | 'BUYER' 
     <div className="space-y-6">
       <div className="flex flex-wrap gap-2">
         {filters.map(f => (
-          <button key={f} onClick={() => setFilter(f)} className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors ${filter === f ? 'bg-[#00703C] text-white' : 'bg-white border border-gray-200 text-gray-600 hover:bg-gray-50'}`}>
+          <button key={f} onClick={() => setFilter(f)} className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors ${filter === f ? 'bg-public-primary text-white' : 'bg-white border border-gray-200 text-gray-600 hover:bg-gray-50'}`}>
             {f === 'ALL' ? 'All Contracts' : f.charAt(0) + f.slice(1).toLowerCase()}
           </button>
         ))}
@@ -99,19 +99,19 @@ export default function ContractsDashboard({ role }: { role: 'FARMER' | 'BUYER' 
                 </div>
 
                 <div className="grid grid-cols-2 gap-4 mb-4">
-                  <div className={`p-3 rounded-lg border-2 ${c.farmerSigned ? 'border-green-200 bg-green-50' : 'border-gray-200'}`}>
+                  <div className={`p-3 rounded-lg border-2 ${c.farmerSigned ? 'border-public-primary/20 bg-green-50' : 'border-gray-200'}`}>
                     <p className="text-xs font-bold uppercase text-gray-500 mb-1">Farmer</p>
-                    {c.farmerSigned ? (<p className="text-sm text-green-700 font-semibold flex items-center gap-1"><CheckCircle className="w-3 h-3" /> Signed</p>) : (<p className="text-sm text-gray-400 flex items-center gap-1"><Clock className="w-3 h-3" /> Pending</p>)}
+                    {c.farmerSigned ? (<p className="text-sm text-public-primary font-semibold flex items-center gap-1"><CheckCircle className="w-3 h-3" /> Signed</p>) : (<p className="text-sm text-gray-400 flex items-center gap-1"><Clock className="w-3 h-3" /> Pending</p>)}
                   </div>
-                  <div className={`p-3 rounded-lg border-2 ${c.buyerSigned ? 'border-green-200 bg-green-50' : 'border-gray-200'}`}>
+                  <div className={`p-3 rounded-lg border-2 ${c.buyerSigned ? 'border-public-primary/20 bg-green-50' : 'border-gray-200'}`}>
                     <p className="text-xs font-bold uppercase text-gray-500 mb-1">Buyer</p>
-                    {c.buyerSigned ? (<p className="text-sm text-green-700 font-semibold flex items-center gap-1"><CheckCircle className="w-3 h-3" /> Signed</p>) : (<p className="text-sm text-gray-400 flex items-center gap-1"><Clock className="w-3 h-3" /> Pending</p>)}
+                    {c.buyerSigned ? (<p className="text-sm text-public-primary font-semibold flex items-center gap-1"><CheckCircle className="w-3 h-3" /> Signed</p>) : (<p className="text-sm text-gray-400 flex items-center gap-1"><Clock className="w-3 h-3" /> Pending</p>)}
                   </div>
                 </div>
 
                 {c.status === 'EXECUTED' && tx && (
                   <div className="pt-4 border-t border-gray-100">
-                    <a href={`/api/transactions/${tx.id}/contract/pdf`} target="_blank" className="inline-flex items-center gap-2 text-sm font-semibold text-[#00703C] hover:underline">
+                    <a href={`/api/transactions/${tx.id}/contract/pdf`} target="_blank" className="inline-flex items-center gap-2 text-sm font-semibold text-public-primary hover:underline">
                       <Download className="w-4 h-4" /> Download Contract PDF
                     </a>
                   </div>

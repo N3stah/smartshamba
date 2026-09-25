@@ -50,7 +50,7 @@ export default async function PublicProfilePage({ params }: { params: Promise<{ 
   return (
     <div className="min-h-screen bg-gray-50 p-8">
       <div className="max-w-2xl mx-auto bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden">
-        <div className="bg-linear-to-r from-[#00703C] to-[#004d29] p-8 text-white text-center">
+        <div className="bg-linear-to-r from-public-primary to-public-primary/80 p-8 text-white text-center">
           <div className="w-24 h-24 bg-white/20 rounded-full mx-auto mb-4 flex items-center justify-center text-4xl font-bold">
             {user.name?.charAt(0) || 'U'}
           </div>
@@ -68,7 +68,7 @@ export default async function PublicProfilePage({ params }: { params: Promise<{ 
 
           {userType === 'FARMER' && (
             <div>
-              <h3 className="font-bold text-gray-900 mb-4 flex items-center gap-2"><Package className="w-5 h-5 text-[#00703C]" /> Active Listings</h3>
+              <h3 className="font-bold text-gray-900 mb-4 flex items-center gap-2"><Package className="w-5 h-5 text-public-primary" /> Active Listings</h3>
               <div className="grid grid-cols-2 gap-4">
                 {activeListings.map((l) => (
                   <div key={l.id} className="bg-gray-50 p-4 rounded-lg border border-gray-100">

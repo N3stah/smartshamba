@@ -31,7 +31,7 @@ export default function ProcurementIntelligence({ county }: { county: string }) 
   if (loading) {
     return (
       <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6 flex items-center justify-center h-32">
-        <Loader2 className="w-6 h-6 animate-spin text-[#00703C]" />
+        <Loader2 className="w-6 h-6 animate-spin text-public-primary" />
       </div>
     );
   }
@@ -42,7 +42,7 @@ export default function ProcurementIntelligence({ county }: { county: string }) 
     switch (risk.toLowerCase()) {
       case 'high': return 'bg-red-100 text-red-800 border-red-200';
       case 'medium': return 'bg-yellow-100 text-yellow-800 border-yellow-200';
-      default: return 'bg-green-100 text-green-800 border-green-200';
+      default: return 'bg-public-secondary text-green-800 border-public-primary/20';
     }
   };
 
@@ -56,7 +56,7 @@ export default function ProcurementIntelligence({ county }: { county: string }) 
   return (
     <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
       <div className="flex items-center gap-2 mb-4">
-        <TrendingUp className="w-5 h-5 text-[#00703C]" />
+        <TrendingUp className="w-5 h-5 text-public-primary" />
         <h2 className="text-sm font-bold text-gray-900 uppercase tracking-wider">AI Procurement Intelligence</h2>
       </div>
 

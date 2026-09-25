@@ -16,7 +16,7 @@ interface WeatherData {
 const formatEAT = (unix: number) => new Date(unix * 1000).toLocaleString('en-KE', { timeZone: 'Africa/Nairobi', hour: '2-digit', minute: '2-digit' });
 const formatEATshort = (unix: number) => new Date(unix * 1000).toLocaleString('en-KE', { timeZone: 'Africa/Nairobi', weekday: 'short', hour: '2-digit' });
 
-export default function ProWeatherDashboard({ county, weatherData, advisoryData, primaryColor = '{primaryColor}', primaryTextColor = '{primaryTextColor}', primaryHoverColor = 'hover:{primaryColor}/90', primaryFocusColor = '{primaryFocusColor}' }: { county: string; weatherData: WeatherData; advisoryData: any; primaryColor?: string; primaryTextColor?: string; primaryHoverColor?: string; primaryFocusColor?: string }) {
+export default function ProWeatherDashboard({ county, weatherData, advisoryData, primaryColor = '{primaryColor}', primaryTextColor = '{primaryTextColor}', primaryHoverColor = 'hover:bg-public-primary/90', primaryFocusColor = '{primaryFocusColor}' }: { county: string; weatherData: WeatherData; advisoryData: any; primaryColor?: string; primaryTextColor?: string; primaryHoverColor?: string; primaryFocusColor?: string }) {
   const [chatInput, setChatInput] = useState('');
   const [chatRes, setChatRes] = useState('');
   const [chatLoading, setChatLoading] = useState(false);
@@ -30,7 +30,7 @@ export default function ProWeatherDashboard({ county, weatherData, advisoryData,
   };
 
   const getAqiStyle = (aqi: number) => {
-    if (aqi <= 2) return 'bg-green-100 text-green-800';
+    if (aqi <= 2) return 'bg-public-secondary text-green-800';
     if (aqi === 3) return 'bg-yellow-100 text-yellow-800';
     return 'bg-red-100 text-red-800';
   };
@@ -162,7 +162,7 @@ export default function ProWeatherDashboard({ county, weatherData, advisoryData,
             className="flex-1 border border-gray-300 rounded-full px-4 py-2 text-sm text-gray-900 placeholder-gray-400 focus:outline-none {primaryFocusColor}"
             disabled={chatLoading}
           />
-          <button type="submit" disabled={chatLoading || !chatInput.trim()} className="bg-[#00703C] text-white p-2.5 rounded-full hover:{primaryColor}/90 disabled:opacity-50">
+          <button type="submit" disabled={chatLoading || !chatInput.trim()} className="bg-public-primary text-white p-2.5 rounded-full hover:bg-public-primary/90 disabled:opacity-50">
             {chatLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
           </button>
         </form>

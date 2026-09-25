@@ -77,14 +77,14 @@ export default function TransportBooking({ transactionId, bags, pickupCounty, dr
     return (
       <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
         <div className="flex items-center gap-2 mb-4">
-          <Truck className="w-5 h-5 text-[#00703C]" />
+          <Truck className="w-5 h-5 text-public-primary" />
           <h3 className="font-bold text-gray-900">Transport Booked Successfully</h3>
         </div>
-        <div className="bg-green-50 border border-green-200 rounded-lg p-4 flex items-center gap-3">
+        <div className="bg-green-50 border border-public-primary/20 rounded-lg p-4 flex items-center gap-3">
           <CheckCircle className="w-6 h-6 text-green-600" />
           <div>
             <p className="text-sm font-medium text-green-900">Your transport request has been sent!</p>
-            <p className="text-xs text-green-700 mt-1">The provider will accept the job shortly. You will receive an SMS update.</p>
+            <p className="text-xs text-public-primary mt-1">The provider will accept the job shortly. You will receive an SMS update.</p>
           </div>
         </div>
       </div>
@@ -94,13 +94,13 @@ export default function TransportBooking({ transactionId, bags, pickupCounty, dr
   return (
     <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
       <div className="flex items-center gap-2 mb-4">
-        <Truck className="w-5 h-5 text-[#00703C]" />
+        <Truck className="w-5 h-5 text-public-primary" />
         <h3 className="font-bold text-gray-900">Book Transport</h3>
       </div>
 
       {/* AI Recommendation */}
       {aiRec && (
-        <div className="bg-gradient-to-br from-[#00703C] to-[#004d29] rounded-xl p-4 mb-4 text-white">
+        <div className="bg-gradient-to-br from-public-primary to-public-primary/80 rounded-xl p-4 mb-4 text-white">
           <div className="flex items-center gap-2 mb-2">
             <Sparkles className="w-4 h-4" />
             <h4 className="text-sm font-bold uppercase tracking-wider">AI Optimizer</h4>
@@ -120,7 +120,7 @@ export default function TransportBooking({ transactionId, bags, pickupCounty, dr
       
       <div className="space-y-3">
         {providers.map(provider => (
-          <div key={provider.id} className={`border rounded-lg p-4 transition-colors ${aiRec?.recommended_provider === provider.name ? 'border-green-300 bg-green-50' : 'border-gray-100 hover:border-green-200'}`}>
+          <div key={provider.id} className={`border rounded-lg p-4 transition-colors ${aiRec?.recommended_provider === provider.name ? 'border-green-300 bg-green-50' : 'border-gray-100 hover:border-public-primary/20'}`}>
             <div className="flex items-start justify-between mb-3">
               <div>
                 <p className="font-medium text-gray-900 flex items-center gap-2">
@@ -140,7 +140,7 @@ export default function TransportBooking({ transactionId, bags, pickupCounty, dr
             <button
               onClick={() => handleBook(provider.id)}
               disabled={bookingStatus === 'loading'}
-              className="w-full bg-[#00703C] text-white py-2 rounded-lg text-sm font-semibold hover:bg-[#00582f] disabled:opacity-50 flex items-center justify-center gap-2"
+              className="w-full bg-public-primary text-white py-2 rounded-lg text-sm font-semibold hover:bg-public-primary/90 disabled:opacity-50 flex items-center justify-center gap-2"
             >
               {bookingStatus === 'loading' ? <Loader2 className="w-4 h-4 animate-spin" /> : <Package className="w-4 h-4" />}
               Book Now

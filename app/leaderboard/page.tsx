@@ -48,13 +48,13 @@ export default function LeaderboardPage() {
           <div className="inline-flex bg-white border rounded-lg p-1 shadow-sm">
             <button 
               onClick={() => setActiveTab('FARMERS')} 
-              className={`px-6 py-2 rounded-md text-sm font-medium transition-colors ${activeTab === 'FARMERS' ? 'bg-[#00703C] text-white' : 'text-gray-500 hover:text-gray-900'}`}
+              className={`px-6 py-2 rounded-md text-sm font-medium transition-colors ${activeTab === 'FARMERS' ? 'bg-public-primary text-white' : 'text-gray-500 hover:text-gray-900'}`}
             >
               Top Farmers
             </button>
             <button 
               onClick={() => setActiveTab('BUYERS')} 
-              className={`px-6 py-2 rounded-md text-sm font-medium transition-colors ${activeTab === 'BUYERS' ? 'bg-[#00703C] text-white' : 'text-gray-500 hover:text-gray-900'}`}
+              className={`px-6 py-2 rounded-md text-sm font-medium transition-colors ${activeTab === 'BUYERS' ? 'bg-public-primary text-white' : 'text-gray-500 hover:text-gray-900'}`}
             >
               Top Buyers
             </button>
@@ -63,7 +63,7 @@ export default function LeaderboardPage() {
 
         <div className="bg-white rounded-xl border shadow-sm overflow-hidden">
           {loading ? (
-            <div className="flex justify-center p-8"><Loader2 className="w-6 h-6 animate-spin text-[#00703C]" /></div>
+            <div className="flex justify-center p-8"><Loader2 className="w-6 h-6 animate-spin text-public-primary" /></div>
           ) : data.length === 0 ? (
             <div className="p-8 text-center text-gray-400">No data available yet.</div>
           ) : (
@@ -86,7 +86,7 @@ export default function LeaderboardPage() {
                     </div>
                   </div>
                   <div className="text-right">
-                    <p className="font-bold text-[#00703C]">{user.trustScore}</p>
+                    <p className="font-bold text-public-primary">{user.trustScore}</p>
                     <p className="text-xs text-gray-400">Trust Score</p>
                   </div>
                 </li>

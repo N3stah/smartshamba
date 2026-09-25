@@ -29,7 +29,7 @@ export default function AcceptDemandButton({ demandId }: { demandId: string }) {
   };
 
   if (status === 'success') {
-    return <div className="flex items-center gap-2 text-green-700 text-sm font-medium bg-green-50 p-2 rounded-lg w-full justify-center"><CheckCircle className="w-4 h-4" /> Accepted</div>;
+    return <div className="flex items-center gap-2 text-public-primary text-sm font-medium bg-green-50 p-2 rounded-lg w-full justify-center"><CheckCircle className="w-4 h-4" /> Accepted</div>;
   }
 
   if (status === 'error') {
@@ -40,7 +40,7 @@ export default function AcceptDemandButton({ demandId }: { demandId: string }) {
     <button 
       onClick={handleAccept} 
       disabled={loading} 
-      className="w-full bg-[#00703C] text-white py-2 rounded-lg text-sm font-semibold hover:bg-green-800 transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
+      className="w-full bg-public-primary text-white py-2 rounded-lg text-sm font-semibold hover:bg-public-primary/90 transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
     >
       {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Accept Demand'}
     </button>

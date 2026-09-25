@@ -64,10 +64,10 @@ export default function ContractViewer({ transactionId, role }: { transactionId:
   return (
     <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
       <div className="flex items-center gap-2 mb-4 pb-4 border-b border-gray-100">
-        <FileText className="w-5 h-5 text-[#00703C]" />
+        <FileText className="w-5 h-5 text-public-primary" />
         <h3 className="font-bold text-gray-900">Digital Contract</h3>
         <span className={`ml-auto px-2 py-1 rounded-full text-xs font-bold ${
-          contract.status === 'EXECUTED' ? 'bg-green-100 text-green-800' :
+          contract.status === 'EXECUTED' ? 'bg-public-secondary text-green-800' :
           contract.status === 'DISPUTED' ? 'bg-red-100 text-red-800' :
           contract.status === 'VOIDED' ? 'bg-gray-100 text-gray-800' :
           'bg-yellow-100 text-yellow-800'
@@ -90,7 +90,7 @@ export default function ContractViewer({ transactionId, role }: { transactionId:
       {/* Signature Blocks */}
       <div className="grid grid-cols-2 gap-4 pt-4 border-t border-gray-100">
         {/* Farmer Signature */}
-        <div className={`p-4 rounded-lg border-2 ${contract.farmerSigned ? 'border-green-200 bg-green-50' : 'border-gray-200'}`}>
+        <div className={`p-4 rounded-lg border-2 ${contract.farmerSigned ? 'border-public-primary/20 bg-green-50' : 'border-gray-200'}`}>
           <p className="text-xs font-bold uppercase text-gray-500 mb-2">Farmer Signature</p>
           {contract.farmerSigned ? (
             <div className="flex items-center gap-2">
@@ -106,7 +106,7 @@ export default function ContractViewer({ transactionId, role }: { transactionId:
         </div>
 
         {/* Buyer Signature */}
-        <div className={`p-4 rounded-lg border-2 ${contract.buyerSigned ? 'border-green-200 bg-green-50' : 'border-gray-200'}`}>
+        <div className={`p-4 rounded-lg border-2 ${contract.buyerSigned ? 'border-public-primary/20 bg-green-50' : 'border-gray-200'}`}>
           <p className="text-xs font-bold uppercase text-gray-500 mb-2">Buyer Signature</p>
           {contract.buyerSigned ? (
             <div className="flex items-center gap-2">
@@ -136,9 +136,9 @@ export default function ContractViewer({ transactionId, role }: { transactionId:
               value={signName}
               onChange={(e) => setSignName(e.target.value)}
               placeholder="Enter your full legal name"
-              className="flex-1 border border-gray-300 rounded-lg px-4 py-2 text-sm text-gray-900 focus:ring-1 focus:ring-[#00703C] focus:border-[#00703C]"
+              className="flex-1 border border-gray-300 rounded-lg px-4 py-2 text-sm text-gray-900 focus:ring-1 focus:ring-public-primary focus:border-public-primary"
             />
-            <button type="submit" disabled={signing} className="bg-[#00703C] text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-[#00582f] disabled:opacity-50">
+            <button type="submit" disabled={signing} className="bg-public-primary text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-public-primary/90 disabled:opacity-50">
               {signing ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Sign Contract'}
             </button>
           </div>
@@ -151,7 +151,7 @@ export default function ContractViewer({ transactionId, role }: { transactionId:
           <a 
             href={`/api/transactions/${transactionId}/contract/pdf`} 
             target="_blank"
-            className="inline-flex items-center gap-2 text-sm font-semibold text-[#00703C] hover:underline"
+            className="inline-flex items-center gap-2 text-sm font-semibold text-public-primary hover:underline"
           >
             <Download className="w-4 h-4" /> Download Contract PDF
           </a>

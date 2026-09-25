@@ -31,9 +31,9 @@ export default function MarketIntelligenceCard({ role }: { role: 'FARMER' | 'BUY
   const getRecommendationStyle = (rec: string) => {
     if (role === 'BUYER') {
       // For buyers, SELL means it's a good time to buy (farmers are selling)
-      return rec === 'SELL' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800';
+      return rec === 'SELL' ? 'bg-public-secondary text-green-800' : 'bg-yellow-100 text-yellow-800';
     }
-    return rec === 'SELL' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800';
+    return rec === 'SELL' ? 'bg-public-secondary text-green-800' : 'bg-yellow-100 text-yellow-800';
   };
 
   const getTrendIcon = (current: number, predicted: number) => {
@@ -45,7 +45,7 @@ export default function MarketIntelligenceCard({ role }: { role: 'FARMER' | 'BUY
   if (loading) {
     return (
       <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6 flex items-center justify-center h-48">
-        <Loader2 className="w-6 h-6 animate-spin text-[#00703C]" />
+        <Loader2 className="w-6 h-6 animate-spin text-public-primary" />
       </div>
     );
   }
@@ -55,7 +55,7 @@ export default function MarketIntelligenceCard({ role }: { role: 'FARMER' | 'BUY
   const crops = [...new Set(predictions.map(p => p.crop))];
 
   return (
-    <div className="bg-gradient-to-br from-[#00703C] to-[#004d29] rounded-xl shadow-lg p-6 text-white mb-8">
+    <div className="bg-gradient-to-br from-public-primary to-public-primary/80 rounded-xl shadow-lg p-6 text-white mb-8">
       <div className="flex items-center gap-2 mb-4">
         <Brain className="w-6 h-6" />
         <h3 className="text-lg font-bold">AI Market Intelligence</h3>

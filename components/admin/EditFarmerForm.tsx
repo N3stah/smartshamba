@@ -82,7 +82,7 @@ export default function EditFarmerForm({ farmerId, initialName, initialPhone, in
         </div>
       )}
       {success && (
-        <div className="text-green-700 text-sm bg-green-50 p-3 rounded-lg border border-green-200">
+        <div className="text-public-primary text-sm bg-green-50 p-3 rounded-lg border border-public-primary/20">
           Profile updated successfully!
         </div>
       )}
@@ -90,7 +90,7 @@ export default function EditFarmerForm({ farmerId, initialName, initialPhone, in
       <button
         type="submit"
         disabled={loading}
-        className="bg-[#00703C] text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-green-800 disabled:opacity-50 flex items-center gap-2"
+        className="bg-public-primary text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-public-primary/90 disabled:opacity-50 flex items-center gap-2"
       >
         {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
         Save Changes
