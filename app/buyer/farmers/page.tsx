@@ -29,18 +29,18 @@ export default async function BuyerProduceDirectory() {
           </div>
         ) : (
           listings.map((listing) => (
-            <div key={listing.id} className="bg-white rounded-xl border border-gray-200 shadow-sm p-6 hover:shadow-md transition-shadow flex flex-col">
+            <div key={listing.id} className="bg-surface rounded-lg border border-border shadow-sm p-6 hover:shadow-md transition-shadow flex flex-col">
               <div className="flex justify-between items-start mb-4">
                 <div>
                   <h3 className="text-lg font-bold text-gray-900 flex items-center gap-2">
-                    <Package className="w-5 h-5 text-[#00703C]" /> {listing.product}
+                    <Package className="w-5 h-5 text-buyer-primary" /> {listing.product}
                   </h3>
                   <p className="text-sm text-gray-500 mt-1">
                     {listing.quantityBags} bags available
                   </p>
                 </div>
                 {listing.farmer?.verified && (
-                  <span className="bg-green-100 text-[#00703C] text-xs font-bold px-3 py-1 rounded-full">
+                  <span className="bg-buyer-secondary text-buyer-primary text-xs font-bold px-3 py-1 rounded-full">
                     Verified Farmer
                   </span>
                 )}
@@ -49,7 +49,7 @@ export default async function BuyerProduceDirectory() {
               <div className="border-t border-gray-100 pt-4 mt-auto">
                 <div className="flex justify-between items-center mb-3">
                   <p className="text-xs text-gray-500">Price per bag</p>
-                  <p className="text-xl font-bold text-[#00703C]">KSh {listing.pricePerBag.toLocaleString()}</p>
+                  <p className="text-xl font-bold text-buyer-primary">KSh {listing.pricePerBag.toLocaleString()}</p>
                 </div>
                 
                 <div className="text-sm text-gray-600 space-y-1 mb-4">

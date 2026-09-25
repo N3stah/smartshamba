@@ -38,7 +38,7 @@ export default function AdminReputationPage() {
       .finally(() => setLoading(false));
   }, []);
 
-  if (loading) return <div className="flex justify-center p-8"><Loader2 className="w-6 h-6 animate-spin text-[#00703C]" /></div>;
+  if (loading) return <div className="flex justify-center p-8"><Loader2 className="w-6 h-6 animate-spin text-admin-primary" /></div>;
   if (!data) return <div className="bg-white p-8 text-center text-gray-500 rounded-xl border">Failed to load reputation data.</div>;
 
   const renderBreakdown = (breakdown: ScoreBreakdown) => (
@@ -53,8 +53,8 @@ export default function AdminReputationPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between border-b border-gray-200 pb-4">
         <div className="flex items-center gap-3">
-          <div className="p-2 bg-green-100 rounded-lg">
-            <Shield className="w-6 h-6 text-[#00703C]" />
+          <div className="p-2 bg-admin-secondary rounded-lg">
+            <Shield className="w-6 h-6 text-admin-primary" />
           </div>
           <div>
             <h1 className="text-2xl font-bold text-gray-900">Trust Intelligence Engine</h1>
@@ -73,7 +73,7 @@ export default function AdminReputationPage() {
 
       <div className="grid lg:grid-cols-2 gap-6">
         {/* Top Rated Farmers */}
-        <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+        <div className="bg-surface rounded-lg border border-border shadow-sm overflow-hidden">
           <div className="px-6 py-4 border-b border-gray-100 bg-green-50">
             <h2 className="font-semibold text-green-900 flex items-center gap-2"><Trophy className="w-4 h-4" /> Top Rated Farmers</h2>
           </div>
@@ -82,7 +82,7 @@ export default function AdminReputationPage() {
               <div key={f.id} className="p-4">
                 <div className="flex items-center justify-between">
                   <span className="font-medium text-gray-900">{f.name}</span>
-                  <span className="text-sm font-bold text-green-700">{f.score} - {f.level}</span>
+                  <span className="text-sm font-bold text-admin-primary">{f.score} - {f.level}</span>
                 </div>
                 {renderBreakdown(f.breakdown)}
               </div>
@@ -92,7 +92,7 @@ export default function AdminReputationPage() {
         </div>
 
         {/* Top Rated Buyers */}
-        <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+        <div className="bg-surface rounded-lg border border-border shadow-sm overflow-hidden">
           <div className="px-6 py-4 border-b border-gray-100 bg-blue-50">
             <h2 className="font-semibold text-blue-900 flex items-center gap-2"><Trophy className="w-4 h-4" /> Top Rated Buyers</h2>
           </div>

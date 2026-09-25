@@ -12,7 +12,7 @@ type DisputeStatus = "OPEN" | "UNDER_REVIEW" | "RESOLVED" | "CLOSED";
 const STATUS_STYLES: Record<DisputeStatus, string> = {
   OPEN: "bg-red-100 text-red-800",
   UNDER_REVIEW: "bg-amber-100 text-amber-800",
-  RESOLVED: "bg-green-100 text-green-800",
+  RESOLVED: "bg-farmer-secondary text-text",
   CLOSED: "bg-gray-100 text-gray-600",
 };
 
@@ -65,7 +65,7 @@ export default async function FarmerDisputesPage() {
   return (
     <div className="p-6 bg-gray-50 min-h-screen">
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-green-800">My Disputes</h1>
+        <h1 className="text-2xl font-bold text-text">My Disputes</h1>
         <p className="text-sm text-gray-500 mt-1">
           Report issues with your transactions. You can also dial{" "}
           <span className="font-mono font-medium">*384*53374#</span> and select{" "}
@@ -81,7 +81,7 @@ export default async function FarmerDisputesPage() {
       )}
 
       {/* Dispute history */}
-      <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+      <div className="bg-surface rounded-lg border border-border shadow-sm overflow-hidden">
         <div className="px-6 py-4 border-b border-gray-100">
           <h2 className="text-sm font-semibold text-gray-700">Dispute History</h2>
         </div>
@@ -140,9 +140,7 @@ export default async function FarmerDisputesPage() {
       </div>
 
       <div className="mt-6">
-        <Link href="/dashboard" className="text-sm text-green-700 hover:underline">
-          ← Back to dashboard
-        </Link>
+        
       </div>
     </div>
   );

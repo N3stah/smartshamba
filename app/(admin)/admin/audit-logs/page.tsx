@@ -103,7 +103,7 @@ export default function AdminAuditLogsPage() {
 
         <button 
           onClick={handleApplyFilters}
-          className="bg-green-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-green-700"
+          className="bg-green-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-admin-primary"
         >
           Apply Filters
         </button>

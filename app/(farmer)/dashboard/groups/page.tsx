@@ -1,6 +1,5 @@
 export const dynamic = 'force-dynamic';
 
-
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import Link from "next/link";
@@ -11,6 +10,8 @@ import GroupCard, {
   Group,
 } from "@/components/groups/GroupCard";
 import GroupStats from "@/components/groups/GroupStats";
+import { Card } from "@/components/ui/Card";
+import { Button } from "@/components/ui/Button";
 
 export default async function GroupsPage() {
   const cookieStore = await cookies();
@@ -120,24 +121,20 @@ export default async function GroupsPage() {
   );
 
   return (
-    <div>
-      <div className="flex items-center justify-between mb-8">
+    <div className="space-y-8">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">
+          <h1 className="text-2xl font-bold text-text">
             Farmer Groups
           </h1>
-
-          <p className="text-gray-500 mt-1">
-            Join nearby farmers, combine harvests and negotiate
-            better prices together.
+          <p className="text-gray-500 mt-1 text-sm">
+            Join nearby farmers, combine harvests and negotiate better prices together.
           </p>
         </div>
-
-        <Link
-          href="/dashboard/groups/create"
-          className="bg-green-700 hover:bg-green-600 text-white px-5 py-3 rounded-lg transition-colors"
-        >
-          Create Group
+        <Link href="/dashboard/groups/create">
+          <Button size="lg">
+            Create Group
+          </Button>
         </Link>
       </div>
 
@@ -148,22 +145,17 @@ export default async function GroupsPage() {
       />
 
       {enriched.length === 0 ? (
-        <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-12 text-center">
-          <h2 className="text-lg font-semibold text-gray-900">
+        <Card className="p-12 text-center">
+          <h2 className="text-lg font-semibold text-text">
             No Groups Found
           </h2>
-
-          <p className="text-gray-500 mt-2">
+          <p className="text-gray-500 mt-2 text-sm">
             There are currently no farmer groups in your area.
           </p>
-
-          <Link
-            href="/dashboard/groups/create"
-            className="inline-block mt-6 bg-green-700 hover:bg-green-600 text-white px-6 py-3 rounded-lg"
-          >
-            Create the First Group
+          <Link href="/dashboard/groups/create" className="inline-block mt-6">
+            <Button>Create the First Group</Button>
           </Link>
-        </div>
+        </Card>
       ) : (
         <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-6">
           {enriched.map((group) => (

@@ -127,7 +127,7 @@ export default function AdminAdvisoriesPage() {
         {!showForm && (
           <button
             onClick={() => setShowForm(true)}
-            className="px-4 py-2 text-sm font-medium rounded-lg bg-green-600 text-white hover:bg-green-700 transition-colors"
+            className="px-4 py-2 text-sm font-medium rounded-lg bg-green-600 text-white hover:bg-admin-primary transition-colors"
           >
             + New Advisory
           </button>
@@ -136,7 +136,7 @@ export default function AdminAdvisoriesPage() {
 
       {/* Form */}
       {showForm && (
-        <div className="bg-white rounded-xl border border-green-200 shadow-sm p-6 mb-6">
+        <div className="bg-white rounded-xl border border-admin-primary/20 shadow-sm p-6 mb-6">
           <h2 className="text-sm font-semibold text-gray-800 mb-4">
             {editId ? 'Edit Advisory' : 'New Advisory'}
           </h2>
@@ -215,7 +215,7 @@ export default function AdminAdvisoriesPage() {
             <button
               onClick={handleSave}
               disabled={saving}
-              className="px-4 py-2 text-sm font-medium rounded-lg bg-green-600 text-white hover:bg-green-700 transition-colors disabled:opacity-50"
+              className="px-4 py-2 text-sm font-medium rounded-lg bg-green-600 text-white hover:bg-admin-primary transition-colors disabled:opacity-50"
             >
               {saving ? 'Saving…' : editId ? 'Update Advisory' : 'Create Advisory'}
             </button>
@@ -230,7 +230,7 @@ export default function AdminAdvisoriesPage() {
       )}
 
       {/* Advisories table */}
-      <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+      <div className="bg-surface rounded-lg border border-border shadow-sm overflow-hidden">
         <table className="w-full text-sm text-left">
           <thead className="bg-gray-50 border-b border-gray-100">
             <tr>
@@ -257,7 +257,7 @@ export default function AdminAdvisoriesPage() {
                   <td className="px-5 py-3 text-gray-600">{a.county?.name ?? 'National'}</td>
                   <td className="px-5 py-3">
                     <span className={`inline-flex px-2 py-0.5 rounded-full text-xs font-medium ${
-                      a.active ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'
+                      a.active ? 'bg-admin-secondary text-admin-primary' : 'bg-gray-100 text-gray-500'
                     }`}>
                       {a.active ? 'Active' : 'Inactive'}
                     </span>

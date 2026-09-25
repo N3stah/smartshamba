@@ -25,12 +25,12 @@ export default function CFODashboard() {
       .finally(() => setLoading(false));
   }, []);
 
-  if (loading) return <div className="flex justify-center p-8"><Loader2 className="w-6 h-6 animate-spin text-[#00703C]" /></div>;
+  if (loading) return <div className="flex justify-center p-8"><Loader2 className="w-6 h-6 animate-spin text-admin-primary" /></div>;
   if (!data) return <div className="bg-white p-8 text-center text-gray-500 rounded-xl border">Failed to load financial data.</div>;
 
   const kpis = [
-    { label: 'Total Revenue', value: `KSh ${(data.totalRevenue || 0).toLocaleString()}`, sub: 'Platform fees collected', icon: TrendingUp, color: 'text-green-700' },
-    { label: 'Revenue (30d)', value: `KSh ${(data.revenue30d || 0).toLocaleString()}`, sub: 'Last 30 days', icon: DollarSign, color: 'text-green-700' },
+    { label: 'Total Revenue', value: `KSh ${(data.totalRevenue || 0).toLocaleString()}`, sub: 'Platform fees collected', icon: TrendingUp, color: 'text-admin-primary' },
+    { label: 'Revenue (30d)', value: `KSh ${(data.revenue30d || 0).toLocaleString()}`, sub: 'Last 30 days', icon: DollarSign, color: 'text-admin-primary' },
     { label: 'Liabilities (Escrow)', value: `KSh ${(data.platformLiabilities || 0).toLocaleString()}`, sub: 'Owed to users', icon: AlertTriangle, color: 'text-red-700' },
     { label: 'Tx Volume (30d)', value: data.txVolume30d || 0, sub: 'Transactions processed', icon: Activity, color: 'text-blue-700' }
   ];

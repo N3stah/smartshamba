@@ -20,7 +20,7 @@ export default async function AdminAIDashboardPage() {
 
   const getRecStyle = (rec: string) => {
     switch (rec.toUpperCase()) {
-      case 'SELL': case 'BUY': return 'bg-green-100 text-green-800 border border-green-200';
+      case 'SELL': case 'BUY': return 'bg-admin-secondary text-green-800 border border-admin-primary/20';
       case 'WAIT': return 'bg-yellow-100 text-yellow-800 border border-yellow-200';
       default: return 'bg-gray-100 text-gray-800 border border-gray-200';
     }
@@ -30,8 +30,8 @@ export default async function AdminAIDashboardPage() {
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b border-gray-200 pb-4">
         <div className="flex items-center gap-3">
-          <div className="p-2 bg-green-100 rounded-lg">
-            <Brain className="w-6 h-6 text-[#00703C]" />
+          <div className="p-2 bg-admin-secondary rounded-lg">
+            <Brain className="w-6 h-6 text-admin-primary" />
           </div>
           <div>
             <h1 className="text-2xl font-bold text-gray-900">AI Market Intelligence</h1>
@@ -64,7 +64,7 @@ export default async function AdminAIDashboardPage() {
       </div>
 
       {/* Detailed Table */}
-      <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+      <div className="bg-surface rounded-lg border border-border shadow-sm overflow-hidden">
         <div className="px-6 py-4 border-b border-gray-100 flex items-center gap-2">
           <Activity className="w-4 h-4 text-gray-400" />
           <h2 className="font-semibold text-gray-900">Detailed Forecast History</h2>
@@ -97,7 +97,7 @@ export default async function AdminAIDashboardPage() {
                     <td className="p-4">
                       <div className="flex items-center gap-2">
                         <div className="w-16 bg-gray-200 rounded-full h-1.5">
-                          <div className="bg-[#00703C] h-1.5 rounded-full" style={{ width: `${p.confidenceScore}%` }}></div>
+                          <div className="bg-admin-primary h-1.5 rounded-full" style={{ width: `${p.confidenceScore}%` }}></div>
                         </div>
                         <span className="text-xs text-gray-500">{p.confidenceScore}%</span>
                       </div>

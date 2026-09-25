@@ -102,7 +102,7 @@ export default function GeofencesPage() {
       <h1 className="text-2xl font-bold text-gray-900">GIS Geofencing</h1>
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-1 bg-white rounded-xl border p-6 shadow-sm space-y-4">
-          <h2 className="font-bold text-lg flex items-center gap-2 text-gray-900"><MapPin className="w-5 h-5 text-[#00703C]" /> Draw New Zone</h2>
+          <h2 className="font-bold text-lg flex items-center gap-2 text-gray-900"><MapPin className="w-5 h-5 text-admin-primary" /> Draw New Zone</h2>
           <div className="bg-gray-50 p-3 rounded-lg text-sm text-gray-700 font-medium">
             <p>Click on the map to add points.</p>
             <p className="mt-1">{points.length} points added.</p>
@@ -112,7 +112,7 @@ export default function GeofencesPage() {
               onClick={() => {
                 console.log('Saving geofence:', points);
               }}
-              className="w-full bg-[#00703C] text-white py-2 rounded-lg text-sm font-bold hover:bg-[#00582f]"
+              className="w-full bg-admin-primary text-white py-2 rounded-lg text-sm font-bold hover:bg-admin-primary/90"
             >
               Save Geofence
             </button>

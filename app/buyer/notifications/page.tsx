@@ -22,7 +22,7 @@ export default async function BuyerNotifications() {
   return (
     <div>
       <h1 className="text-2xl font-bold text-gray-900 mb-6">Notifications</h1>
-      <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+      <div className="bg-surface rounded-lg border border-border shadow-sm overflow-hidden">
         <div className="divide-y divide-gray-100">
           {notifications.length === 0 ? (
             <div className="p-8 text-center text-gray-400">No notifications yet.</div>

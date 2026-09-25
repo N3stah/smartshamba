@@ -35,7 +35,7 @@ export default async function AdminFarmerDetailPage({ params }: PageProps) {
     return (
       <div className="text-center py-12">
         <h1 className="text-2xl font-bold text-gray-900 mb-4">Farmer Not Found</h1>
-        <Link href="/admin/farmers" className="text-[#00703C] hover:underline">← Back to Farmers</Link>
+        <Link href="/admin/farmers" className="text-admin-primary hover:underline">← Back to Farmers</Link>
       </div>
     );
   }
@@ -53,16 +53,16 @@ export default async function AdminFarmerDetailPage({ params }: PageProps) {
         {/* Left Column: Profile Summary & Edit Form */}
         <div className="lg:col-span-1 space-y-8">
           {/* Profile Summary */}
-          <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
+          <div className="bg-surface rounded-lg border border-border shadow-sm p-6">
             <div className="flex items-center gap-4 mb-6">
-              <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center">
-                <User className="w-8 h-8 text-[#00703C]" />
+              <div className="w-16 h-16 bg-admin-secondary rounded-full flex items-center justify-center">
+                <User className="w-8 h-8 text-admin-primary" />
               </div>
               <div>
                 <h2 className="text-xl font-bold text-gray-900">{farmer.name ?? 'Unknown'}</h2>
                 <div className="flex items-center gap-2 mt-1">
                   {farmer.verified ? (
-                    <span className="flex items-center gap-1 text-xs font-bold text-green-700 bg-green-100 px-2 py-1 rounded-full">
+                    <span className="flex items-center gap-1 text-xs font-bold text-admin-primary bg-admin-secondary px-2 py-1 rounded-full">
                       <ShieldCheck className="w-3 h-3" /> Verified
                     </span>
                   ) : (
@@ -81,7 +81,7 @@ export default async function AdminFarmerDetailPage({ params }: PageProps) {
           </div>
 
           {/* Secure Edit Form */}
-          <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
+          <div className="bg-surface rounded-lg border border-border shadow-sm p-6">
             <h3 className="text-lg font-bold text-gray-900 mb-1">Edit Locked Details</h3>
             <p className="text-xs text-gray-500 mb-6">Admins can securely correct registration details here. All changes are audit logged.</p>
             <EditFarmerForm 
@@ -95,7 +95,7 @@ export default async function AdminFarmerDetailPage({ params }: PageProps) {
 
         {/* Right Column: Transaction History */}
         <div className="lg:col-span-2">
-          <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+          <div className="bg-surface rounded-lg border border-border shadow-sm overflow-hidden">
             <div className="px-6 py-4 border-b border-gray-100">
               <h3 className="font-semibold text-gray-900">Recent Transactions</h3>
             </div>

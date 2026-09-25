@@ -44,7 +44,7 @@ export default function CustomReportBuilder() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <a href={buildUrl('excel')} target="_blank" className="bg-green-600 text-white rounded-xl p-6 shadow-sm flex items-center gap-4 hover:bg-green-700 transition-colors">
+        <a href={buildUrl('excel')} target="_blank" className="bg-green-600 text-white rounded-xl p-6 shadow-sm flex items-center gap-4 hover:bg-admin-primary transition-colors">
           <FileSpreadsheet className="w-10 h-10" />
           <div>
             <h3 className="font-bold text-lg">Export to Excel</h3>

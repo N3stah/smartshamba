@@ -10,7 +10,7 @@ export default function LogisticsDashboard() {
     fetch('/api/admin/executive-bi').then(r => r.ok ? r.json() : null).then(d => setData(d?.logistics)).finally(() => setLoading(false));
   }, []);
 
-  if (loading) return <div className="flex justify-center p-8"><Loader2 className="w-6 h-6 animate-spin text-[#00703C]" /></div>;
+  if (loading) return <div className="flex justify-center p-8"><Loader2 className="w-6 h-6 animate-spin text-admin-primary" /></div>;
 
   const kpis = [
     { label: 'Active Jobs', value: data?.activeJobs },

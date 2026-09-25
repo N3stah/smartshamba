@@ -29,17 +29,17 @@ export default async function FarmerDemandsPage() {
           </div>
         ) : (
           demands.map((demand) => (
-            <div key={demand.id} className="bg-white rounded-xl border border-gray-200 shadow-sm p-6 hover:shadow-md transition-shadow flex flex-col">
+            <div key={demand.id} className="bg-surface rounded-lg border border-border shadow-sm p-6 hover:shadow-md transition-shadow flex flex-col">
               <div className="flex justify-between items-start mb-4">
                 <div>
                   <h3 className="text-lg font-bold text-gray-900 flex items-center gap-2">
-                    <Package className="w-5 h-5 text-[#00703C]" /> {demand.product}
+                    <Package className="w-5 h-5 text-farmer-primary" /> {demand.product}
                   </h3>
                   <p className="text-sm text-gray-500 mt-1">
                     Needs: {demand.quantityBags} bags
                   </p>
                 </div>
-                <span className="bg-blue-100 text-blue-700 text-xs font-bold px-3 py-1 rounded-full">
+                <span className="bg-farmer-secondary text-blue-700 text-xs font-bold px-3 py-1 rounded-full">
                   Active
                 </span>
               </div>

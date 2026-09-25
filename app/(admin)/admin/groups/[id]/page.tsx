@@ -96,7 +96,7 @@ export default async function AdminGroupDetailsPage({
             Bags Pledged
           </p>
 
-          <p className="mt-2 text-3xl font-bold text-green-700">
+          <p className="mt-2 text-3xl font-bold text-admin-primary">
             {totalBags}
           </p>
         </div>
@@ -116,7 +116,7 @@ export default async function AdminGroupDetailsPage({
             Sales Value
           </p>
 
-          <p className="mt-2 text-3xl font-bold text-green-700">
+          <p className="mt-2 text-3xl font-bold text-admin-primary">
             KSh {totalSales.toLocaleString()}
           </p>
         </div>
@@ -230,7 +230,7 @@ export default async function AdminGroupDetailsPage({
                     {member.farmer.phone}
                   </td>
 
-                  <td className="px-6 py-4 text-center font-semibold text-green-700">
+                  <td className="px-6 py-4 text-center font-semibold text-admin-primary">
                     {member.bagsPledged}
                   </td>
 
@@ -300,7 +300,7 @@ export default async function AdminGroupDetailsPage({
                   </td>
 
                   <td className="px-6 py-4 text-center">
-                    <span className="rounded-full bg-green-100 px-3 py-1 text-xs font-medium text-green-700">
+                    <span className="rounded-full bg-admin-secondary px-3 py-1 text-xs font-medium text-admin-primary">
                       {tx.status}
                     </span>
                   </td>

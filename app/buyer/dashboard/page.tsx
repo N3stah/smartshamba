@@ -46,7 +46,7 @@ export default async function BuyerDashboard() {
 
       <div className="mt-8 grid grid-cols-2 md:grid-cols-3 gap-4 mb-8">
         <Link href="/buyer/ai-procurement" className="bg-white rounded-xl border border-gray-200 p-5 shadow-sm hover:shadow-md transition-all hover:border-green-300 group">
-          <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center mb-3 group-hover:bg-green-200 transition-colors">
+          <div className="w-10 h-10 bg-buyer-secondary rounded-lg flex items-center justify-center mb-3 group-hover:bg-green-200 transition-colors">
             <span className="text-xl">🤖</span>
           </div>
           <h3 className="font-semibold text-gray-900 text-sm">AI Procurement</h3>
@@ -60,14 +60,14 @@ export default async function BuyerDashboard() {
           <p className="text-xs text-gray-500 mt-1">Balance & transaction history</p>
         </Link>
         <Link href="/buyer/contracts" className="bg-white rounded-xl border border-gray-200 p-5 shadow-sm hover:shadow-md transition-all hover:border-green-300 group">
-          <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center mb-3 group-hover:bg-green-200 transition-colors">
+          <div className="w-10 h-10 bg-buyer-secondary rounded-lg flex items-center justify-center mb-3 group-hover:bg-green-200 transition-colors">
             <span className="text-xl">📄</span>
           </div>
           <h3 className="font-semibold text-gray-900 text-sm">Contracts</h3>
           <p className="text-xs text-gray-500 mt-1">View digital trade agreements</p>
         </Link>
         <Link href="/buyer/weather" className="bg-white rounded-xl border border-gray-200 p-5 shadow-sm hover:shadow-md transition-all hover:border-blue-300 group">
-          <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center mb-3 group-hover:bg-blue-200 transition-colors">
+          <div className="w-10 h-10 bg-buyer-secondary rounded-lg flex items-center justify-center mb-3 group-hover:bg-blue-200 transition-colors">
             <span className="text-xl">🌦️</span>
           </div>
           <h3 className="font-semibold text-gray-900 text-sm">Weather & Climate</h3>
@@ -89,7 +89,7 @@ export default async function BuyerDashboard() {
         </Link>
       </div>
 
-      <div className="mt-8 bg-white rounded-xl border border-gray-200 shadow-sm">
+      <div className="mt-8 bg-surface rounded-lg border border-border shadow-sm">
         <div className="px-6 py-4 border-b border-gray-100">
           <h2 className="text-sm font-semibold text-gray-700">Recent Transactions</h2>
         </div>

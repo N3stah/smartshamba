@@ -60,7 +60,7 @@ export default function AdminNotificationsPage() {
             key={tab}
             onClick={() => setFilter(tab as 'ALL' | 'FARMER' | 'BUYER')}
             className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-              filter === tab ? 'bg-[#00703C] text-white' : 'bg-white border border-gray-200 text-gray-600 hover:bg-gray-50'
+              filter === tab ? 'bg-admin-primary text-white' : 'bg-white border border-gray-200 text-gray-600 hover:bg-gray-50'
             }`}
           >
             {tab === 'ALL' ? 'All' : tab === 'FARMER' ? 'Farmers' : 'Buyers'}
@@ -69,7 +69,7 @@ export default function AdminNotificationsPage() {
       </div>
 
       {/* Table */}
-      <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+      <div className="bg-surface rounded-lg border border-border shadow-sm overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-sm">
             <thead className="bg-gray-50 border-b border-gray-200">
@@ -95,7 +95,7 @@ export default function AdminNotificationsPage() {
                   <tr key={n.id} className="hover:bg-gray-50">
                     <td className="p-4">
                       <span className={`inline-block px-2 py-1 rounded text-xs font-bold ${
-                        n.status === 'SENT' ? 'bg-green-100 text-green-800' :
+                        n.status === 'SENT' ? 'bg-admin-secondary text-green-800' :
                         n.status === 'FAILED' ? 'bg-red-100 text-red-800' :
                         n.status === 'PENDING' ? 'bg-yellow-100 text-yellow-800' :
                         'bg-blue-100 text-blue-800'
@@ -107,7 +107,7 @@ export default function AdminNotificationsPage() {
                     <td className="p-4">
                       <div className="flex items-center gap-2">
                         {n.farmerId ? (
-                          <span className="flex items-center gap-1 text-[#00703C] bg-green-50 px-2 py-1 rounded text-xs font-bold">
+                          <span className="flex items-center gap-1 text-admin-primary bg-green-50 px-2 py-1 rounded text-xs font-bold">
                             <User className="w-3 h-3" /> Farmer
                           </span>
                         ) : n.buyerId ? (

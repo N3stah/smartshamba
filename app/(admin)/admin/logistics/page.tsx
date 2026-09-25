@@ -63,24 +63,24 @@ export default async function AdminLogisticsPage() {
           </div>
           <p className="text-2xl font-bold text-blue-700">{stats.active}</p>
         </div>
-        <div className="bg-white rounded-xl border border-green-200 p-5 shadow-sm">
+        <div className="bg-white rounded-xl border border-admin-primary/20 p-5 shadow-sm">
           <div className="flex items-center justify-between mb-2">
             <p className="text-xs text-gray-500 uppercase tracking-wider">Delivered</p>
             <CheckCircle className="w-5 h-5 text-green-500" />
           </div>
-          <p className="text-2xl font-bold text-green-700">{stats.delivered}</p>
+          <p className="text-2xl font-bold text-admin-primary">{stats.delivered}</p>
         </div>
         <div className="bg-white rounded-xl border border-green-300 p-5 shadow-sm">
           <div className="flex items-center justify-between mb-2">
             <p className="text-xs text-gray-500 uppercase tracking-wider">Revenue</p>
-            <DollarSign className="w-5 h-5 text-[#00703C]" />
+            <DollarSign className="w-5 h-5 text-admin-primary" />
           </div>
-          <p className="text-2xl font-bold text-green-700">KSh {stats.revenue.toLocaleString()}</p>
+          <p className="text-2xl font-bold text-admin-primary">KSh {stats.revenue.toLocaleString()}</p>
         </div>
       </div>
 
       {/* Bookings Table */}
-      <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+      <div className="bg-surface rounded-lg border border-border shadow-sm overflow-hidden">
         <div className="px-6 py-4 border-b border-gray-100">
           <h2 className="font-semibold text-gray-900">All Transport Bookings</h2>
         </div>
@@ -105,7 +105,7 @@ export default async function AdminLogisticsPage() {
                   </td>
                   <td className="p-4">
                     <span className={`inline-flex px-2 py-1 rounded-full text-xs font-bold ${
-                      b.status === 'DELIVERED' ? 'bg-green-100 text-green-800' :
+                      b.status === 'DELIVERED' ? 'bg-admin-secondary text-green-800' :
                       b.status === 'IN_TRANSIT' ? 'bg-blue-100 text-blue-800' :
                       b.status === 'CANCELLED' ? 'bg-red-100 text-red-800' :
                       'bg-yellow-100 text-yellow-800'

@@ -27,12 +27,10 @@ export default async function BuyerAIProcurementPage() {
     <div className="space-y-8">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <Brain className="w-8 h-8 text-[#00703C]" />
+          <Brain className="w-8 h-8 text-buyer-primary" />
           <h1 className="text-2xl font-bold text-gray-900">AI Procurement Intelligence</h1>
         </div>
-        <Link href="/buyer/dashboard" className="text-sm text-gray-500 hover:text-gray-900 flex items-center gap-1">
-          <ArrowLeft className="w-4 h-4" /> Back to Dashboard
-        </Link>
+        
       </div>
 
       <MarketIntelligenceCard role="BUYER" />

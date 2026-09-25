@@ -269,7 +269,7 @@ export default function EditGroupPage() {
           <button
             type="submit"
             disabled={saving}
-            className="rounded-lg bg-green-700 px-6 py-3 text-white hover:bg-green-600 disabled:opacity-60"
+            className="rounded-lg bg-admin-primary px-6 py-3 text-white hover:bg-admin-primary/90 disabled:opacity-60"
           >
             {saving ? 'Saving...' : 'Save Changes'}
           </button>

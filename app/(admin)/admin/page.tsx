@@ -69,7 +69,7 @@ export default async function AdminDashboard() {
           </div>
 
           <div className="bg-white p-6 rounded-xl shadow-sm border">
-            <h3 className="font-bold text-gray-900 mb-4 flex items-center gap-2"><TrendingUp className="w-5 h-5 text-[#00703C]" /> Revenue Trend (Last 30 Days)</h3>
+            <h3 className="font-bold text-gray-900 mb-4 flex items-center gap-2"><TrendingUp className="w-5 h-5 text-admin-primary" /> Revenue Trend (Last 30 Days)</h3>
             <RevenueChart data={charts.salesTrend || []} />
           </div>
         </>

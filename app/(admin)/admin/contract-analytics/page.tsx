@@ -14,7 +14,7 @@ export default function ContractAnalyticsPage() {
       .finally(() => setLoading(false));
   }, []);
 
-  if (loading) return <div className="flex justify-center p-8"><Loader2 className="w-6 h-6 animate-spin text-[#00703C]" /></div>;
+  if (loading) return <div className="flex justify-center p-8"><Loader2 className="w-6 h-6 animate-spin text-admin-primary" /></div>;
   if (!data) return <div className="bg-white p-8 text-center text-gray-500 rounded-xl border">Failed to load analytics data.</div>;
 
   const kpis = data.kpis;
@@ -23,8 +23,8 @@ export default function ContractAnalyticsPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between border-b border-gray-200 pb-4">
         <div className="flex items-center gap-3">
-          <div className="p-2 bg-green-100 rounded-lg">
-            <FileText className="w-6 h-6 text-[#00703C]" />
+          <div className="p-2 bg-admin-secondary rounded-lg">
+            <FileText className="w-6 h-6 text-admin-primary" />
           </div>
           <div>
             <h1 className="text-2xl font-bold text-gray-900">Contract Analytics</h1>
@@ -41,12 +41,12 @@ export default function ContractAnalyticsPage() {
           </div>
           <p className="text-2xl font-bold text-gray-900">{kpis.total}</p>
         </div>
-        <div className="bg-white rounded-xl border border-green-200 p-5 shadow-sm">
+        <div className="bg-white rounded-xl border border-admin-primary/20 p-5 shadow-sm">
           <div className="flex items-center justify-between mb-2">
             <p className="text-xs text-gray-500 uppercase tracking-wider">Completion Rate</p>
             <TrendingUp className="w-5 h-5 text-green-500" />
           </div>
-          <p className="text-2xl font-bold text-green-700">{kpis.completionRate}%</p>
+          <p className="text-2xl font-bold text-admin-primary">{kpis.completionRate}%</p>
         </div>
         <div className="bg-white rounded-xl border border-yellow-200 p-5 shadow-sm">
           <div className="flex items-center justify-between mb-2">
@@ -65,7 +65,7 @@ export default function ContractAnalyticsPage() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
+        <div className="bg-surface rounded-lg border border-border shadow-sm p-6">
           <h2 className="font-semibold text-gray-900 mb-4">Contract Status Breakdown</h2>
           <div className="space-y-3">
             <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">

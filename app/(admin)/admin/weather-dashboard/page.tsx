@@ -65,7 +65,7 @@ export default async function AdminWeatherDashboard() {
       )}
 
       {/* County Weather Grid */}
-      <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+      <div className="bg-surface rounded-lg border border-border shadow-sm overflow-hidden">
         <div className="px-6 py-4 border-b border-gray-100">
           <h2 className="font-semibold text-gray-900">Regional Weather Status</h2>
         </div>

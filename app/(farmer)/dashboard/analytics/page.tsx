@@ -45,9 +45,7 @@ export default async function FarmerAnalyticsPage({ searchParams }: { searchPara
         <h1 className="text-2xl font-bold text-gray-900">Farm Analytics</h1>
         <div className="flex items-center gap-4">
           <DateFilter />
-          <Link href="/dashboard" className="text-sm text-gray-500 hover:text-gray-900 flex items-center gap-1">
-            <ArrowLeft className="w-4 h-4" /> Back
-          </Link>
+          
         </div>
       </div>
 
@@ -74,7 +72,7 @@ export default async function FarmerAnalyticsPage({ searchParams }: { searchPara
       </div>
 
       <div className="grid lg:grid-cols-2 gap-6">
-        <SalesTrendChart data={data.charts.salesTrend} dataKey="revenue" color="#00703C" name={`Earnings Trend (${range})`} />
+        <SalesTrendChart data={data.charts.salesTrend} dataKey="revenue" color="#D97706" name={`Earnings Trend (${range})`} />
         <SalesTrendChart data={data.charts.priceTrend} dataKey="avgPrice" color="#3B82F6" name={`Average Price per Bag Trend (${range})`} />
       </div>
 

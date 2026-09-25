@@ -24,12 +24,12 @@ export default async function BuyerDisputes() {
       <h1 className="text-2xl font-bold text-gray-900 mb-6">My Disputes</h1>
       <div className="space-y-4">
         {disputes.length === 0 ? (
-          <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-8 text-center text-gray-400">
+          <div className="bg-surface rounded-lg border border-border shadow-sm p-8 text-center text-gray-400">
             No disputes filed.
           </div>
         ) : (
           disputes.map((d) => (
-            <div key={d.id} className="bg-white rounded-xl border border-gray-200 shadow-sm p-6 flex justify-between items-start">
+            <div key={d.id} className="bg-surface rounded-lg border border-border shadow-sm p-6 flex justify-between items-start">
               <div>
                 <p className="font-mono text-xs text-gray-500 mb-1">{d.transaction.reference}</p>
                 <p className="font-semibold text-gray-900">{d.reason.replace(/_/g, ' ')}</p>

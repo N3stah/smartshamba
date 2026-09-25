@@ -62,9 +62,9 @@ export default function AdminGroupsPage() {
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         {[
           { label: 'Total Groups', value: stats.total, color: 'text-gray-900' },
-          { label: 'Active Groups', value: stats.active, color: 'text-green-700' },
+          { label: 'Active Groups', value: stats.active, color: 'text-admin-primary' },
           { label: 'Total Members', value: stats.members, color: 'text-blue-700' },
-          { label: 'Bags Pledged', value: stats.bags.toLocaleString(), color: 'text-green-700' },
+          { label: 'Bags Pledged', value: stats.bags.toLocaleString(), color: 'text-admin-primary' },
         ].map((s) => (
           <div key={s.label} className="bg-white rounded-xl border border-gray-200 p-4 shadow-sm">
             <p className="text-xs text-gray-500 uppercase tracking-wider">{s.label}</p>
@@ -80,7 +80,7 @@ export default function AdminGroupsPage() {
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           placeholder="Search by name, county, ward or village..."
-          className="flex-1 border border-gray-300 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:border-green-600 focus:ring-2 focus:ring-green-100"
+          className="flex-1 border border-gray-300 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:border-admin-primary focus:ring-2 focus:ring-admin-secondary"
         />
         <div className="flex rounded-lg border border-gray-200 overflow-hidden bg-white shadow-sm">
           {(['all', 'active', 'inactive'] as const).map((f) => (
@@ -88,7 +88,7 @@ export default function AdminGroupsPage() {
               key={f}
               onClick={() => setFilter(f)}
               className={`px-4 py-2.5 text-sm font-medium capitalize transition-colors ${
-                filter === f ? 'bg-green-700 text-white' : 'text-gray-600 hover:bg-gray-50'
+                filter === f ? 'bg-admin-primary text-white' : 'text-gray-600 hover:bg-gray-50'
               }`}
             >
               {f}
@@ -106,7 +106,7 @@ export default function AdminGroupsPage() {
       ) : filtered.length === 0 ? (
         <div className="py-16 text-center text-gray-400 text-sm">No groups found.</div>
       ) : (
-        <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+        <div className="bg-surface rounded-lg border border-border shadow-sm overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
@@ -136,7 +136,7 @@ export default function AdminGroupsPage() {
                     <td className="px-4 py-3 text-right text-gray-600">{g.transactionCount}</td>
                     <td className="px-4 py-3">
                       <span className={`inline-flex px-2.5 py-1 rounded-full text-xs font-medium ${
-                        g.active ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'
+                        g.active ? 'bg-admin-secondary text-admin-primary' : 'bg-gray-100 text-gray-500'
                       }`}>
                         {g.active ? 'Active' : 'Inactive'}
                       </span>
@@ -147,7 +147,7 @@ export default function AdminGroupsPage() {
                     <td className="px-4 py-3">
                       <Link
                         href={`/admin/groups/${g.id}`}
-                        className="text-xs font-medium text-green-700 hover:underline"
+                        className="text-xs font-medium text-admin-primary hover:underline"
                       >
                         View →
                       </Link>

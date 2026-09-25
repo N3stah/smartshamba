@@ -89,7 +89,7 @@ export default function AdminSettingsPage() {
     }
   };
 
-  if (loading) return <div className="flex justify-center p-8"><Loader2 className="w-6 h-6 animate-spin text-[#00703C]" /></div>;
+  if (loading) return <div className="flex justify-center p-8"><Loader2 className="w-6 h-6 animate-spin text-admin-primary" /></div>;
 
   return (
     <div className="space-y-6">
@@ -100,11 +100,11 @@ export default function AdminSettingsPage() {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Security & MFA Section */}
-        <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
-          <h2 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2"><ShieldCheck className="w-5 h-5 text-[#00703C]" /> Security & MFA</h2>
+        <div className="bg-surface rounded-lg border border-border shadow-sm p-6">
+          <h2 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2"><ShieldCheck className="w-5 h-5 text-admin-primary" /> Security & MFA</h2>
           
           {mfaEnabled ? (
-            <div className="bg-green-50 border border-green-200 rounded-lg p-4 flex items-center gap-3">
+            <div className="bg-green-50 border border-admin-primary/20 rounded-lg p-4 flex items-center gap-3">
               <CheckCircle className="w-5 h-5 text-green-600" />
               <p className="text-sm font-medium text-green-800">Multi-Factor Authentication is Enabled</p>
             </div>
@@ -116,7 +116,7 @@ export default function AdminSettingsPage() {
                 <button 
                   onClick={handleSetupMFA} 
                   disabled={mfaLoading}
-                  className="w-full bg-[#00703C] text-white py-2 rounded-lg text-sm font-medium hover:bg-[#00582f] disabled:opacity-50 flex items-center justify-center gap-2"
+                  className="w-full bg-admin-primary text-white py-2 rounded-lg text-sm font-medium hover:bg-admin-primary/90 disabled:opacity-50 flex items-center justify-center gap-2"
                 >
                   {mfaLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Lock className="w-4 h-4" />}
                   Generate QR Code
@@ -148,8 +148,8 @@ export default function AdminSettingsPage() {
         </div>
 
         {/* Password Change Section */}
-        <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
-          <h2 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2"><Key className="w-5 h-5 text-[#00703C]" /> Change Password</h2>
+        <div className="bg-surface rounded-lg border border-border shadow-sm p-6">
+          <h2 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2"><Key className="w-5 h-5 text-admin-primary" /> Change Password</h2>
           <form onSubmit={handlePasswordChange} className="space-y-4">
             <div>
               <label className="block text-xs font-medium text-gray-700 mb-1">Current Password</label>
@@ -182,8 +182,8 @@ export default function AdminSettingsPage() {
       </div>
 
       {/* Platform Configurations (Read-Only) */}
-      <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
-        <h2 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2"><Cpu className="w-5 h-5 text-[#00703C]" /> Platform Configurations</h2>
+      <div className="bg-surface rounded-lg border border-border shadow-sm p-6">
+        <h2 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2"><Cpu className="w-5 h-5 text-admin-primary" /> Platform Configurations</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           <div className="bg-gray-50 p-4 rounded-lg border border-gray-100">
             <p className="text-xs text-gray-500 uppercase">Transaction Fee</p>

@@ -38,7 +38,7 @@ export default function CEODashboard() {
     }).finally(() => setLoading(false));
   }, []);
 
-  if (loading) return <div className="flex justify-center p-8"><Loader2 className="w-6 h-6 animate-spin text-[#00703C]" /></div>;
+  if (loading) return <div className="flex justify-center p-8"><Loader2 className="w-6 h-6 animate-spin text-admin-primary" /></div>;
 
   const kpis = [
     { label: 'Total Revenue', value: `KSh ${(ceo?.totalRevenue || 0).toLocaleString()}`, sub: `${ceo?.revenueGrowth || 0}% growth (30d)`, icon: TrendingUp },
@@ -74,7 +74,7 @@ export default function CEODashboard() {
           <div key={k.label} className="bg-white rounded-xl border p-5 shadow-sm">
             <div className="flex justify-between mb-2">
               <p className="text-xs text-gray-500 uppercase">{k.label}</p>
-              <k.icon className="w-5 h-5 text-[#00703C]" />
+              <k.icon className="w-5 h-5 text-admin-primary" />
             </div>
             <p className="text-2xl font-bold text-gray-900">{k.value}</p>
             <p className="text-xs text-gray-400 mt-1">{k.sub}</p>

@@ -16,7 +16,7 @@ interface WeatherData {
 const formatEAT = (unix: number) => new Date(unix * 1000).toLocaleString('en-KE', { timeZone: 'Africa/Nairobi', hour: '2-digit', minute: '2-digit' });
 const formatEATshort = (unix: number) => new Date(unix * 1000).toLocaleString('en-KE', { timeZone: 'Africa/Nairobi', weekday: 'short', hour: '2-digit' });
 
-export default function ProWeatherDashboard({ county, weatherData, advisoryData }: { county: string; weatherData: WeatherData; advisoryData: any }) {
+export default function ProWeatherDashboard({ county, weatherData, advisoryData, primaryColor = '{primaryColor}', primaryTextColor = '{primaryTextColor}', primaryHoverColor = 'hover:{primaryColor}/90', primaryFocusColor = '{primaryFocusColor}' }: { county: string; weatherData: WeatherData; advisoryData: any; primaryColor?: string; primaryTextColor?: string; primaryHoverColor?: string; primaryFocusColor?: string }) {
   const [chatInput, setChatInput] = useState('');
   const [chatRes, setChatRes] = useState('');
   const [chatLoading, setChatLoading] = useState(false);
@@ -103,7 +103,7 @@ export default function ProWeatherDashboard({ county, weatherData, advisoryData 
         </div>
 
         {/* Precision Agronomy AI Advisory */}
-        <div className="bg-gradient-to-br from-[#00703C] to-[#004d29] rounded-xl shadow-lg p-6 text-white flex flex-col justify-between">
+        <div className="{primaryColor} rounded-xl shadow-lg p-6 text-white flex flex-col justify-between">
           <div>
             <h3 className="text-sm font-bold uppercase tracking-wider mb-3 flex items-center gap-2"><Activity className="w-4 h-4" /> Precision Agronomy AI</h3>
             <div className="space-y-3 text-sm">
@@ -159,17 +159,17 @@ export default function ProWeatherDashboard({ county, weatherData, advisoryData 
             value={chatInput}
             onChange={(e) => setChatInput(e.target.value)}
             placeholder="Ask about weather impacts on your farm..."
-            className="flex-1 border border-gray-300 rounded-full px-4 py-2 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:border-[#00703C]"
+            className="flex-1 border border-gray-300 rounded-full px-4 py-2 text-sm text-gray-900 placeholder-gray-400 focus:outline-none {primaryFocusColor}"
             disabled={chatLoading}
           />
-          <button type="submit" disabled={chatLoading || !chatInput.trim()} className="bg-[#00703C] text-white p-2.5 rounded-full hover:bg-[#00582f] disabled:opacity-50">
+          <button type="submit" disabled={chatLoading || !chatInput.trim()} className="bg-[#00703C] text-white p-2.5 rounded-full hover:{primaryColor}/90 disabled:opacity-50">
             {chatLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
           </button>
         </form>
 
         {chatRes && (
           <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 text-sm text-gray-800">
-            <span className="font-bold text-[#00703C]">AI:</span> {chatRes}
+            <span className="font-bold {primaryTextColor}">AI:</span> {chatRes}
           </div>
         )}
       </div>

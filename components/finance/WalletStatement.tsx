@@ -1,6 +1,7 @@
 'use client';
 import { useEffect, useState } from 'react';
 import { Loader2, ArrowDownCircle, ArrowUpCircle, Wallet, Download } from 'lucide-react';
+import { Card } from '@/components/ui/Card';
 
 interface Entry {
   id: string;
@@ -43,7 +44,6 @@ export default function WalletStatement({ role }: { role: 'FARMER' | 'BUYER' }) 
         setWithdrawMsg('Withdrawal request submitted! Admin will process it shortly.');
         setWithdrawAmount('');
         setShowWithdraw(false);
-        // Refresh data
         fetch('/api/farmers/me/wallet').then(r => r.json()).then(setData);
       } else {
         throw new Error(resData.error || 'Failed to request withdrawal');
@@ -55,42 +55,44 @@ export default function WalletStatement({ role }: { role: 'FARMER' | 'BUYER' }) 
     }
   };
 
-  if (loading) return <div className="flex justify-center p-8"><Loader2 className="w-6 h-6 animate-spin text-[#00703C]" /></div>;
-  if (!data) return <div className="bg-white p-8 text-center text-gray-500 rounded-xl border">Failed to load wallet data.</div>;
+  if (loading) return <div className="flex justify-center p-8"><Loader2 className="w-6 h-6 animate-spin text-{role === 'FARMER' ? 'farmer-primary' : 'buyer-primary'}" /></div>;
+  if (!data) return <div className="bg-surface p-8 text-center text-gray-500 rounded-lg border border-border">Failed to load wallet data.</div>;
 
   return (
     <div className="space-y-6">
       {/* Balance Card */}
-      <div className="bg-gradient-to-br from-[#00703C] to-[#004d29] rounded-xl shadow-lg p-6 text-white flex flex-col md:flex-row justify-between items-start md:items-center">
-        <div>
-          <div className="flex items-center gap-2 mb-2">
-            <Wallet className="w-5 h-5" />
-            <p className="text-sm font-medium uppercase tracking-wider">Available Balance</p>
+      <Card className="p-6 bg-{role === 'FARMER' ? 'farmer-primary' : 'buyer-primary'} text-white border-{role === 'FARMER' ? 'farmer-primary' : 'buyer-primary'}">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center">
+          <div>
+            <div className="flex items-center gap-2 mb-2">
+              <Wallet className="w-5 h-5" />
+              <p className="text-sm font-medium uppercase tracking-wider opacity-90">Available Balance</p>
+            </div>
+            <p className="text-4xl font-bold">KSh {data.balance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
           </div>
-          <p className="text-4xl font-bold">KSh {data.balance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
+          {role === 'FARMER' && data.balance > 0 && (
+            <div className="flex flex-col sm:flex-row gap-2 mt-4 md:mt-0">
+              <a 
+                href={role === 'FARMER' ? '/api/farmers/me/wallet/export' : '/api/buyers/me/wallet/export'}
+                className="bg-transparent border border-white/50 text-white px-4 py-2 rounded-md text-sm font-bold hover:bg-white/10 flex items-center justify-center gap-2"
+              >
+                <Download className="w-4 h-4" /> Export CSV
+              </a>
+              <button 
+                onClick={() => setShowWithdraw(!showWithdraw)}
+                className="bg-white text-{role === 'FARMER' ? 'farmer-primary' : 'buyer-primary'} px-4 py-2 rounded-md text-sm font-bold hover:bg-gray-100 flex items-center justify-center gap-2"
+              >
+                <Download className="w-4 h-4" /> Withdraw to M-PESA
+              </button>
+            </div>
+          )}
         </div>
-        {role === 'FARMER' && data.balance > 0 && (
-          <a 
-            href={role === 'FARMER' ? '/api/farmers/me/wallet/export' : '/api/buyers/me/wallet/export'}
-            className="mt-4 md:mt-0 bg-transparent border border-white text-white px-4 py-2 rounded-lg text-sm font-bold hover:bg-white/10 flex items-center gap-2 mr-2"
-          >
-            <Download className="w-4 h-4" /> Export CSV
-          </a>
-        )}
-        {role === 'FARMER' && data.balance > 0 && (
-          <button 
-            onClick={() => setShowWithdraw(!showWithdraw)}
-            className="mt-4 md:mt-0 bg-white text-[#00703C] px-4 py-2 rounded-lg text-sm font-bold hover:bg-gray-100 flex items-center gap-2"
-          >
-            <Download className="w-4 h-4" /> Withdraw to M-PESA
-          </button>
-        )}
-      </div>
+      </Card>
 
       {/* Withdrawal Form */}
       {showWithdraw && (
-        <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
-          <h3 className="font-bold text-gray-900 mb-4">Request Withdrawal</h3>
+        <Card className="p-6">
+          <h3 className="font-bold text-text mb-4">Request Withdrawal</h3>
           <form onSubmit={handleWithdraw} className="flex flex-col sm:flex-row gap-2">
             <input
               type="number"
@@ -100,32 +102,34 @@ export default function WalletStatement({ role }: { role: 'FARMER' | 'BUYER' }) 
               value={withdrawAmount}
               onChange={(e) => setWithdrawAmount(e.target.value)}
               placeholder={`Max: KSh ${data.balance.toLocaleString()}`}
-              className="flex-1 border border-gray-300 rounded-lg px-4 py-2 text-sm text-gray-900"
+              className="flex-1 border border-border rounded-md px-4 py-2 text-sm text-text focus:ring-{role === 'FARMER' ? 'farmer-primary' : 'buyer-primary'} focus:border-{role === 'FARMER' ? 'farmer-primary' : 'buyer-primary'}"
             />
-            <button type="submit" disabled={withdrawLoading} className="bg-[#00703C] text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-[#00582f] disabled:opacity-50">
+            <button type="submit" disabled={withdrawLoading} className="bg-farmer-primary text-white px-4 py-2 rounded-md text-sm font-semibold hover:bg-{role === 'FARMER' ? 'farmer-primary/90' : 'buyer-primary/90'} disabled:opacity-50">
               {withdrawLoading ? 'Submitting...' : 'Submit Request'}
             </button>
           </form>
           {withdrawMsg && <p className="text-sm text-gray-600 mt-2">{withdrawMsg}</p>}
-        </div>
+        </Card>
       )}
 
-      {/* Statement Table */}
-      <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
-        <div className="px-6 py-4 border-b border-gray-100">
-          <h2 className="font-semibold text-gray-900">Recent Transactions</h2>
+      {/* Statement List (Mobile + Desktop) */}
+      <Card className="overflow-hidden">
+        <div className="px-6 py-4 border-b border-border">
+          <h2 className="font-semibold text-text">Recent Transactions</h2>
         </div>
-        <div className="overflow-x-auto">
+        
+        {/* Desktop Table */}
+        <div className="hidden md:block overflow-x-auto">
           <table className="w-full text-left text-sm">
-            <thead className="bg-gray-50 border-b border-gray-200">
+            <thead className="bg-gray-50 border-b border-border">
               <tr>
-                <th className="p-4 font-semibold text-gray-600">Date</th>
-                <th className="p-4 font-semibold text-gray-600">Description</th>
-                <th className="p-4 font-semibold text-gray-600 text-right">Debit (KSh)</th>
-                <th className="p-4 font-semibold text-gray-600 text-right">Credit (KSh)</th>
+                <th className="p-4 font-semibold text-gray-500">Date</th>
+                <th className="p-4 font-semibold text-gray-500">Description</th>
+                <th className="p-4 font-semibold text-gray-500 text-right">Debit (KSh)</th>
+                <th className="p-4 font-semibold text-gray-500 text-right">Credit (KSh)</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-100">
+            <tbody className="divide-y divide-border">
               {data.entries.length === 0 ? (
                 <tr><td colSpan={4} className="p-8 text-center text-gray-400">No transactions yet.</td></tr>
               ) : (
@@ -138,7 +142,7 @@ export default function WalletStatement({ role }: { role: 'FARMER' | 'BUYER' }) 
                       <div className="flex items-center gap-2">
                         {e.entryType === 'CREDIT' ? <ArrowDownCircle className="w-4 h-4 text-green-500" /> : <ArrowUpCircle className="w-4 h-4 text-red-500" />}
                         <div>
-                          <p className="font-medium text-gray-900">{e.description}</p>
+                          <p className="font-medium text-text">{e.description}</p>
                           {e.reference && <p className="text-xs text-gray-400 font-mono">{e.reference}</p>}
                         </div>
                       </div>
@@ -155,7 +159,32 @@ export default function WalletStatement({ role }: { role: 'FARMER' | 'BUYER' }) 
             </tbody>
           </table>
         </div>
-      </div>
+
+        {/* Mobile Cards */}
+        <div className="md:hidden divide-y divide-border">
+          {data.entries.length === 0 ? (
+            <div className="p-8 text-center text-gray-400">No transactions yet.</div>
+          ) : (
+            data.entries.map(e => (
+              <div key={e.id} className="p-4">
+                <div className="flex justify-between items-start mb-2">
+                  <div className="flex items-center gap-2">
+                    {e.entryType === 'CREDIT' ? <ArrowDownCircle className="w-5 h-5 text-green-500" /> : <ArrowUpCircle className="w-5 h-5 text-red-500" />}
+                    <p className="font-medium text-text">{e.description}</p>
+                  </div>
+                  <p className={`font-bold ${e.entryType === 'CREDIT' ? 'text-green-600' : 'text-red-600'}`}>
+                    {e.entryType === 'CREDIT' ? '+' : '-'} KSh {e.amount.toLocaleString()}
+                  </p>
+                </div>
+                <p className="text-xs text-gray-500 ml-7">
+                  {new Date(e.createdAt).toLocaleDateString('en-KE', { day: 'numeric', month: 'short', year: 'numeric' })}
+                  {e.reference && ` · Ref: ${e.reference}`}
+                </p>
+              </div>
+            ))
+          )}
+        </div>
+      </Card>
     </div>
   );
 }

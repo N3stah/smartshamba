@@ -10,7 +10,7 @@ export default function AgIntelDashboard() {
     fetch('/api/admin/executive-bi').then(r => r.ok ? r.json() : null).then(d => setData(d?.agintel)).finally(() => setLoading(false));
   }, []);
 
-  if (loading) return <div className="flex justify-center p-8"><Loader2 className="w-6 h-6 animate-spin text-[#00703C]" /></div>;
+  if (loading) return <div className="flex justify-center p-8"><Loader2 className="w-6 h-6 animate-spin text-admin-primary" /></div>;
 
   return (
     <div className="space-y-6">
@@ -23,7 +23,7 @@ export default function AgIntelDashboard() {
       
       <div className="grid lg:grid-cols-2 gap-6">
         <div className="bg-white rounded-xl border shadow-sm p-6">
-          <h3 className="font-bold text-gray-900 mb-4 flex items-center gap-2"><TrendingUp className="w-5 h-5 text-[#00703C]" /> Top Supply (Active Bags)</h3>
+          <h3 className="font-bold text-gray-900 mb-4 flex items-center gap-2"><TrendingUp className="w-5 h-5 text-admin-primary" /> Top Supply (Active Bags)</h3>
           <div className="space-y-2">
             {data?.supplyByCrop?.map((s: any) => (
               <div key={s.crop} className="flex justify-between p-2 bg-gray-50 rounded">

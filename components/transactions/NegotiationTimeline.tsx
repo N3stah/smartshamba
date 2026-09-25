@@ -56,7 +56,7 @@ export default function NegotiationTimeline({ transactionId, userRole }: { trans
         {offers.map((offer) => (
           <div key={offer.id} className={`relative flex ${offer.actor === userRole ? 'justify-end' : 'justify-start'}`}>
             <div className={`absolute w-3 h-3 rounded-full -left-1.75 top-2 ${offer.status === 'ACCEPTED' ? 'bg-green-500' : offer.status === 'REJECTED' ? 'bg-red-500' : 'bg-blue-500'}`}></div>
-            <div className={`max-w-xs p-3 rounded-lg shadow-sm border ${offer.actor === userRole ? 'bg-[#00703C] text-white' : 'bg-gray-50 text-gray-900'}`}>
+            <div className={`max-w-xs p-3 rounded-lg shadow-sm border ${offer.actor === userRole ? 'bg-farmer-primary text-white' : 'bg-gray-50 text-gray-900'}`}>
               <p className="text-xs font-bold uppercase mb-1 opacity-80">{offer.actor}</p>
               <p className="font-bold text-lg">KSh {offer.pricePerUnit.toLocaleString()} <span className="text-xs font-normal opacity-80">/ {offer.quantity} bags</span></p>
               {offer.terms && <p className="text-sm italic mt-1 opacity-90">&quot;{offer.terms}&quot;</p>}
@@ -76,12 +76,12 @@ export default function NegotiationTimeline({ transactionId, userRole }: { trans
           </div>
           <textarea value={terms} onChange={e => setTerms(e.target.value)} placeholder="Terms / Conditions (optional)" className="w-full border rounded-lg p-2 text-sm h-16" />
           <div className="flex gap-2">
-            <button type="submit" className="flex-1 bg-[#00703C] text-white px-4 py-2 rounded-lg text-sm font-medium">Submit Offer</button>
+            <button type="submit" className="flex-1 bg-farmer-primary text-white px-4 py-2 rounded-lg text-sm font-medium">Submit Offer</button>
             <button type="button" onClick={() => setShowForm(false)} className="bg-gray-200 text-gray-700 px-4 py-2 rounded-lg text-sm font-medium">Cancel</button>
           </div>
         </form>
       ) : (
-        <button onClick={() => setShowForm(true)} className="mt-6 w-full border-2 border-dashed border-gray-300 text-gray-500 py-3 rounded-lg text-sm font-medium hover:border-[#00703C] hover:text-[#00703C]">
+        <button onClick={() => setShowForm(true)} className="mt-6 w-full border-2 border-dashed border-gray-300 text-gray-500 py-3 rounded-lg text-sm font-medium hover:border-farmer-primary hover:text-farmer-primary">
           + Make a Counter-Offer
         </button>
       )}

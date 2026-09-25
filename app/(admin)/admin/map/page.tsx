@@ -30,7 +30,7 @@ interface MapMarker {
       .finally(() => setLoading(false));
   }, []);
 
-  if (loading) return <div className="flex justify-center p-8"><Loader2 className="w-6 h-6 animate-spin text-[#00703C]" /></div>;
+  if (loading) return <div className="flex justify-center p-8"><Loader2 className="w-6 h-6 animate-spin text-admin-primary" /></div>;
 
   const markers = [
     ...(mapData?.farmers || []).map((f: MapMarker) => ({ ...f, type: 'FARMER' as const, description: 'Farmer' })),
@@ -42,8 +42,8 @@ interface MapMarker {
     <div className="space-y-6">
       <div className="flex items-center justify-between border-b border-gray-200 pb-4">
         <div className="flex items-center gap-3">
-          <div className="p-2 bg-green-100 rounded-lg">
-            <MapPin className="w-6 h-6 text-[#00703C]" />
+          <div className="p-2 bg-admin-secondary rounded-lg">
+            <MapPin className="w-6 h-6 text-admin-primary" />
           </div>
           <div>
             <h1 className="text-2xl font-bold text-gray-900">National Operations Map</h1>
@@ -57,10 +57,10 @@ interface MapMarker {
 
       <MapView markers={markers} center={[0.1769, 37.9083]} zoom={6} />
       
-      <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
+      <div className="bg-surface rounded-lg border border-border shadow-sm p-6">
         <div className="grid grid-cols-3 gap-4 text-center">
           <div>
-            <p className="text-2xl font-bold text-green-700">{mapData?.farmers?.length || 0}</p>
+            <p className="text-2xl font-bold text-admin-primary">{mapData?.farmers?.length || 0}</p>
             <p className="text-xs text-gray-500">Farmers Mapped</p>
           </div>
           <div>

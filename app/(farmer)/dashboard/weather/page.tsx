@@ -34,17 +34,15 @@ export default async function FarmerWeatherPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between border-b border-gray-200 pb-4">
         <div className="flex items-center gap-3">
-          <div className="p-2 bg-blue-100 rounded-lg">
-            <CloudRain className="w-6 h-6 text-blue-600" />
+          <div className="p-2 bg-farmer-secondary rounded-lg">
+            <CloudRain className="w-6 h-6 text-farmer-primary" />
           </div>
           <div>
             <h1 className="text-2xl font-bold text-gray-900">Climate Intelligence</h1>
             <p className="text-sm text-gray-500">Precision agriculture weather & AI insights for {countyName}</p>
           </div>
         </div>
-        <Link href="/dashboard" className="text-sm text-gray-500 hover:text-gray-900 flex items-center gap-1 bg-white px-3 py-2 rounded-lg border border-gray-200 shadow-sm">
-          <ArrowLeft className="w-4 h-4" /> Back
-        </Link>
+        
       </div>
 
       <WeatherAlertBanner county={countyName} />

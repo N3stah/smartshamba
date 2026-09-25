@@ -61,15 +61,15 @@ export default function ExecutiveDashboardPage() {
       .finally(() => setLoading(false));
   }, []);
 
-  if (loading) return <div className="flex justify-center p-8"><Loader2 className="w-6 h-6 animate-spin text-[#00703C]" /></div>;
+  if (loading) return <div className="flex justify-center p-8"><Loader2 className="w-6 h-6 animate-spin text-admin-primary" /></div>;
   if (!data) return <div className="bg-white p-8 text-center text-gray-500 rounded-xl border">Failed to load executive data.</div>;
 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between border-b border-gray-200 pb-4">
         <div className="flex items-center gap-3">
-          <div className="p-2 bg-green-100 rounded-lg">
-            <ShieldCheck className="w-6 h-6 text-[#00703C]" />
+          <div className="p-2 bg-admin-secondary rounded-lg">
+            <ShieldCheck className="w-6 h-6 text-admin-primary" />
           </div>
           <div>
             <h1 className="text-2xl font-bold text-gray-900">Executive Command Center</h1>
@@ -111,7 +111,7 @@ export default function ExecutiveDashboardPage() {
       {/* Tabs */}
       <div className="flex border-b border-gray-200">
         {(['CEO', 'CFO', 'CTO', 'PM'] as const).map(t => (
-          <button key={t} onClick={() => setTab(t)} className={`px-4 py-2 text-sm font-medium ${tab === t ? 'text-[#00703C] border-b-2 border-[#00703C]' : 'text-gray-500'}`}>{t} View</button>
+          <button key={t} onClick={() => setTab(t)} className={`px-4 py-2 text-sm font-medium ${tab === t ? 'text-admin-primary border-b-2 border-[#00703C]' : 'text-gray-500'}`}>{t} View</button>
         ))}
       </div>
 
@@ -166,7 +166,7 @@ export default function ExecutiveDashboardPage() {
           </div>
           <div className="bg-white rounded-xl border border-green-300 p-5 shadow-sm">
             <div className="flex justify-between mb-2"><p className="text-xs text-gray-500 uppercase">Total Revenue</p><DollarSign className="w-5 h-5 text-green-600" /></div>
-            <p className="text-2xl font-bold text-green-700">KSh {(data.cfo.totalRevenue / 1000).toFixed(1)}K</p>
+            <p className="text-2xl font-bold text-admin-primary">KSh {(data.cfo.totalRevenue / 1000).toFixed(1)}K</p>
             <p className="text-xs text-gray-400 mt-1">{data.ceo.revenueGrowth}% growth (30d)</p>
           </div>
           <div className="bg-white rounded-xl border p-5 shadow-sm">

@@ -17,11 +17,11 @@ export default async function BuyerDemands() {
     <div>
       <h1 className="text-2xl font-bold text-gray-900 mb-6">Post Demand</h1>
       <div className="grid lg:grid-cols-2 gap-8">
-        <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
+        <div className="bg-surface rounded-lg border border-border shadow-sm p-6">
           <h2 className="text-lg font-bold mb-4">Create New Demand Request</h2>
           <DemandForm />
         </div>
-        <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
+        <div className="bg-surface rounded-lg border border-border shadow-sm p-6">
           <h2 className="text-lg font-bold mb-4">Active Demands</h2>
           {buyer.BuyerDemand.length === 0 ? (
             <p className="text-gray-400 text-sm">No active demands.</p>
@@ -33,7 +33,7 @@ export default async function BuyerDemands() {
                     <p className="font-medium text-gray-900">{d.product}</p>
                     <p className="text-xs text-gray-500">{d.quantityBags} bags needed in {d.location}</p>
                   </div>
-                  <span className="text-xs font-bold text-blue-700 bg-blue-100 px-2 py-1 rounded-full h-fit">{d.status}</span>
+                  <span className="text-xs font-bold text-blue-700 bg-buyer-secondary px-2 py-1 rounded-full h-fit">{d.status}</span>
                 </div>
               ))}
             </div>

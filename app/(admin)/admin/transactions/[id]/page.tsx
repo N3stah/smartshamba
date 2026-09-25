@@ -23,7 +23,7 @@ export default async function AdminTransactionDetail({ params }: { params: Promi
     return (
       <div className="text-center py-12">
         <h1 className="text-2xl font-bold text-gray-900 mb-4">Transaction Not Found</h1>
-        <Link href="/admin/transactions" className="text-[#00703C] hover:underline">← Back to Transactions</Link>
+        <Link href="/admin/transactions" className="text-admin-primary hover:underline">← Back to Transactions</Link>
       </div>
     );
   }
@@ -37,7 +37,7 @@ export default async function AdminTransactionDetail({ params }: { params: Promi
         </Link>
       </div>
       
-      <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
+      <div className="bg-surface rounded-lg border border-border shadow-sm p-6">
         <div className="flex justify-between items-start mb-6">
           <div>
             <p className="font-mono text-xs text-gray-500">{transaction.reference}</p>
@@ -51,7 +51,7 @@ export default async function AdminTransactionDetail({ params }: { params: Promi
         <div className="grid grid-cols-2 gap-4 text-sm border-t border-gray-100 pt-4 mb-6">
           <div><p className="text-gray-500">Bags</p><p className="font-medium text-gray-900">{transaction.quantityBags}</p></div>
           <div><p className="text-gray-500">Price per Bag</p><p className="font-medium text-gray-900">KSh {transaction.pricePerBag.toLocaleString()}</p></div>
-          <div><p className="text-gray-500">Total Value</p><p className="font-bold text-[#00703C]">KSh {transaction.totalValue.toLocaleString()}</p></div>
+          <div><p className="text-gray-500">Total Value</p><p className="font-bold text-admin-primary">KSh {transaction.totalValue.toLocaleString()}</p></div>
         </div>
 
         {transaction.deliveryMethod && (

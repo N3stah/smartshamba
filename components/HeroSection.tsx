@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { motion, useScroll, useTransform, useReducedMotion } from "framer-motion";
 import { useRef } from "react";
 import { ArrowRight, ShieldCheck, Phone, Truck } from "lucide-react";
@@ -9,108 +10,70 @@ export default function HeroSection() {
   const heroRef = useRef<HTMLElement | null>(null);
   const prefersReducedMotion = useReducedMotion();
 
-  // Track scroll progress specifically relative to the Hero section
   const { scrollYProgress } = useScroll({
     target: heroRef,
     offset: ["start start", "end start"],
   });
 
-  // Parallax effect for the highlighted word
-  const highlightedWordY = useTransform(
-    scrollYProgress,
-    [0, 1],
-    [0, prefersReducedMotion ? 0 : -60] // Moves upward dynamically relative to the rest of the text
-  );
-
-  const highlightedWordOpacity = useTransform(
-    scrollYProgress,
-    [0, 0.8, 1],
-    [1, prefersReducedMotion ? 1 : 0.8, prefersReducedMotion ? 1 : 0.4]
-  );
-
-  // Subtle fade and upward movement for the entire content block
-  const contentY = useTransform(
-    scrollYProgress,
-    [0, 1],
-    [0, prefersReducedMotion ? 0 : -30]
-  );
-
-  const contentOpacity = useTransform(
-    scrollYProgress,
-    [0, 0.9],
-    [1, prefersReducedMotion ? 1 : 0]
-  );
+  const contentY = useTransform(scrollYProgress, [0, 1], [0, prefersReducedMotion ? 0 : -30]);
+  const contentOpacity = useTransform(scrollYProgress, [0, 0.9], [1, prefersReducedMotion ? 1 : 0]);
 
   return (
     <section
       ref={heroRef}
-      className="relative w-full h-[88vh] min-h-[600px] flex items-center overflow-hidden bg-gray-900"
+      className="relative min-h-[680px] h-[88vh] w-full overflow-hidden bg-gray-950"
     >
-      {/* Background Image */}
-      <div className="absolute inset-0 z-0">
-        <img 
-          src="/images/Farmer-holdingphone-inthefarm.png" 
-          alt="Farmer using a mobile phone in a maize field in Kenya" 
-          className="w-full h-full object-cover object-center md:object-right" 
+      <div className="absolute inset-0">
+        <Image
+          src="/images/Farmer-holdingphone-inthefarm.png"
+          alt="Farmer using a mobile phone in a maize field"
+          className="h-full w-full object-cover object-[68%_center] sm:object-[70%_center] lg:object-[72%_center]"
+          priority
+          fill
+          sizes="100vw"
         />
-        {/* Desktop: Left-to-right gradient scrim for text safety */}
-        <div className="absolute inset-0 bg-gradient-to-r from-black/85 via-black/40 to-transparent hidden md:block"></div>
-        {/* Mobile: Bottom-to-top gradient for text safety */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent md:hidden"></div>
+        <div className="absolute inset-0 bg-gradient-to-r from-black/90 via-black/68 to-black/15" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/65 via-transparent to-transparent md:hidden" />
       </div>
 
-      {/* Content Overlay */}
-      <motion.div 
+      <motion.div
         style={{ y: contentY, opacity: contentOpacity }}
-        className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 w-full"
+        className="relative z-10 mx-auto flex h-full max-w-7xl items-center px-4 sm:px-6 lg:px-8"
       >
-        <div className="max-w-2xl">
-          <p className="text-lime-400 font-semibold text-xs sm:text-sm uppercase tracking-[0.2em] mb-5 drop-shadow-md">
-            Rift Valley & Western Kenya &middot; 2026
+        <div className="max-w-3xl pt-14 sm:pt-16 lg:pt-0">
+          <p className="mb-5 text-xs font-bold uppercase tracking-[0.2em] text-public-secondary sm:text-sm">
+            Rift Valley & Western Kenya · 2026
           </p>
-          
-          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-white leading-[1.1] tracking-tight mb-6 drop-shadow-lg">
-            Direct,{" "}
-            <motion.span 
-              style={{ y: highlightedWordY, opacity: highlightedWordOpacity }}
-              className="inline-block text-lime-400 drop-shadow-[0_4px_12px_rgba(0,0,0,0.6)]"
-            >
-              Transparent
-            </motion.span>{" "}
-            Maize Trading for Kenya&rsquo;s Farmers & Buyers
+          <h1 className="text-4xl font-extrabold leading-[1.04] tracking-tight text-white sm:text-5xl lg:text-6xl xl:text-7xl">
+            Direct, Transparent Maize Trading for Kenya&rsquo;s Farmers & Buyers
           </h1>
-          
-          <p className="text-base sm:text-lg text-gray-100 leading-relaxed max-w-xl mb-8 drop-shadow-md">
+          <p className="mt-7 max-w-2xl text-base font-medium leading-7 text-white drop-shadow-[0_2px_8px_rgba(0,0,0,0.55)] sm:text-lg lg:text-xl lg:leading-8">
             SmartShamba connects farmers and buyers across Rift Valley & Western Kenya through coordinated transactions, USSD and web access, transport coordination, and settlement workflows.
           </p>
-          
-          <div className="flex flex-col sm:flex-row gap-4">
-            <Link 
-              href="/ussd" 
-              className="inline-flex items-center justify-center gap-2 bg-[#00703C] text-white px-7 py-3.5 rounded-lg text-sm font-bold hover:bg-[#00582f] transition-colors shadow-lg"
+          <div className="mt-9 flex flex-col gap-3 sm:flex-row">
+            <Link
+              href="/ussd"
+              className="inline-flex items-center justify-center gap-2 rounded-md bg-public-primary px-7 py-3.5 text-sm font-bold text-white shadow-lg transition-all duration-200 hover:bg-public-primary/90 hover:-translate-y-0.5"
             >
-              Launch USSD Demo <ArrowRight className="w-4 h-4" />
+              Launch USSD Demo
+              <ArrowRight className="h-4 w-4" />
             </Link>
-            <Link 
-              href="/buyers" 
-              className="inline-flex items-center justify-center gap-2 bg-white/10 backdrop-blur-sm border-2 border-white/40 text-white px-7 py-3.5 rounded-lg text-sm font-bold hover:bg-white/20 transition-colors"
+            <Link
+              href="/buyers"
+              className="inline-flex items-center justify-center gap-2 rounded-md border border-white/60 bg-white/10 px-7 py-3.5 text-sm font-bold text-white backdrop-blur-sm transition-all duration-200 hover:bg-white/20 hover:-translate-y-0.5"
             >
               View Verified Buyers
             </Link>
           </div>
-          
-          <div className="flex flex-wrap items-center gap-x-6 gap-y-3 mt-10 pt-8 border-t border-white/20">
-            <div className="flex items-center gap-2 text-sm text-gray-200">
-              <ShieldCheck className="w-4 h-4 text-lime-400" />
-              <span className="font-medium">Verified Buyers</span>
+          <div className="mt-9 flex flex-wrap gap-x-7 gap-y-3 border-t border-white/20 pt-6">
+            <div className="flex items-center gap-2 text-sm font-medium text-white">
+              <ShieldCheck className="h-4 w-4 text-public-secondary" /> Verified Buyers
             </div>
-            <div className="flex items-center gap-2 text-sm text-gray-200">
-              <Phone className="w-4 h-4 text-lime-400" />
-              <span className="font-medium">USSD + M-PESA</span>
+            <div className="flex items-center gap-2 text-sm font-medium text-white">
+              <Phone className="h-4 w-4 text-public-secondary" /> USSD + M-PESA
             </div>
-            <div className="flex items-center gap-2 text-sm text-gray-200">
-              <Truck className="w-4 h-4 text-lime-400" />
-              <span className="font-medium">Transport Coordination</span>
+            <div className="flex items-center gap-2 text-sm font-medium text-white">
+              <Truck className="h-4 w-4 text-public-secondary" /> Transport Coordination
             </div>
           </div>
         </div>

@@ -19,7 +19,7 @@ export default async function AdminDemandsPage() {
   return (
     <div>
       <h1 className="text-2xl font-bold text-gray-900 mb-6">Buyer Demands (Moderation)</h1>
-      <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+      <div className="bg-surface rounded-lg border border-border shadow-sm overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>

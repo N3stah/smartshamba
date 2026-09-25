@@ -52,13 +52,13 @@ export default function ContractTemplatesPage() {
     }
   };
 
-  if (loading) return <div className="flex justify-center p-8"><Loader2 className="w-6 h-6 animate-spin text-[#00703C]" /></div>;
+  if (loading) return <div className="flex justify-center p-8"><Loader2 className="w-6 h-6 animate-spin text-admin-primary" /></div>;
 
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <h1 className="text-2xl font-bold text-gray-900">Contract Templates</h1>
-        <button onClick={() => setShowForm(!showForm)} className="flex items-center gap-2 bg-[#00703C] text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-[#005a30]">
+        <button onClick={() => setShowForm(!showForm)} className="flex items-center gap-2 bg-admin-primary text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-[#005a30]">
           <Plus className="w-4 h-4" /> New Template
         </button>
       </div>
@@ -76,7 +76,7 @@ export default function ContractTemplatesPage() {
                 <textarea value={c.content} onChange={e => updateClause(i, 'content', e.target.value)} placeholder="Clause Content (Use {{variables}})" className="border rounded-lg p-2 text-sm h-20" required />
               </div>
             ))}
-            <button type="button" onClick={addClause} className="text-sm text-[#00703C] font-medium flex items-center gap-1"><Plus className="w-3 h-3" /> Add Clause</button>
+            <button type="button" onClick={addClause} className="text-sm text-admin-primary font-medium flex items-center gap-1"><Plus className="w-3 h-3" /> Add Clause</button>
           </div>
           <button type="submit" className="bg-gray-900 text-white px-4 py-2 rounded-lg text-sm font-medium">Save Template</button>
         </form>
@@ -87,7 +87,7 @@ export default function ContractTemplatesPage() {
           <div key={t.id} className="bg-white rounded-xl border p-5 shadow-sm">
             <div className="flex justify-between items-start mb-2">
               <div className="flex items-center gap-2">
-                <FileText className="w-5 h-5 text-[#00703C]" />
+                <FileText className="w-5 h-5 text-admin-primary" />
                 <h3 className="font-bold text-gray-900">{t.name}</h3>
               </div>
               <span className="text-xs bg-gray-100 px-2 py-1 rounded-full">{t.category || 'General'}</span>

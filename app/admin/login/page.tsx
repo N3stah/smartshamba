@@ -44,11 +44,11 @@ function LoginForm() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-900 flex items-center justify-center p-4 font-sans">
+    <div className="min-h-screen bg-background flex items-center justify-center p-4 font-sans">
       <div className="w-full max-w-md">
         {/* Header */}
         <div className="text-center mb-8">
-          <div className="w-16 h-16 bg-[#00703C] rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
+          <div className="w-16 h-16 bg-admin-primary rounded-lg flex items-center justify-center mx-auto mb-4 shadow-lg">
             <ShieldCheck className="w-8 h-8 text-white" />
           </div>
           <h1 className="text-2xl font-bold text-white">SmartShamba</h1>
@@ -70,7 +70,7 @@ function LoginForm() {
                 placeholder="name@smartshamba.com"
                 required
                 autoFocus
-                className="w-full border border-gray-300 rounded-lg px-4 py-3 text-gray-900 placeholder-gray-400 focus:outline-none focus:border-[#00703C] focus:ring-2 focus:ring-green-100 transition-colors text-sm"
+                className="w-full border border-gray-300 rounded-lg px-4 py-3 text-gray-900 placeholder-gray-400 focus:outline-none focus:border-admin-primary focus:ring-2 focus:ring-admin-secondary transition-colors text-sm"
               />
             </div>
             <div>
@@ -81,7 +81,7 @@ function LoginForm() {
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••••••"
                 required
-                className="w-full border border-gray-300 rounded-lg px-4 py-3 text-gray-900 placeholder-gray-400 focus:outline-none focus:border-[#00703C] focus:ring-2 focus:ring-green-100 transition-colors text-sm"
+                className="w-full border border-gray-300 rounded-lg px-4 py-3 text-gray-900 placeholder-gray-400 focus:outline-none focus:border-admin-primary focus:ring-2 focus:ring-admin-secondary transition-colors text-sm"
               />
             </div>
             <div>
@@ -92,7 +92,7 @@ function LoginForm() {
                 onChange={(e) => setMfaCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
                 placeholder="6-digit code"
                 maxLength={6}
-                className="w-full border border-gray-300 rounded-lg px-4 py-3 text-gray-900 placeholder-gray-400 focus:outline-none focus:border-[#00703C] focus:ring-2 focus:ring-green-100 transition-colors text-sm font-mono tracking-widest"
+                className="w-full border border-gray-300 rounded-lg px-4 py-3 text-gray-900 placeholder-gray-400 focus:outline-none focus:border-admin-primary focus:ring-2 focus:ring-admin-secondary transition-colors text-sm font-mono tracking-widest"
               />
               <p className="text-xs text-gray-400 mt-1">Leave blank if MFA is not enabled for your account.</p>
             </div>
@@ -106,7 +106,7 @@ function LoginForm() {
             <button
               type="submit"
               disabled={loading || !email || !password}
-              className="w-full bg-[#00703C] hover:bg-[#00582f] disabled:bg-gray-200 disabled:text-gray-400 text-white font-semibold py-3 rounded-lg transition-colors text-sm flex items-center justify-center gap-2"
+              className="w-full bg-admin-primary hover:bg-admin-primary/90 disabled:bg-gray-200 disabled:text-gray-400 text-white font-semibold py-3 rounded-lg transition-colors text-sm flex items-center justify-center gap-2"
             >
               {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <ShieldCheck className="w-4 h-4" />}
               {loading ? 'Authenticating...' : 'Login to Executive Dashboard'}

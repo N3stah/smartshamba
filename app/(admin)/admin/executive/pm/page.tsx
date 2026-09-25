@@ -37,7 +37,7 @@ export default function PMDashboard() {
       .finally(() => setLoading(false));
   }, []);
 
-  if (loading) return <div className="flex justify-center p-8"><Loader2 className="w-6 h-6 animate-spin text-[#00703C]" /></div>;
+  if (loading) return <div className="flex justify-center p-8"><Loader2 className="w-6 h-6 animate-spin text-admin-primary" /></div>;
   if (!data) return <div className="bg-white p-8 text-center text-gray-500 rounded-xl border">Failed to load product data.</div>;
 
   const kpis = [
@@ -116,7 +116,7 @@ export default function PMDashboard() {
             </div>
             <div className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
               <span className="text-sm font-medium text-gray-700">Active Supply (Listings)</span>
-              <span className="font-bold text-green-700">{data.activeListings}</span>
+              <span className="font-bold text-admin-primary">{data.activeListings}</span>
             </div>
             <div className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
               <span className="text-sm font-medium text-gray-700">Active Demand (Buyers)</span>

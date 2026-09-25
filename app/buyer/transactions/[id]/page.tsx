@@ -39,7 +39,7 @@ export default async function BuyerTransactionDetail({ params }: { params: Promi
     <div className="space-y-6">
       <h1 className="text-2xl font-bold text-gray-900">Transaction Details</h1>
       
-      <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
+      <div className="bg-surface rounded-lg border border-border shadow-sm p-6">
         <div className="flex justify-between items-start mb-6">
           <div>
             <p className="font-mono text-xs text-gray-500">{transaction.reference}</p>
@@ -51,7 +51,7 @@ export default async function BuyerTransactionDetail({ params }: { params: Promi
         <div className="grid grid-cols-2 gap-4 text-sm border-t border-gray-100 pt-4 mb-6">
           <div><p className="text-gray-500">Bags</p><p className="font-medium text-gray-900">{transaction.quantityBags}</p></div>
           <div><p className="text-gray-500">Price per Bag</p><p className="font-medium text-gray-900">KSh {transaction.pricePerBag.toLocaleString()}</p></div>
-          <div><p className="text-gray-500">Total Value</p><p className="font-bold text-[#00703C]">KSh {transaction.totalValue.toLocaleString()}</p></div>
+          <div><p className="text-gray-500">Total Value</p><p className="font-bold text-buyer-primary">KSh {transaction.totalValue.toLocaleString()}</p></div>
         </div>
 
         {transaction.deliveryMethod && (

@@ -25,7 +25,7 @@ export default function ErrorUI({ error, reset, title }: { error: Error; reset: 
         <div className="flex flex-col sm:flex-row gap-3 justify-center">
           <button
             onClick={reset}
-            className="bg-[#00703C] text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-green-800 flex items-center justify-center gap-2"
+            className="bg-buyer-primary text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-buyer-primary/90 flex items-center justify-center gap-2"
           >
             <RotateCw className="w-4 h-4" /> Try Again
           </button>

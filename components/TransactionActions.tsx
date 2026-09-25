@@ -53,7 +53,7 @@ export default function TransactionActions({ transactionId, currentStatus, userR
     });
   };
 
-  const Button = ({ onClick, children, color = 'bg-[#00703C]', icon: Icon }: any) => (
+  const Button = ({ onClick, children, color = 'bg-admin-primary', icon: Icon }: any) => (
     <button
       onClick={onClick}
       disabled={loading}

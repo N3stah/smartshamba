@@ -23,13 +23,13 @@ export default function ErrorUI({ error, reset, title = 'Something went wrong' }
         <p className="text-sm text-gray-500 mb-6">
           An unexpected error occurred. Our team has been notified.
           {process.env.NODE_ENV === 'development' && (
-            <span className="block mt-2 font-mono text-xs text-red-500">{error.message}</span>
+            <span className="block mt-2 font-mono text-xs text-red-500">{typeof error.message === 'string' ? error.message : JSON.stringify(error.message)}</span>
           )}
         </p>
         <div className="flex flex-col sm:flex-row gap-3 justify-center">
           <button
             onClick={reset}
-            className="bg-[#00703C] text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-green-800 flex items-center justify-center gap-2"
+            className="bg-admin-primary text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-green-800 flex items-center justify-center gap-2"
           >
             <RotateCw className="w-4 h-4" /> Try Again
           </button>

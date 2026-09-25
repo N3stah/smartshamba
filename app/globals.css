@@ -36,16 +36,7 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Ensure headings are always dark and bold */
-h1, h2, h3, h4, h5, h6 {
-  color: #111827; /* gray-900 */
-  font-weight: 700;
-}
-
-/* Darken paragraph and list text */
-p, li, span, label {
-  color: #374151; /* gray-700 */
-}
+/* Headings and paragraphs use Tailwind utility classes for color and weight to support light/dark sections */
 
 /* Ensure text inside white cards is readable */
 .bg-white p, .bg-white li, .bg-white span, .bg-white label {
@@ -88,4 +79,67 @@ p, li, span, label {
 }
 .animate-marquee {
   animation: marquee 45s linear infinite;
+}
+
+
+/* SmartShamba Design System Foundation */
+:root {
+  --color-background: #FBFBFA;
+  --color-surface: #FFFFFF;
+  --color-text: #111C24;
+  --color-border: #E5E7EB;
+  --color-public-primary: #1D4A38;
+  --color-farmer-primary: #D97706;
+  --color-buyer-primary: #0F4C81;
+  --color-transport-primary: #4B5563;
+  --color-admin-primary: #4F46E5;
+}
+
+body {
+  background-color: var(--color-background);
+  color: var(--color-text);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Accessible focus states */
+*:focus-visible {
+  outline: 2px solid var(--color-public-primary);
+  outline-offset: 2px;
+}
+
+
+/* Typography Foundation */
+body {
+  font-family: var(--font-jakarta), sans-serif;
+  background-color: var(--color-background);
+  color: var(--color-text);
+}
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-merriweather), serif;
+}
+
+
+/* ==========================================
+   GLOBAL PRESENTATION-SAFE CONTRAST RULES
+   ========================================== */
+
+/* Ensure base text is deep charcoal, not washed-out gray */
+body {
+  color: #1F2937; /* gray-800 */
+}
+
+/* Headings remain structural charcoal */
+h1, h2, h3, h4, h5, h6 {
+  color: #111827; /* gray-900 */
+}
+
+/* Darken muted text classes globally for better readability */
+.text-gray-400 { color: #4B5563 !important; } /* gray-600 */
+.text-gray-500 { color: #4B5563 !important; } /* gray-600 */
+.text-gray-600 { color: #374151 !important; } /* gray-700 */
+
+/* Ensure small text is readable */
+.text-xs, .text-sm {
+  color: #374151; /* gray-700 */
+  font-weight: 500;
 }

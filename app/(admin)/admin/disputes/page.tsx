@@ -29,7 +29,7 @@ interface Dispute {
 const STATUS_BADGES: Record<DisputeStatus, string> = {
   OPEN: 'bg-red-100 text-red-800',
   UNDER_REVIEW: 'bg-amber-100 text-amber-800',
-  RESOLVED: 'bg-green-100 text-green-800',
+  RESOLVED: 'bg-admin-secondary text-green-800',
   CLOSED: 'bg-gray-100 text-gray-800',
 };
 

@@ -17,7 +17,7 @@ export default function AdminFinancePage() {
       .finally(() => setLoading(false));
   }, []);
 
-  if (loading) return <div className="flex justify-center p-8"><Loader2 className="w-6 h-6 animate-spin text-[#00703C]" /></div>;
+  if (loading) return <div className="flex justify-center p-8"><Loader2 className="w-6 h-6 animate-spin text-admin-primary" /></div>;
   if (!data) return <div className="bg-white p-8 text-center text-gray-500 rounded-xl border">Failed to load financial data.</div>;
 
   const processWithdrawal = async (id: string, action: string) => {
@@ -37,8 +37,8 @@ export default function AdminFinancePage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between border-b border-gray-200 pb-4">
         <div className="flex items-center gap-3">
-          <div className="p-2 bg-green-100 rounded-lg">
-            <Wallet className="w-6 h-6 text-[#00703C]" />
+          <div className="p-2 bg-admin-secondary rounded-lg">
+            <Wallet className="w-6 h-6 text-admin-primary" />
           </div>
           <div>
             <h1 className="text-2xl font-bold text-gray-900">Finance & Reconciliation</h1>
@@ -55,9 +55,9 @@ export default function AdminFinancePage() {
         <div className="bg-white rounded-xl border border-green-300 p-5 shadow-sm">
           <div className="flex items-center justify-between mb-2">
             <p className="text-xs text-gray-500 uppercase tracking-wider">Platform Revenue (Fees)</p>
-            <TrendingUp className="w-5 h-5 text-[#00703C]" />
+            <TrendingUp className="w-5 h-5 text-admin-primary" />
           </div>
-          <p className="text-2xl font-bold text-green-700">KSh {data.kpis.platformRevenue.toLocaleString()}</p>
+          <p className="text-2xl font-bold text-admin-primary">KSh {data.kpis.platformRevenue.toLocaleString()}</p>
         </div>
         <div className="bg-white rounded-xl border border-red-200 p-5 shadow-sm">
           <div className="flex items-center justify-between mb-2">
@@ -112,7 +112,7 @@ export default function AdminFinancePage() {
       </div>
 
       {/* Audit Feed */}
-      <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+      <div className="bg-surface rounded-lg border border-border shadow-sm overflow-hidden">
         <div className="px-6 py-4 border-b border-gray-100">
           <h2 className="font-semibold text-gray-900">Recent Ledger Entries (Audit Trail)</h2>
         </div>
@@ -134,7 +134,7 @@ export default function AdminFinancePage() {
                   <td className="p-4 text-xs font-bold uppercase text-gray-700">{e.userType}</td>
                   <td className="p-4 text-sm text-gray-900">{e.description}</td>
                   <td className="p-4">
-                    <span className={`px-2 py-1 rounded-full text-xs font-bold ${e.entryType === 'CREDIT' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+                    <span className={`px-2 py-1 rounded-full text-xs font-bold ${e.entryType === 'CREDIT' ? 'bg-admin-secondary text-green-800' : 'bg-red-100 text-red-800'}`}>
                       {e.entryType}
                     </span>
                   </td>

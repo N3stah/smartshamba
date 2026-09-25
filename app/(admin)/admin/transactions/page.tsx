@@ -18,7 +18,7 @@ interface Transaction {
 const STATUS_STYLES: Record<string, string> = {
   PENDING:   'bg-yellow-100 text-yellow-800 border border-yellow-200',
   CONFIRMED: 'bg-blue-100 text-blue-800 border border-blue-200',
-  SETTLED:   'bg-green-100 text-green-800 border border-green-200',
+  SETTLED:   'bg-admin-secondary text-green-800 border border-admin-primary/20',
   DISPUTED:  'bg-red-100 text-red-800 border border-red-200',
   DELIVERED: 'bg-purple-100 text-purple-800 border border-purple-200',
 };
@@ -74,11 +74,11 @@ function SettleModal({
           <div className="grid grid-cols-2 gap-3 text-sm">
             <div>
               <p className="text-xs text-gray-400 uppercase tracking-wider">Reference</p>
-              <p className="font-mono text-gray-900 font-medium mt-0.5"><Link href={`/admin/transactions/${tx.id}`} className="text-[#00703C] hover:underline">{tx.reference}</Link></p>
+              <p className="font-mono text-gray-900 font-medium mt-0.5"><Link href={`/admin/transactions/${tx.id}`} className="text-admin-primary hover:underline">{tx.reference}</Link></p>
             </div>
             <div>
               <p className="text-xs text-gray-400 uppercase tracking-wider">Amount</p>
-              <p className="font-bold text-green-700 mt-0.5">KSh {tx.totalValue.toLocaleString()}</p>
+              <p className="font-bold text-admin-primary mt-0.5">KSh {tx.totalValue.toLocaleString()}</p>
             </div>
             <div>
               <p className="text-xs text-gray-400 uppercase tracking-wider">Farmer</p>
@@ -103,7 +103,7 @@ function SettleModal({
               placeholder="e.g. QK31YZX3HQ"
               required
               autoFocus
-              className="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm font-mono text-gray-900 placeholder-gray-400 focus:outline-none focus:border-green-600 focus:ring-2 focus:ring-green-100 uppercase"
+              className="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm font-mono text-gray-900 placeholder-gray-400 focus:outline-none focus:border-admin-primary focus:ring-2 focus:ring-admin-secondary uppercase"
             />
             <p className="text-xs text-gray-400 mt-1">
               Enter the M-PESA confirmation code from Safaricom. The farmer will be notified via SMS.
@@ -127,7 +127,7 @@ function SettleModal({
             <button
               type="submit"
               disabled={loading || !mpesaRef.trim()}
-              className="flex-1 bg-green-700 hover:bg-green-600 disabled:bg-gray-200 disabled:text-gray-400 text-white py-2.5 rounded-lg text-sm font-semibold transition-colors"
+              className="flex-1 bg-admin-primary hover:bg-admin-primary/90 disabled:bg-gray-200 disabled:text-gray-400 text-white py-2.5 rounded-lg text-sm font-semibold transition-colors"
             >
               {loading ? 'Settling...' : 'Confirm settlement'}
             </button>
@@ -215,13 +215,13 @@ export default function TransactionsPage() {
           <p className="text-xs text-gray-500 uppercase tracking-wider">Pending</p>
           <p className="text-2xl font-bold text-yellow-700 mt-1">{stats.pending}</p>
         </div>
-        <div className="bg-white rounded-xl border border-green-200 p-4 shadow-sm">
+        <div className="bg-white rounded-xl border border-admin-primary/20 p-4 shadow-sm">
           <p className="text-xs text-gray-500 uppercase tracking-wider">Settled</p>
-          <p className="text-2xl font-bold text-green-700 mt-1">{stats.settled}</p>
+          <p className="text-2xl font-bold text-admin-primary mt-1">{stats.settled}</p>
         </div>
         <div className="bg-white rounded-xl border border-green-300 p-4 shadow-sm">
           <p className="text-xs text-gray-500 uppercase tracking-wider">Total Volume</p>
-          <p className="text-xl font-bold text-green-700 mt-1">KSh {stats.volume.toLocaleString()}</p>
+          <p className="text-xl font-bold text-admin-primary mt-1">KSh {stats.volume.toLocaleString()}</p>
         </div>
       </div>
 
@@ -232,7 +232,7 @@ export default function TransactionsPage() {
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           placeholder="Search by reference, farmer, buyer, or phone..."
-          className="flex-1 border border-gray-300 rounded-lg px-4 py-2.5 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:border-green-600 focus:ring-2 focus:ring-green-100"
+          className="flex-1 border border-gray-300 rounded-lg px-4 py-2.5 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:border-admin-primary focus:ring-2 focus:ring-admin-secondary"
         />
         <div className="flex rounded-lg border border-gray-200 overflow-hidden bg-white shadow-sm shrink-0">
           {(['ALL', 'PENDING', 'CONFIRMED', 'SETTLED', 'DISPUTED'] as FilterStatus[]).map((f) => (
@@ -240,7 +240,7 @@ export default function TransactionsPage() {
               key={f}
               onClick={() => setFilter(f)}
               className={`px-3 py-2.5 text-xs font-medium transition-colors capitalize ${
-                filter === f ? 'bg-green-700 text-white' : 'text-gray-600 hover:bg-gray-50'
+                filter === f ? 'bg-admin-primary text-white' : 'text-gray-600 hover:bg-gray-50'
               }`}
             >
               {f === 'ALL' ? 'All' : f.charAt(0) + f.slice(1).toLowerCase()}
@@ -250,7 +250,7 @@ export default function TransactionsPage() {
       </div>
 
       {/* Table */}
-      <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+      <div className="bg-surface rounded-lg border border-border shadow-sm overflow-hidden">
         <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
           <h2 className="text-sm font-semibold text-gray-700">
             {filtered.length} transaction{filtered.length !== 1 ? 's' : ''}
@@ -279,7 +279,7 @@ export default function TransactionsPage() {
                 <tr key={tx.id} className="hover:bg-gray-50 transition-colors">
                   <td className="px-4 py-3">
                     <span className="font-mono text-xs text-gray-700 bg-gray-100 px-2 py-1 rounded">
-                      <Link href={`/admin/transactions/${tx.id}`} className="text-[#00703C] hover:underline">{tx.reference}</Link>
+                      <Link href={`/admin/transactions/${tx.id}`} className="text-admin-primary hover:underline">{tx.reference}</Link>
                     </span>
                   </td>
                   <td className="px-4 py-3">
@@ -308,7 +308,7 @@ export default function TransactionsPage() {
                     {canSettle(tx.status) && (
                       <button
                         onClick={() => setSettlingTx(tx)}
-                        className="text-xs font-medium px-3 py-1.5 rounded-lg bg-green-50 text-green-700 hover:bg-green-100 border border-green-200 transition-colors whitespace-nowrap"
+                        className="text-xs font-medium px-3 py-1.5 rounded-lg bg-green-50 text-admin-primary hover:bg-admin-secondary border border-admin-primary/20 transition-colors whitespace-nowrap"
                       >
                         Settle
                       </button>

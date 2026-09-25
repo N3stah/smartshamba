@@ -1,6 +1,5 @@
 export const dynamic = 'force-dynamic';
 
-
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { prisma } from '@/lib/prisma';
@@ -8,7 +7,11 @@ import Link from 'next/link';
 import RateBuyerButton from './RateBuyerButton';
 import SyncPoller from './SyncPoller';
 import EmptyState from '@/components/ui/EmptyState';
+import { Card } from '@/components/ui/Card';
+import { Button } from '@/components/ui/Button';
+import StatusBadge from '@/components/ui/StatusBadge';
 import { getDictionary } from '@/lib/i18n/server';
+import { Tag, ArrowRight, Wallet, Users, TrendingUp } from 'lucide-react';
 
 async function getFarmerData(phone: string) {
   const farmer = await prisma.farmer.findUnique({
@@ -40,14 +43,6 @@ async function getFarmerData(phone: string) {
   return { farmer, transactions, stats, settled };
 }
 
-const STATUS_STYLES: Record<string, string> = {
-  PENDING:   'bg-yellow-100 text-yellow-800',
-  CONFIRMED: 'bg-blue-100 text-blue-800',
-  SETTLED:   'bg-green-100 text-green-800',
-  DISPUTED:  'bg-red-100 text-red-800',
-  DELIVERED: 'bg-purple-100 text-purple-800',
-};
-
 export default async function FarmerDashboard() {
   const cookieStore = await cookies();
   const phone = cookieStore.get('smartshamba_farmer')?.value;
@@ -60,11 +55,11 @@ export default async function FarmerDashboard() {
   const t = await getDictionary();
 
   return (
-    <div>
+    <div className="space-y-8">
       <SyncPoller />
       
-      <div className="mb-8">
-        <h1 className="text-2xl font-bold text-gray-900">
+      <div>
+        <h1 className="text-2xl font-bold text-text">
           {t.common.welcome}, {farmer.name ?? 'Farmer'} 👋
         </h1>
         <p className="text-gray-500 text-sm mt-1">
@@ -72,102 +67,108 @@ export default async function FarmerDashboard() {
         </p>
       </div>
 
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-        <div className="bg-white rounded-xl border border-gray-200 p-5 shadow-sm">
+      {/* Action-First Section */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <Card className="p-6 flex flex-col justify-between">
+          <div>
+            <h2 className="text-lg font-semibold text-text mb-2">Ready to sell?</h2>
+            <p className="text-sm text-gray-500 mb-4">List your available maize harvest for buyers to see.</p>
+          </div>
+          <Link href="/dashboard/listings" className="inline-block">
+            <Button size="lg" className="w-full md:w-auto">
+              <Tag className="w-4 h-4 mr-2" /> Post Produce
+            </Button>
+          </Link>
+        </Card>
+        <Card className="p-6 flex flex-col justify-between">
+          <div>
+            <h2 className="text-lg font-semibold text-text mb-2">Active Buyer Demands</h2>
+            <p className="text-sm text-gray-500 mb-4">See what buyers are actively purchasing right now.</p>
+          </div>
+          <Link href="/dashboard/demands" className="inline-block">
+            <Button variant="outline" size="lg" className="w-full md:w-auto">
+              View Demands <ArrowRight className="w-4 h-4 ml-2" />
+            </Button>
+          </Link>
+        </Card>
+      </div>
+
+      {/* Stats Overview */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <Card className="p-5">
           <p className="text-xs text-gray-500 uppercase tracking-wider">{t.dashboard.totalTransactions}</p>
-          <p className="text-3xl font-bold text-gray-900 mt-1">{stats._count.id}</p>
-        </div>
-        <div className="bg-white rounded-xl border border-green-200 p-5 shadow-sm">
+          <p className="text-2xl font-bold text-text mt-1">{stats._count.id}</p>
+        </Card>
+        <Card className="p-5 border-farmer-primary/20">
           <p className="text-xs text-gray-500 uppercase tracking-wider">Settled</p>
-          <p className="text-3xl font-bold text-green-700 mt-1">{settled}</p>
-        </div>
-        <div className="bg-white rounded-xl border border-gray-200 p-5 shadow-sm">
+          <p className="text-2xl font-bold text-farmer-primary mt-1">{settled}</p>
+        </Card>
+        <Card className="p-5">
           <p className="text-xs text-gray-500 uppercase tracking-wider">{t.dashboard.totalBagsSold}</p>
-          <p className="text-3xl font-bold text-gray-900 mt-1">{stats._sum.quantityBags ?? 0}</p>
-        </div>
-        <div className="bg-white rounded-xl border border-green-300 p-5 shadow-sm">
+          <p className="text-2xl font-bold text-text mt-1">{stats._sum.quantityBags ?? 0}</p>
+        </Card>
+        <Card className="p-5">
           <p className="text-xs text-gray-500 uppercase tracking-wider">{t.dashboard.totalValue}</p>
-          <p className="text-xl font-bold text-green-700 mt-1">
+          <p className="text-xl font-bold text-text mt-1">
             KSh {(stats._sum.totalValue ?? 0).toLocaleString()}
           </p>
+        </Card>
+      </div>
+
+      {/* V2 Quick Access List */}
+      <Card className="p-6">
+        <h2 className="text-lg font-semibold text-text mb-4">Intelligence & Tools</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <Link href="/dashboard/ai-market" className="flex items-center gap-3 p-3 rounded-md hover:bg-gray-50 transition-colors">
+            <div className="w-10 h-10 bg-farmer-secondary rounded-md flex items-center justify-center text-farmer-primary">
+              <TrendingUp className="w-5 h-5" />
+            </div>
+            <div>
+              <h3 className="font-semibold text-text text-sm">AI Market Intel</h3>
+              <p className="text-xs text-gray-500">Price predictions & recommendations</p>
+            </div>
+          </Link>
+          <Link href="/dashboard/wallet" className="flex items-center gap-3 p-3 rounded-md hover:bg-gray-50 transition-colors">
+            <div className="w-10 h-10 bg-farmer-secondary rounded-md flex items-center justify-center text-farmer-primary">
+              <Wallet className="w-5 h-5" />
+            </div>
+            <div>
+              <h3 className="font-semibold text-text text-sm">My Wallet</h3>
+              <p className="text-xs text-gray-500">Balance, ledger & withdrawals</p>
+            </div>
+          </Link>
+          <Link href="/dashboard/groups" className="flex items-center gap-3 p-3 rounded-md hover:bg-gray-50 transition-colors">
+            <div className="w-10 h-10 bg-farmer-secondary rounded-md flex items-center justify-center text-farmer-primary">
+              <Users className="w-5 h-5" />
+            </div>
+            <div>
+              <h3 className="font-semibold text-text text-sm">Farmer Groups</h3>
+              <p className="text-xs text-gray-500">Join groups, combine harvests</p>
+            </div>
+          </Link>
         </div>
+      </Card>
+
+      <div className="bg-farmer-primary text-white rounded-lg p-4 text-center">
+        <p className="text-sm font-medium">📱 Dial *384*53374# to sell maize via your phone</p>
       </div>
 
-
-      {/* V2 Feature Quick Access */}
-      <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-8">
-        <Link href="/dashboard/ai-market" className="bg-white rounded-xl border border-gray-200 p-5 shadow-sm hover:shadow-md transition-all hover:border-green-300 group">
-          <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center mb-3 group-hover:bg-green-200 transition-colors">
-            <span className="text-xl">🤖</span>
-          </div>
-          <h3 className="font-semibold text-gray-900 text-sm">AI Market Intel</h3>
-          <p className="text-xs text-gray-500 mt-1">Price predictions & recommendations</p>
-        </Link>
-        <Link href="/dashboard/weather" className="bg-white rounded-xl border border-gray-200 p-5 shadow-sm hover:shadow-md transition-all hover:border-blue-300 group">
-          <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center mb-3 group-hover:bg-blue-200 transition-colors">
-            <span className="text-xl">🌦️</span>
-          </div>
-          <h3 className="font-semibold text-gray-900 text-sm">Weather & Alerts</h3>
-          <p className="text-xs text-gray-500 mt-1">Live county weather & farm advisories</p>
-        </Link>
-        <Link href="/dashboard/demands" className="bg-white rounded-xl border border-gray-200 p-5 shadow-sm hover:shadow-md transition-all hover:border-purple-300 group">
-          <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center mb-3 group-hover:bg-purple-200 transition-colors">
-            <span className="text-xl">📋</span>
-          </div>
-          <h3 className="font-semibold text-gray-900 text-sm">Buyer Demands</h3>
-          <p className="text-xs text-gray-500 mt-1">See what buyers are actively purchasing</p>
-        </Link>
-        <Link href="/dashboard/wallet" className="bg-white rounded-xl border border-gray-200 p-5 shadow-sm hover:shadow-md transition-all hover:border-yellow-300 group">
-          <div className="w-10 h-10 bg-yellow-100 rounded-lg flex items-center justify-center mb-3 group-hover:bg-yellow-200 transition-colors">
-            <span className="text-xl">💰</span>
-          </div>
-          <h3 className="font-semibold text-gray-900 text-sm">My Wallet</h3>
-          <p className="text-xs text-gray-500 mt-1">Balance, ledger & withdrawals</p>
-        </Link>
-        <Link href="/dashboard/contracts" className="bg-white rounded-xl border border-gray-200 p-5 shadow-sm hover:shadow-md transition-all hover:border-green-300 group">
-          <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center mb-3 group-hover:bg-green-200 transition-colors">
-            <span className="text-xl">📄</span>
-          </div>
-          <h3 className="font-semibold text-gray-900 text-sm">My Contracts</h3>
-          <p className="text-xs text-gray-500 mt-1">Digital trade agreements</p>
-        </Link>
-        <Link href="/dashboard/assistant" className="bg-white rounded-xl border border-gray-200 p-5 shadow-sm hover:shadow-md transition-all hover:border-indigo-300 group">
-          <div className="w-10 h-10 bg-indigo-100 rounded-lg flex items-center justify-center mb-3 group-hover:bg-indigo-200 transition-colors">
-            <span className="text-xl">💬</span>
-          </div>
-          <h3 className="font-semibold text-gray-900 text-sm">AI Assistant</h3>
-          <p className="text-xs text-gray-500 mt-1">Ask questions about your farm</p>
-        </Link>
-      </div>
-      <div className="bg-white rounded-xl border border-green-200 shadow-sm p-6 mb-8">
-        <div className="flex items-center justify-between">
-          <div>
-            <h2 className="text-lg font-semibold text-gray-900">Farmer Groups</h2>
-            <p className="text-sm text-gray-500 mt-1">Join a farmer group, combine harvests with nearby farmers and negotiate better prices with buyers.</p>
-          </div>
-          <Link href="/dashboard/groups" className="bg-green-700 hover:bg-green-600 text-white px-5 py-3 rounded-lg font-medium transition-colors">View Groups →</Link>
+      {/* Recent Transactions */}
+      <Card className="overflow-hidden">
+        <div className="px-6 py-4 border-b border-border flex items-center justify-between">
+          <h2 className="text-sm font-semibold text-text">{t.dashboard.recentTransactions}</h2>
+          <Link href="/dashboard/transactions" className="text-xs text-farmer-primary hover:underline">{t.dashboard.viewAll} →</Link>
         </div>
-      </div>
-
-      <div className="bg-green-800 text-white rounded-xl p-4 mb-8 text-center">
-        <p className="text-sm">📱 Dial *384*53374# to sell maize via your phone</p>
-      </div>
-
-      <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
-        <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
-          <h2 className="text-sm font-semibold text-gray-700">{t.dashboard.recentTransactions}</h2>
-          <Link href="/dashboard/transactions" className="text-xs text-green-700 hover:underline">{t.dashboard.viewAll} →</Link>
-        </div>
-        <div className="divide-y divide-gray-100">
+        <div className="divide-y divide-border">
           {transactions.length === 0 ? (
             <EmptyState message={t.emptyStates.noTransactions} />
           ) : (
             transactions.map((tx) => (
-              <div key={tx.id} className="px-6 py-4 flex items-center justify-betweengap-4">
+              <div key={tx.id} className="px-6 py-4 flex items-center justify-between gap-4">
                 <div>
-                  <p className="font-mono text-xs text-gray-600">{tx.reference}</p>
-                  <p className="text-sm font-medium text-gray-900 mt-0.5">{tx.buyer.name}</p>
-                  <p className="text-xs text-gray-400">{tx.quantityBags} bags · KSh {tx.totalValue.toLocaleString()}</p>
+                  <p className="font-mono text-xs text-gray-500">{tx.reference}</p>
+                  <p className="text-sm font-medium text-text mt-0.5">{tx.buyer.name}</p>
+                  <p className="text-xs text-gray-500">{tx.quantityBags} bags · KSh {tx.totalValue.toLocaleString()}</p>
                   {tx.status === 'SETTLED' && (
                     <RateBuyerButton
                       transactionId={tx.id}
@@ -177,18 +178,16 @@ export default async function FarmerDashboard() {
                   )}
                 </div>
                 <div className="text-right shrink-0">
-                  <span className={`inline-flex px-2.5 py-1 rounded-full text-xs font-medium ${STATUS_STYLES[tx.status] ?? 'bg-gray-100 text-gray-600'}`}>
-                    {tx.status}
-                  </span>
+                  <StatusBadge status={tx.status} />
                   <p className="text-xs text-gray-400 mt-1">
-                    {new Date(tx.createdAt).toLocaleDateString('en-KE', { day: 'numeric', month: 'short' })}
+                    {new Date(tx.createdAt).toLocaleDateString('en-KE', { day:'numeric', month: 'short' })}
                   </p>
                 </div>
               </div>
             ))
           )}
         </div>
-      </div>
+      </Card>
     </div>
   );
 }

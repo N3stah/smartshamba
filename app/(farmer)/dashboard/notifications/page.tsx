@@ -35,13 +35,13 @@ export default async function NotificationSettingsPage() {
   return (
     <div className="p-6 bg-gray-50 min-h-screen">
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-green-800">Notification Settings</h1>
+        <h1 className="text-2xl font-bold text-text">Notification Settings</h1>
         <p className="text-sm text-gray-500 mt-1">
           Choose which SMS messages you want to receive. Login codes are always sent.
         </p>
       </div>
 
-      <div className="bg-white rounded-xl border border-gray-200 shadow-sm divide-y divide-gray-100 max-w-xl">
+      <div className="bg-surface rounded-lg border border-border shadow-sm divide-y divide-gray-100 max-w-xl">
         <PreferenceToggle
           label="Transaction confirmations"
           description="SMS when you confirm a sale or receive payment."
@@ -79,9 +79,7 @@ export default async function NotificationSettingsPage() {
       </p>
 
       <div className="mt-6">
-        <Link href="/dashboard" className="text-sm text-green-700 hover:underline">
-          ← Back to dashboard
-        </Link>
+        
       </div>
     </div>
   );
