@@ -88,11 +88,11 @@ function LoginForm() {
         <div className="bg-white rounded-2xl shadow-xl p-8">
           {/* Mode Tabs */}
           <div className="flex border-b border-gray-200 mb-6">
-            <button onClick={() => { setMode('otp'); setStep('phone'); setError(''); setMessage(''); }} className={`w-1/2 pb-2 text-sm font-medium ${mode === 'otp' ? 'text-green-700 border-b-2 border-green-700' : 'text-gray-500'}`}>OTP Login</button>
-            <button onClick={() => { setMode('password'); setError(''); setMessage(''); }} className={`w-1/2 pb-2 text-sm font-medium ${mode === 'password' ? 'text-green-700 border-b-2 border-green-700' : 'text-gray-500'}`}>Password Login</button>
+            <button onClick={() => { setMode('otp'); setStep('phone'); setError(''); setMessage(''); }} className={`w-1/2 pb-2 text-sm font-medium ${mode === 'otp' ? 'text-farmer-primary border-b-2 border-farmer-primary' : 'text-gray-500'}`}>OTP Login</button>
+            <button onClick={() => { setMode('password'); setError(''); setMessage(''); }} className={`w-1/2 pb-2 text-sm font-medium ${mode === 'password' ? 'text-farmer-primary border-b-2 border-farmer-primary' : 'text-gray-500'}`}>Password Login</button>
           </div>
 
-          {message && <div className="bg-green-50 border border-green-200 rounded-lg px-4 py-3 text-green-700 text-sm mb-4">{message}</div>}
+          {message && <div className="bg-farmer-secondary border border-farmer-primary/20 rounded-lg px-4 py-3 text-farmer-primary text-sm mb-4">{message}</div>}
 
           {mode === 'otp' && (
             step === 'phone' ? (
@@ -102,10 +102,10 @@ function LoginForm() {
                 <form onSubmit={handleRequestOtp} className="space-y-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">Phone number</label>
-                    <input type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="+254700000000" required autoFocus className="w-full border border-gray-300 rounded-lg px-4 py-3 text-sm focus:ring-2 focus:ring-green-100 focus:border-green-600 text-gray-900" />
+                    <input type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="+254700000000" required autoFocus className="w-full border border-gray-300 rounded-lg px-4 py-3 text-sm focus:ring-2 focus:ring-farmer-secondary focus:border-farmer-primary text-gray-900" />
                   </div>
                   {error && <div className="bg-red-50 border border-red-200 rounded-lg px-4 py-3 text-red-700 text-sm">{error}</div>}
-                  <button type="submit" disabled={loading || !phone} className="w-full bg-green-700 hover:bg-green-600 disabled:bg-gray-200 text-white font-semibold py-3 rounded-lg transition-colors text-sm">{loading ? 'Sending OTP...' : 'Send OTP →'}</button>
+                  <button type="submit" disabled={loading || !phone} className="w-full bg-farmer-primary hover:bg-farmer-primary/90 disabled:bg-gray-200 disabled:cursor-not-allowed text-white font-semibold py-3 rounded-md transition-colors text-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-farmer-primary">{loading ? 'Sending OTP...' : 'Send OTP →'}</button>
                 </form>
               </>
             ) : (
@@ -117,7 +117,7 @@ function LoginForm() {
                     <input type="text" value={code} onChange={(e) => setCode(e.target.value.replace(/\D/g, '').slice(0, 6))} placeholder="123456" required autoFocus maxLength={6} className="w-full border border-gray-300 rounded-lg px-4 py-3 text-sm font-mono text-center text-xl tracking-widest text-gray-900" />
                   </div>
                   {error && <div className="bg-red-50 border border-red-200 rounded-lg px-4 py-3 text-red-700 text-sm">{error}</div>}
-                  <button type="submit" disabled={loading || code.length !== 6} className="w-full bg-green-700 hover:bg-green-600 disabled:bg-gray-200 text-white font-semibold py-3 rounded-lg transition-colors text-sm">{loading ? 'Verifying...' : 'Sign in →'}</button>
+                  <button type="submit" disabled={loading || code.length !== 6} className="w-full bg-farmer-primary hover:bg-farmer-primary/90 disabled:bg-gray-200 disabled:cursor-not-allowed text-white font-semibold py-3 rounded-md transition-colors text-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-farmer-primary">{loading ? 'Verifying...' : 'Sign in →'}</button>
                   <button type="button" onClick={() => { setStep('phone'); setCode(''); setError(''); }} className="w-full text-gray-500 hover:text-gray-700 text-sm py-2">← Use a different number</button>
                 </form>
               </>
@@ -131,20 +131,20 @@ function LoginForm() {
               <form onSubmit={handlePasswordLogin} className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Phone number</label>
-                  <input type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="+254700000000" required autoFocus className="w-full border border-gray-300 rounded-lg px-4 py-3 text-sm focus:ring-2 focus:ring-green-100 focus:border-green-600 text-gray-900" />
+                  <input type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="+254700000000" required autoFocus className="w-full border border-gray-300 rounded-lg px-4 py-3 text-sm focus:ring-2 focus:ring-farmer-secondary focus:border-farmer-primary text-gray-900" />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Password</label>
                   <div className="relative">
-                    <input type={showPass ? 'text' : 'password'} value={password} onChange={(e) => setPassword(e.target.value)} placeholder="********" required className="w-full border border-gray-300 rounded-lg px-4 py-3 pr-10 text-sm focus:ring-2 focus:ring-green-100 focus:border-green-600 text-gray-900" />
+                    <input type={showPass ? 'text' : 'password'} value={password} onChange={(e) => setPassword(e.target.value)} placeholder="********" required className="w-full border border-gray-300 rounded-lg px-4 py-3 pr-10 text-sm focus:ring-2 focus:ring-farmer-secondary focus:border-farmer-primary text-gray-900" />
                     <button type="button" onClick={() => setShowPass(!showPass)} className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-500">
                       {showPass ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                     </button>
                   </div>
                 </div>
                 {error && <div className="bg-red-50 border border-red-200 rounded-lg px-4 py-3 text-red-700 text-sm">{error}</div>}
-                <button type="submit" disabled={loading || !phone || !password} className="w-full bg-green-700 hover:bg-green-600 disabled:bg-gray-200 text-white font-semibold py-3 rounded-lg transition-colors text-sm">{loading ? 'Signing in...' : 'Sign in →'}</button>
-                <button type="button" onClick={() => { setMode('forgot'); setStep('phone'); setError(''); setMessage(''); }} className="w-full text-green-700 hover:text-green-800 text-sm py-2 font-medium">Forgot Password?</button>
+                <button type="submit" disabled={loading || !phone || !password} className="w-full bg-farmer-primary hover:bg-farmer-primary/90 disabled:bg-gray-200 disabled:cursor-not-allowed text-white font-semibold py-3 rounded-md transition-colors text-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-farmer-primary">{loading ? 'Signing in...' : 'Sign in →'}</button>
+                <button type="button" onClick={() => { setMode('forgot'); setStep('phone'); setError(''); setMessage(''); }} className="w-full text-farmer-primary hover:text-green-800 text-sm py-2 font-medium">Forgot Password?</button>
               </form>
             </>
           )}
@@ -157,10 +157,10 @@ function LoginForm() {
                 <form onSubmit={handleRequestOtp} className="space-y-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">Phone number</label>
-                    <input type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="+254700000000" required autoFocus className="w-full border border-gray-300 rounded-lg px-4 py-3 text-sm focus:ring-2 focus:ring-green-100 focus:border-green-600 text-gray-900" />
+                    <input type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="+254700000000" required autoFocus className="w-full border border-gray-300 rounded-lg px-4 py-3 text-sm focus:ring-2 focus:ring-farmer-secondary focus:border-farmer-primary text-gray-900" />
                   </div>
                   {error && <div className="bg-red-50 border border-red-200 rounded-lg px-4 py-3 text-red-700 text-sm">{error}</div>}
-                  <button type="submit" disabled={loading || !phone} className="w-full bg-green-700 hover:bg-green-600 disabled:bg-gray-200 text-white font-semibold py-3 rounded-lg transition-colors text-sm">{loading ? 'Sending OTP...' : 'Send Reset OTP →'}</button>
+                  <button type="submit" disabled={loading || !phone} className="w-full bg-farmer-primary hover:bg-farmer-primary/90 disabled:bg-gray-200 disabled:cursor-not-allowed text-white font-semibold py-3 rounded-md transition-colors text-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-farmer-primary">{loading ? 'Sending OTP...' : 'Send Reset OTP →'}</button>
                   <button type="button" onClick={() => { setMode('password'); setError(''); }} className="w-full text-gray-500 hover:text-gray-700 text-sm py-2">← Back to Password Login</button>
                 </form>
               </>
@@ -176,20 +176,20 @@ function LoginForm() {
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">New Password</label>
                     <div className="relative">
-                      <input type={showPass ? 'text' : 'password'} value={newPassword} onChange={(e) => setNewPassword(e.target.value)} placeholder="********" required minLength={6} className="w-full border border-gray-300 rounded-lg px-4 py-3 pr-10 text-sm focus:ring-2 focus:ring-green-100 focus:border-green-600 text-gray-900" />
+                      <input type={showPass ? 'text' : 'password'} value={newPassword} onChange={(e) => setNewPassword(e.target.value)} placeholder="********" required minLength={6} className="w-full border border-gray-300 rounded-lg px-4 py-3 pr-10 text-sm focus:ring-2 focus:ring-farmer-secondary focus:border-farmer-primary text-gray-900" />
                       <button type="button" onClick={() => setShowPass(!showPass)} className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-500">
                         {showPass ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                       </button>
                     </div>
                   </div>
                   {error && <div className="bg-red-50 border border-red-200 rounded-lg px-4 py-3 text-red-700 text-sm">{error}</div>}
-                  <button type="submit" disabled={loading || code.length !== 6 || !newPassword} className="w-full bg-green-700 hover:bg-green-600 disabled:bg-gray-200 text-white font-semibold py-3 rounded-lg transition-colors text-sm">{loading ? 'Resetting...' : 'Reset Password →'}</button>
+                  <button type="submit" disabled={loading || code.length !== 6 || !newPassword} className="w-full bg-farmer-primary hover:bg-farmer-primary/90 disabled:bg-gray-200 disabled:cursor-not-allowed text-white font-semibold py-3 rounded-md transition-colors text-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-farmer-primary">{loading ? 'Resetting...' : 'Reset Password →'}</button>
                 </form>
               </>
             )
           )}
         </div>
-        <p className="text-center text-xs text-green-300 mt-6">Not registered? Dial <span className="font-mono font-bold">*384*53374#</span> to register via USSD.</p>
+        <p className="text-center text-xs text-farmer-primary/80 mt-6">Not registered? Dial <span className="font-mono font-bold">*384*53374#</span> to register via USSD.</p>
       </div>
     </div>
   );

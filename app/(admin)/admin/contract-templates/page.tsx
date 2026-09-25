@@ -58,7 +58,7 @@ export default function ContractTemplatesPage() {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <h1 className="text-2xl font-bold text-gray-900">Contract Templates</h1>
-        <button onClick={() => setShowForm(!showForm)} className="flex items-center gap-2 bg-admin-primary text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-[#005a30]">
+        <button onClick={() => setShowForm(!showForm)} className="flex items-center gap-2 bg-admin-primary text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-admin-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-admin-primary">
           <Plus className="w-4 h-4" /> New Template
         </button>
       </div>

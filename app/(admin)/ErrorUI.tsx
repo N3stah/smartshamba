@@ -29,7 +29,7 @@ export default function ErrorUI({ error, reset, title = 'Something went wrong' }
         <div className="flex flex-col sm:flex-row gap-3 justify-center">
           <button
             onClick={reset}
-            className="bg-admin-primary text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-green-800 flex items-center justify-center gap-2"
+            className="bg-admin-primary text-white px-4 py-2 rounded-md text-sm font-semibold hover:bg-admin-primary/90 flex items-center justify-center gap-2 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-admin-primary"
           >
             <RotateCw className="w-4 h-4" /> Try Again
           </button>

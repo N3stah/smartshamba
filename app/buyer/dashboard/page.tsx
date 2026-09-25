@@ -4,6 +4,7 @@ import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { prisma } from '@/lib/prisma';
 import Link from 'next/link';
+import { Brain, Wallet, FileText, CloudRain, MessageSquare } from 'lucide-react';
 
 export default async function BuyerDashboard() {
   const cookieStore = await cookies();
@@ -47,35 +48,35 @@ export default async function BuyerDashboard() {
       <div className="mt-8 grid grid-cols-2 md:grid-cols-3 gap-4 mb-8">
         <Link href="/buyer/ai-procurement" className="bg-white rounded-xl border border-gray-200 p-5 shadow-sm hover:shadow-md transition-all hover:border-green-300 group">
           <div className="w-10 h-10 bg-buyer-secondary rounded-lg flex items-center justify-center mb-3 group-hover:bg-green-200 transition-colors">
-            <span className="text-xl">🤖</span>
+            <Brain className="w-5 h-5 text-buyer-primary" />
           </div>
           <h3 className="font-semibold text-gray-900 text-sm">AI Procurement</h3>
           <p className="text-xs text-gray-500 mt-1">Smart buying recommendations</p>
         </Link>
         <Link href="/buyer/wallet" className="bg-white rounded-xl border border-gray-200 p-5 shadow-sm hover:shadow-md transition-all hover:border-yellow-300 group">
           <div className="w-10 h-10 bg-yellow-100 rounded-lg flex items-center justify-center mb-3 group-hover:bg-yellow-200 transition-colors">
-            <span className="text-xl">💰</span>
+            <Wallet className="w-5 h-5 text-buyer-primary" />
           </div>
           <h3 className="font-semibold text-gray-900 text-sm">My Wallet</h3>
           <p className="text-xs text-gray-500 mt-1">Balance & transaction history</p>
         </Link>
         <Link href="/buyer/contracts" className="bg-white rounded-xl border border-gray-200 p-5 shadow-sm hover:shadow-md transition-all hover:border-green-300 group">
           <div className="w-10 h-10 bg-buyer-secondary rounded-lg flex items-center justify-center mb-3 group-hover:bg-green-200 transition-colors">
-            <span className="text-xl">📄</span>
+            <FileText className="w-5 h-5 text-buyer-primary" />
           </div>
           <h3 className="font-semibold text-gray-900 text-sm">Contracts</h3>
           <p className="text-xs text-gray-500 mt-1">View digital trade agreements</p>
         </Link>
         <Link href="/buyer/weather" className="bg-white rounded-xl border border-gray-200 p-5 shadow-sm hover:shadow-md transition-all hover:border-blue-300 group">
           <div className="w-10 h-10 bg-buyer-secondary rounded-lg flex items-center justify-center mb-3 group-hover:bg-blue-200 transition-colors">
-            <span className="text-xl">🌦️</span>
+            <CloudRain className="w-5 h-5 text-buyer-primary" />
           </div>
           <h3 className="font-semibold text-gray-900 text-sm">Weather & Climate</h3>
           <p className="text-xs text-gray-500 mt-1">Regional weather insights</p>
         </Link>
         <Link href="/buyer/assistant" className="bg-white rounded-xl border border-gray-200 p-5 shadow-sm hover:shadow-md transition-all hover:border-indigo-300 group">
           <div className="w-10 h-10 bg-indigo-100 rounded-lg flex items-center justify-center mb-3 group-hover:bg-indigo-200 transition-colors">
-            <span className="text-xl">💬</span>
+            <MessageSquare className="w-5 h-5 text-buyer-primary" />
           </div>
           <h3 className="font-semibold text-gray-900 text-sm">AI Assistant</h3>
           <p className="text-xs text-gray-500 mt-1">Ask about market trends</p>
