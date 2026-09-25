@@ -10,7 +10,7 @@ export default function CropDemandChart({ data }: { data: any[] }) {
           <XAxis dataKey="name" tick={{ fontSize: 12 }} />
           <YAxis tick={{ fontSize: 12 }} />
           <Tooltip />
-          <Bar dataKey="bags" fill="#00703C" radius={[4, 4, 0, 0]} />
+          <Bar dataKey="bags" fill="#4F46E5" radius={[4, 4, 0, 0]} />
         </BarChart>
       </ResponsiveContainer>
     </div>

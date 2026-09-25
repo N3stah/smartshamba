@@ -36,7 +36,7 @@ export default function AITrendChart({ predictions }: { predictions: Prediction[
           />
           <Legend />
           <Line type="monotone" dataKey="current" stroke="#6b7280" strokeWidth={2} name="Current Price" dot={{ r: 4 }} />
-          <Line type="monotone" dataKey="predicted" stroke="#00703C" strokeWidth={3} name="AI Predicted Price" dot={{ r: 5 }} />
+          <Line type="monotone" dataKey="predicted" stroke="#1D4A38" strokeWidth={3} name="AI Predicted Price" dot={{ r: 5 }} />
         </LineChart>
       </ResponsiveContainer>
     </div>

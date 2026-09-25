@@ -7,7 +7,7 @@ import LanguageSwitcher from '@/components/LanguageSwitcher';
 import NotificationPermission from '@/components/NotificationPermission';
 import SmartShambaLogo from '@/components/SmartShambaLogo';
 import { useI18n } from '@/lib/i18n';
-import { LayoutDashboard, ArrowLeftRight, AlertTriangle, Bell, Building2, Tag, Settings, LogOut, Menu, X, BarChart2, Brain, CloudRain, Wallet, FileText, MessageSquare, ClipboardList, ChevronDown } from 'lucide-react';
+import { LayoutDashboard, ArrowLeftRight, AlertTriangle, Bell, Building2, Tag, Settings, LogOut, Menu, X, BarChart2, Brain, CloudRain, Wallet, FileText, MessageSquare, ClipboardList, ChevronDown, Users } from 'lucide-react';
 
 export default function FarmerLayout({ children }: { children: React.ReactNode}) {
   const { t } = useI18n();
@@ -15,33 +15,75 @@ export default function FarmerLayout({ children }: { children: React.ReactNode})
   const pathname = usePathname();
 
   const [openSections, setOpenSections] = useState<Record<string, boolean>>({
-    'Core': true,
-    'V2 Intelligence': true,
+    'TRADE': true,
+    'TRANSACTIONS': true,
+    'OPERATIONS': true,
+    'MONEY': true,
+    'INSIGHTS': true,
+    'COMMUNICATION': true,
+    'ASSISTANCE': true,
+    'ACCOUNT': true,
   });
 
   const navSections = [
     {
-      title: 'Core',
+      title: 'OVERVIEW',
       items: [
-        { href: '/dashboard', label: t.dashboard.title, icon: LayoutDashboard },
-        { href: '/dashboard/analytics', label: 'Analytics', icon: BarChart2 },
-        { href: '/dashboard/listings', label: 'Sell Produce', icon: Tag },
-        { href: '/dashboard/demands', label: 'Active Demands', icon: ClipboardList },
-        { href: '/dashboard/transactions', label: 'My Transactions', icon: ArrowLeftRight },
-        { href: '/dashboard/disputes', label: 'My Disputes', icon: AlertTriangle },
-        { href: '/dashboard/notifications', label: 'Notifications', icon: Bell},
-        { href: '/dashboard/buyers', label: 'Buyer Directory', icon: Building2},
-        { href: '/dashboard/settings', label: 'Settings', icon: Settings },
+        { href: '/dashboard', label: 'Overview', icon: LayoutDashboard },
       ]
     },
     {
-      title: 'V2 Intelligence',
+      title: 'TRADE',
       items: [
-        { href: '/dashboard/ai-market', label: 'AI Market Intel', icon: Brain },
+        { href: '/dashboard/listings', label: 'Sell Produce', icon: Tag },
+        { href: '/dashboard/demands', label: 'Buyer Demands', icon: ClipboardList },
+        { href: '/dashboard/buyers', label: 'Buyers', icon: Building2},
+      ]
+    },
+    {
+      title: 'TRANSACTIONS',
+      items: [
+        { href: '/dashboard/transactions', label: 'My Transactions', icon: ArrowLeftRight },
+        { href: '/dashboard/contracts', label: 'Contracts', icon: FileText },
+        { href: '/dashboard/disputes', label: 'Disputes', icon: AlertTriangle },
+      ]
+    },
+    {
+      title: 'OPERATIONS',
+      items: [
+        { href: '/dashboard/groups', label: 'Farmer Groups', icon: Users },
         { href: '/dashboard/weather', label: 'Weather & Alerts', icon: CloudRain },
+      ]
+    },
+    {
+      title: 'MONEY',
+      items: [
         { href: '/dashboard/wallet', label: 'My Wallet', icon: Wallet },
-        { href: '/dashboard/contracts', label: 'My Contracts', icon: FileText },
-        { href: '/dashboard/assistant', label: 'AI Assistant', icon: MessageSquare },
+      ]
+    },
+    {
+      title: 'INSIGHTS',
+      items: [
+        { href: '/dashboard/ai-market', label: 'Market Intelligence', icon: Brain },
+        { href: '/dashboard/analytics', label: 'Analytics', icon: BarChart2 },
+      ]
+    },
+    {
+      title: 'COMMUNICATION',
+      items: [
+        { href: '/dashboard/notifications', label: 'Notifications', icon: Bell},
+      ]
+    },
+    {
+      title: 'ASSISTANCE',
+      items: [
+        { href: '/dashboard/assistant', label: 'Assistant', icon: MessageSquare },
+      ]
+    },
+    {
+      title: 'ACCOUNT',
+      items: [
+        { href: '/dashboard/settings', label: 'Settings', icon: Settings },
       ]
     }
   ];

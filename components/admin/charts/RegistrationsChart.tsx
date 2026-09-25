@@ -10,7 +10,7 @@ export default function RegistrationsChart({ data }: { data: any[] }) {
           <XAxis dataKey="date" tick={{ fontSize: 12 }} />
           <YAxis tick={{ fontSize: 12 }} allowDecimals={false} />
           <Tooltip />
-          <Line type="monotone" dataKey="farmers" stroke="#00703C" strokeWidth={2} />
+          <Line type="monotone" dataKey="farmers" stroke="#4F46E5" strokeWidth={2} />
         </LineChart>
       </ResponsiveContainer>
     </div>

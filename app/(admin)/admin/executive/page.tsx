@@ -111,7 +111,7 @@ export default function ExecutiveDashboardPage() {
       {/* Tabs */}
       <div className="flex border-b border-gray-200">
         {(['CEO', 'CFO', 'CTO', 'PM'] as const).map(t => (
-          <button key={t} onClick={() => setTab(t)} className={`px-4 py-2 text-sm font-medium ${tab === t ? 'text-admin-primary border-b-2 border-[#00703C]' : 'text-gray-500'}`}>{t} View</button>
+          <button key={t} onClick={() => setTab(t)} className={`px-4 py-2 text-sm font-medium ${tab === t ? 'text-admin-primary border-b-2 border-admin-primary' : 'text-gray-500'}`}>{t} View</button>
         ))}
       </div>
 
@@ -128,12 +128,12 @@ export default function ExecutiveDashboardPage() {
             <p className="text-2xl font-bold text-gray-900">{data.ceo.totalBuyers}</p>
             <p className="text-xs text-gray-400 mt-1">+{data.ceo.buyerGrowth} new (30d)</p>
           </div>
-          <Link href="/admin/ai-dashboard" className="bg-white rounded-xl border p-5 shadow-sm hover:border-[#00703C] transition-colors cursor-pointer">
+          <Link href="/admin/ai-dashboard" className="bg-white rounded-xl border p-5 shadow-sm hover:border-admin-primary transition-colors cursor-pointer">
             <div className="flex justify-between mb-2"><p className="text-xs text-gray-500 uppercase">AI Predictions</p><Brain className="w-5 h-5 text-green-600" /></div>
             <p className="text-2xl font-bold text-gray-900">{data.ceo.aiPredictions}</p>
             <p className="text-xs text-gray-400 mt-1">Market models generated</p>
           </Link>
-          <Link href="/admin/weather-dashboard" className="bg-white rounded-xl border p-5 shadow-sm hover:border-[#00703C] transition-colors cursor-pointer">
+          <Link href="/admin/weather-dashboard" className="bg-white rounded-xl border p-5 shadow-sm hover:border-admin-primary transition-colors cursor-pointer">
             <div className="flex justify-between mb-2"><p className="text-xs text-gray-500 uppercase">Weather Alerts</p><CloudRain className="w-5 h-5 text-blue-400" /></div>
             <p className="text-2xl font-bold text-gray-900">{data.agintel.weatherAlerts}</p>
             <p className="text-xs text-gray-400 mt-1">Sent to farmers (30d)</p>

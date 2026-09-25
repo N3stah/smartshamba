@@ -121,7 +121,7 @@ export default function AIChatWidget({ role }: { role: 'FARMER' | 'BUYER' | 'STA
           <div className="bg-public-primary text-white p-4 flex items-center gap-3">
             <div className="relative">
               <Brain className="w-6 h-6" />
-              <span className="absolute bottom-0 right-0 block h-2 w-2 rounded-full bg-green-400 ring-2 ring-[#00703C]"></span>
+              <span className="absolute bottom-0 right-0 block h-2 w-2 rounded-full bg-green-400 ring-2 ring-public-primary"></span>
             </div>
             <div>
               <h3 className="font-bold text-sm">SmartShamba AI</h3>

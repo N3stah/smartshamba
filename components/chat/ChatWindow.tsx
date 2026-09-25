@@ -120,7 +120,7 @@ export default function ChatWindow({ transactionId, currentUserId, viewerRole }:
         ref={scrollRef} 
         className="flex-1 overflow-y-auto p-4 space-y-3 flex flex-col"
         style={{
-          backgroundImage: `radial-gradient(#00703C 0.75px, transparent 0.75px)`,
+          backgroundImage: `radial-gradient(#1D4A38 0.75px, transparent 0.75px)`,
           backgroundSize: '24px 24px',
           backgroundColor: '#efeae2',
         }}

@@ -71,7 +71,7 @@ export default function WhatsAppGroupManager({ groupId, initialLink, isCreator }
       <div className="flex justify-center">
         {link ? (
           <div className="p-4 bg-white border border-gray-100 rounded-xl shadow-sm">
-            <QRCodeSVG value={link} size={160} bgColor="#ffffff" fgColor="#00703C" level="M" />
+            <QRCodeSVG value={link} size={160} bgColor="#ffffff" fgColor="#1D4A38" level="M" />
             <p className="text-xs text-center text-gray-400 mt-2">Scan to join group</p>
           </div>
         ) : (

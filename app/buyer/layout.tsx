@@ -15,32 +15,68 @@ export default function BuyerLayout({ children }: { children: React.ReactNode}) 
   const pathname = usePathname();
 
   const [openSections, setOpenSections] = useState<Record<string, boolean>>({
-    'Core': true,
-    'V2 Intelligence': true,
+    'OVERVIEW': true,
+    'PROCUREMENT': true,
+    'TRANSACTIONS': true,
+    'FINANCE': true,
+    'INTELLIGENCE': true,
+    'COMMUNICATION': true,
+    'ASSISTANCE': true,
+    'ACCOUNT': true,
   });
 
   const navSections = [
     {
-      title: 'Core',
+      title: 'OVERVIEW',
       items: [
-        { href: '/buyer/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-        { href: '/buyer/demands', label: 'Active Demands', icon: ClipboardList },
-        { href: '/buyer/transactions', label: 'My Transactions', icon: ArrowLeftRight },
-        { href: '/buyer/disputes', label: 'My Disputes', icon: AlertTriangle },
-        { href: '/buyer/notifications', label: 'Notifications', icon: Bell},
-        { href: '/buyer/farmers', label: 'Farmer Directory', icon: Tag},
-        { href: '/buyer/nearby', label: 'Nearby Farmers', icon: MapPin},
-        { href: '/buyer/settings', label: 'Settings', icon: Settings },
+        { href: '/buyer/dashboard', label: 'Overview', icon: LayoutDashboard },
       ]
     },
     {
-      title: 'V2 Intelligence',
+      title: 'PROCUREMENT',
       items: [
-        { href: '/buyer/ai-procurement', label: 'AI Procurement', icon: Brain },
-        { href: '/buyer/weather', label: 'Weather & Climate', icon: CloudRain },
-        { href: '/buyer/wallet', label: 'My Wallet', icon: Wallet },
-        { href: '/buyer/contracts', label: 'My Contracts', icon: FileText },
-        { href: '/buyer/assistant', label: 'AI Assistant', icon: MessageSquare },
+        { href: '/buyer/demands', label: 'Demands', icon: ClipboardList },
+        { href: '/buyer/farmers', label: 'Available Produce', icon: Tag},
+        { href: '/buyer/nearby', label: 'Nearby Supply', icon: MapPin},
+      ]
+    },
+    {
+      title: 'TRANSACTIONS',
+      items: [
+        { href: '/buyer/transactions', label: 'Transactions', icon: ArrowLeftRight },
+        { href: '/buyer/contracts', label: 'Contracts', icon: FileText },
+        { href: '/buyer/disputes', label: 'Disputes', icon: AlertTriangle },
+      ]
+    },
+    {
+      title: 'FINANCE',
+      items: [
+        { href: '/buyer/wallet', label: 'Wallet', icon: Wallet },
+      ]
+    },
+    {
+      title: 'INTELLIGENCE',
+      items: [
+        { href: '/buyer/ai-procurement', label: 'Procurement Intelligence', icon: Brain },
+        { href: '/buyer/weather', label: 'Weather', icon: CloudRain },
+      ]
+    },
+    {
+      title: 'COMMUNICATION',
+      items: [
+        { href: '/buyer/notifications', label: 'Notifications', icon: Bell},
+      ]
+    },
+    {
+      title: 'ASSISTANCE',
+      items: [
+        { href: '/buyer/assistant', label: 'Assistant', icon: MessageSquare },
+      ]
+    },
+    {
+      title: 'ACCOUNT',
+      items: [
+        { href: '/buyer/settings', label: 'Settings', icon: Settings },
       ]
     }
   ];

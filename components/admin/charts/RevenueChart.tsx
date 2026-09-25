@@ -10,7 +10,7 @@ export default function RevenueChart({ data }: { data: any[] }) {
           <XAxis dataKey="date" tick={{ fontSize: 12 }} />
           <YAxis tick={{ fontSize: 12 }} />
           <Tooltip />
-          <Area type="monotone" dataKey="revenue" stroke="#00703C" fill="#e6f4ea" strokeWidth={2} />
+          <Area type="monotone" dataKey="revenue" stroke="#4F46E5" fill="#e6f4ea" strokeWidth={2} />
         </AreaChart>
       </ResponsiveContainer>
     </div>
