@@ -38,28 +38,28 @@ model Ward {
 }
 
 model Farmer {
-  latitude          Float?
-  longitude         Float?
-  isFrozen          Boolean            @default(false)
-  frozenReason      String?
-  frozenAt          DateTime?
-  transportBookings TransportBooking[]
-  contractsAsSeller Contract[]         @relation("ContractSeller")
+  latitude             Float?
+  longitude            Float?
+  isFrozen             Boolean                   @default(false)
+  frozenReason         String?
+  frozenAt             DateTime?
+  transportBookings    TransportBooking[]
+  contractsAsSeller    Contract[]                @relation("ContractSeller")
   transportAllocations TransportCostAllocation[]
-  wallet            Wallet?            @relation("FarmerWallet")
-  aiInsights        AIInsight[]        @relation("FarmerAIInsights")
-  language          String             @default("en") // i18n: "en" | "sw"
-  id                String             @id @default(cuid())
-  nationalId        String? // KYC-lite: 8-digit Kenya National ID
-  password          String?
-  verified          Boolean            @default(false)
-  phone             String             @unique
-  name              String?
-  location          String?
-  countyId          String?
-  wardId            String?
-  village           String?
-  createdAt         DateTime           @default(now())
+  wallet               Wallet?                   @relation("FarmerWallet")
+  aiInsights           AIInsight[]               @relation("FarmerAIInsights")
+  language             String                    @default("en") // i18n: "en" | "sw"
+  id                   String                    @id @default(cuid())
+  nationalId           String? // KYC-lite: 8-digit Kenya National ID
+  password             String?
+  verified             Boolean                   @default(false)
+  phone                String                    @unique
+  name                 String?
+  location             String?
+  countyId             String?
+  wardId               String?
+  village              String?
+  createdAt            DateTime                  @default(now())
 
   transactions Transaction[]
   ratings      Rating[]
@@ -74,42 +74,56 @@ model Farmer {
   notifications          Notification[]
   notificationPreference NotificationPreference?
   ProduceListing         ProduceListing[]
+  smartshambaId          String?                 @unique
+  email                  String?
+  pin                    String?
+  pinFailedAttempts      Int                     @default(0)
+  pinLockedUntil         DateTime?
+  subscriptions          Subscription[]
 }
 
 model Buyer {
-  latitude         Float?
-  longitude        Float?
-  isFrozen         Boolean     @default(false)
-  frozenReason     String?
-  frozenAt         DateTime?
-  contractsAsBuyer Contract[]  @relation("ContractBuyer")
-  wallet           Wallet?     @relation("BuyerWallet")
-  aiInsights       AIInsight[] @relation("BuyerAIInsights")
+  latitude               Float?
+  longitude              Float?
+  isFrozen               Boolean                 @default(false)
+  frozenReason           String?
+  frozenAt               DateTime?
+  contractsAsBuyer       Contract[]              @relation("ContractBuyer")
+  wallet                 Wallet?                 @relation("BuyerWallet")
+  aiInsights             AIInsight[]             @relation("BuyerAIInsights")
   notificationPreference NotificationPreference?
-  phone            String?     @unique // Added for USSD/OTP login
-  password         String?
-  language         String      @default("en") // i18n: "en" | "sw"
-  id               String      @id @default(cuid())
-  name             String
-  location         String
-  verified         Boolean     @default(false)
-  capacityBags     Int
-  pricePerBag      Float
-  active           Boolean     @default(true)
-  countyId         String?
-  wardId           String?
-  village          String?
-  createdAt        DateTime?   @default(now()) @db.Timestamptz(6)
+  phone                  String?                 @unique // Added for USSD/OTP login
+  password               String?
+  language               String                  @default("en") // i18n: "en" | "sw"
+  id                     String                  @id @default(cuid())
+  name                   String
+  location               String
+  verified               Boolean                 @default(false)
+  capacityBags           Int
+  pricePerBag            Float
+  active                 Boolean                 @default(true)
+  countyId               String?
+  wardId                 String?
+  village                String?
+  createdAt              DateTime?               @default(now()) @db.Timestamptz(6)
 
   transactions      Transaction[]
   ratings           Rating[]
   disputes          Dispute[]
   groupTransactions GroupTransaction[]
 
-  county        County?        @relation(fields: [countyId], references: [id])
-  ward          Ward?          @relation(fields: [wardId], references: [id])
-  notifications Notification[]
-  BuyerDemand   BuyerDemand[]
+  county            County?        @relation(fields: [countyId], references: [id])
+  ward              Ward?          @relation(fields: [wardId], references: [id])
+  notifications     Notification[]
+  BuyerDemand       BuyerDemand[]
+  smartshambaId     String?        @unique
+  email             String?
+  nationalId        String?
+  poBox             String?
+  pin               String?
+  pinFailedAttempts Int            @default(0)
+  pinLockedUntil    DateTime?
+  subscriptions     Subscription[]
 }
 
 model Transaction {
@@ -174,8 +188,11 @@ model FarmerGroup {
 
   createdBy Farmer @relation("GroupCreator", fields: [createdById], references: [id])
 
-  members      GroupMember[]
-  transactions GroupTransaction[]
+  members          GroupMember[]
+  transactions     GroupTransaction[]
+  verified         Boolean            @default(false)
+  whatsappApproved Boolean            @default(false)
+  warehouses       Warehouse[]        @relation("WarehouseGroup")
 
   @@index([countyId])
   @@index([wardId])
@@ -363,9 +380,9 @@ model Notification {
 
 model NotificationPreference {
   id                 String   @id @default(cuid())
-  farmerId           String?   @unique
-  buyerId            String?   @unique
-  providerId         String?   @unique
+  farmerId           String?  @unique
+  buyerId            String?  @unique
+  providerId         String?  @unique
   transactionSms     Boolean  @default(true)
   weeklyMarketReport Boolean  @default(true)
   harvestTips        Boolean  @default(true)
@@ -374,8 +391,8 @@ model NotificationPreference {
   createdAt          DateTime @default(now())
   updatedAt          DateTime @updatedAt
 
-  farmer   Farmer?           @relation(fields: [farmerId], references: [id])
-  buyer    Buyer?            @relation(fields: [buyerId], references: [id])
+  farmer   Farmer?            @relation(fields: [farmerId], references: [id])
+  buyer    Buyer?             @relation(fields: [buyerId], references: [id])
   provider TransportProvider? @relation(fields: [providerId], references: [id])
 }
 
@@ -406,7 +423,9 @@ model QualityAssessment {
   notes          String?
   createdAt      DateTime @default(now())
 
-  transaction Transaction @relation(fields: [transactionId], references: [id])
+  transaction      Transaction?    @relation(fields: [transactionId], references: [id])
+  produceListingId String?
+  produceListing   ProduceListing? @relation("ListingQuality", fields: [produceListingId], references: [id])
 }
 
 model AuditLog {
@@ -431,27 +450,31 @@ model AuditLog {
 }
 
 model ProduceListing {
-  id           String   @id @default(cuid())
-  farmerId     String
-  product      String // e.g., "Maize", "Beans"
-  quantityBags Int
-  pricePerBag  Float
-  status       String   @default("ACTIVE") // ACTIVE, CLOSED
-  createdAt    DateTime @default(now())
-  farmer       Farmer   @relation(fields: [farmerId], references: [id])
+  id                 String              @id @default(cuid())
+  farmerId           String
+  product            String // e.g., "Maize", "Beans"
+  quantityBags       Int
+  pricePerBag        Float
+  status             String              @default("ACTIVE") // ACTIVE, CLOSED
+  createdAt          DateTime            @default(now())
+  farmer             Farmer              @relation(fields: [farmerId], references: [id])
+  qualityAssessments QualityAssessment[] @relation("ListingQuality")
 
   @@index([farmerId])
 }
 
 model BuyerDemand {
-  id           String   @id @default(cuid())
+  id           String    @id @default(cuid())
   buyerId      String
   product      String
   quantityBags Int
   location     String
-  status       String   @default("ACTIVE") // ACTIVE, CLOSED
-  createdAt    DateTime @default(now())
-  buyer        Buyer    @relation(fields: [buyerId], references: [id])
+  status       String    @default("ACTIVE") // ACTIVE, CLOSED
+  createdAt    DateTime  @default(now())
+  buyer        Buyer     @relation(fields: [buyerId], references: [id])
+  bagSize      String?
+  startDate    DateTime?
+  endDate      DateTime?
 
   @@index([buyerId])
 }
@@ -618,7 +641,7 @@ model Wallet {
 
   farmer      Farmer?             @relation("FarmerWallet", fields: [farmerId], references: [id])
   buyer       Buyer?              @relation("BuyerWallet", fields: [buyerId], references: [id])
-  provider    TransportProvider? @relation("ProviderWallet", fields: [providerId], references: [id])
+  provider    TransportProvider?  @relation("ProviderWallet", fields: [providerId], references: [id])
   entries     LedgerEntry[]
   withdrawals WithdrawalRequest[]
 }
@@ -769,12 +792,17 @@ model TransportProvider {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  county   County?            @relation(fields: [countyId], references: [id])
-  wallet   Wallet?           @relation("ProviderWallet")
+  county                 County?                 @relation(fields: [countyId], references: [id])
+  wallet                 Wallet?                 @relation("ProviderWallet")
   notificationPreference NotificationPreference?
-  bookings TransportBooking[]
-  vehicles TransportVehicle[]
-  requests TransportRequest[]
+  bookings               TransportBooking[]
+  vehicles               TransportVehicle[]
+  requests               TransportRequest[]
+  smartshambaId          String?                 @unique
+  licenseNumber          String?
+  pin                    String?
+  pinFailedAttempts      Int                     @default(0)
+  pinLockedUntil         DateTime?
 }
 
 enum TransportRequestStatus {
@@ -853,15 +881,15 @@ model TransportBooking {
   completedAt        DateTime?
   createdAt          DateTime               @default(now())
 
-  transaction      Transaction?      @relation(fields: [transactionId], references: [id])
-  groupTransaction GroupTransaction? @relation("TransportBookings", fields: [groupTransactionId], references: [id])
-  provider         TransportProvider @relation(fields: [providerId], references: [id])
-  vehicle          TransportVehicle? @relation(fields: [vehicleId], references: [id])
-  pickupCounty     County?           @relation("TransportPickupCounty", fields: [pickupCountyId], references: [id])
-  dropoffCounty    County?           @relation("TransportDropoffCounty", fields: [dropoffCountyId], references: [id])
-  weatherAlert     WeatherAlert?     @relation("TransportWeatherAlerts", fields: [weatherAlertId], references: [id])
-  farmer           Farmer            @relation(fields: [farmerId], references: [id])
-  request          TransportRequest? @relation("RequestToBooking", fields: [requestId], references: [id])
+  transaction      Transaction?              @relation(fields: [transactionId], references: [id])
+  groupTransaction GroupTransaction?         @relation("TransportBookings", fields: [groupTransactionId], references: [id])
+  provider         TransportProvider         @relation(fields: [providerId], references: [id])
+  vehicle          TransportVehicle?         @relation(fields: [vehicleId], references: [id])
+  pickupCounty     County?                   @relation("TransportPickupCounty", fields: [pickupCountyId], references: [id])
+  dropoffCounty    County?                   @relation("TransportDropoffCounty", fields: [dropoffCountyId], references: [id])
+  weatherAlert     WeatherAlert?             @relation("TransportWeatherAlerts", fields: [weatherAlertId], references: [id])
+  farmer           Farmer                    @relation(fields: [farmerId], references: [id])
+  request          TransportRequest?         @relation("RequestToBooking", fields: [requestId], references: [id])
   events           DeliveryEvent[]
   allocations      TransportCostAllocation[]
 }
@@ -877,7 +905,7 @@ model TransportVehicle {
   createdAt          DateTime @default(now())
   updatedAt          DateTime @updatedAt
 
-  provider TransportProvider @relation(fields: [providerId], references: [id], onDelete: Cascade)
+  provider TransportProvider  @relation(fields: [providerId], references: [id], onDelete: Cascade)
   bookings TransportBooking[]
 }
 
@@ -958,7 +986,7 @@ model Geofence {
 }
 
 model Warehouse {
-  id           String   @id @default(cuid())
+  id           String       @id @default(cuid())
   name         String
   county       String?
   location     String?
@@ -966,8 +994,12 @@ model Warehouse {
   longitude    Float?
   capacityBags Int?
   pricePerBag  Float?
-  isActive     Boolean  @default(true)
-  createdAt    DateTime @default(now())
+  isActive     Boolean      @default(true)
+  createdAt    DateTime     @default(now())
+  groupId      String?
+  houseNumber  String?
+  size         String?
+  group        FarmerGroup? @relation("WarehouseGroup", fields: [groupId], references: [id])
 }
 
 // --- V2-8: Event-Driven Architecture ---
@@ -1046,4 +1078,46 @@ model DailyMetric {
   metrics   Json
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+// --- V2.1: Subscriptions ---
+
+enum SubscriptionType {
+  WEATHER_ALERTS
+  BUYER_DEMAND_ALERTS
+  PEST_ALERTS
+  BUYER_VERIFICATION
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  EXPIRED
+  CANCELLED
+  PENDING_PAYMENT
+}
+
+model Subscription {
+  id     String             @id @default(cuid())
+  type   SubscriptionType
+  status SubscriptionStatus @default(PENDING_PAYMENT)
+
+  farmerId String?
+  buyerId  String?
+
+  priceKsh Float
+
+  startedAt DateTime?
+  expiresAt DateTime?
+
+  mpesaRef          String?
+  checkoutRequestId String? @unique
+
+  createdAt DateTime @default(now())
+
+  farmer Farmer? @relation(fields: [farmerId], references: [id])
+  buyer  Buyer?  @relation(fields: [buyerId], references: [id])
+
+  @@index([farmerId])
+  @@index([buyerId])
+  @@index([status])
 }
