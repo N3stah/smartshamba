@@ -61,7 +61,7 @@ export default function BuyerForm({ buyer, onClose }: Props) {
       return;
     }
 
-    setSuccess(isEdit ? '✓ Buyer updated successfully' : '✓ Buyer created successfully');
+    setSuccess(isEdit ? 'Buyer updated successfully' : 'Buyer created successfully');
     setTimeout(() => {
       router.refresh();
       onClose();

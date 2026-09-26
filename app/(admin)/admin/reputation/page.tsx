@@ -57,11 +57,11 @@ export default function AdminReputationPage() {
             <Shield className="w-6 h-6 text-admin-primary" />
           </div>
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Trust Intelligence Engine</h1>
+            <h1 className="text-2xl font-bold text-text">Reputation & Trust</h1>
             <p className="text-sm text-gray-500">Continuous behavioral evaluation & objective metrics</p>
           </div>
         </div>
-        <Link href="/admin" className="text-sm text-gray-500 hover:text-gray-900 flex items-center gap-1 bg-white px-3 py-2 rounded-lg border border-gray-200 shadow-sm">
+        <Link href="/admin" className="text-sm text-gray-500 hover:text-text flex items-center gap-1 bg-white px-3 py-2 rounded-lg border border-gray-200 shadow-sm">
           <ArrowLeft className="w-4 h-4" /> Back
         </Link>
       </div>
@@ -73,7 +73,7 @@ export default function AdminReputationPage() {
 
       <div className="grid lg:grid-cols-2 gap-6">
         {/* Top Rated Farmers */}
-        <div className="bg-surface rounded-lg border border-border shadow-sm overflow-hidden">
+        <div className="bg-surface rounded-lg border border-border overflow-hidden">
           <div className="px-6 py-4 border-b border-gray-100 bg-green-50">
             <h2 className="font-semibold text-green-900 flex items-center gap-2"><Trophy className="w-4 h-4" /> Top Rated Farmers</h2>
           </div>
@@ -81,7 +81,7 @@ export default function AdminReputationPage() {
             {data.topFarmers.map((f: TrustEntry) => (
               <div key={f.id} className="p-4">
                 <div className="flex items-center justify-between">
-                  <span className="font-medium text-gray-900">{f.name}</span>
+                  <span className="font-medium text-text">{f.name}</span>
                   <span className="text-sm font-bold text-admin-primary">{f.score} - {f.level}</span>
                 </div>
                 {renderBreakdown(f.breakdown)}
@@ -92,7 +92,7 @@ export default function AdminReputationPage() {
         </div>
 
         {/* Top Rated Buyers */}
-        <div className="bg-surface rounded-lg border border-border shadow-sm overflow-hidden">
+        <div className="bg-surface rounded-lg border border-border overflow-hidden">
           <div className="px-6 py-4 border-b border-gray-100 bg-blue-50">
             <h2 className="font-semibold text-blue-900 flex items-center gap-2"><Trophy className="w-4 h-4" /> Top Rated Buyers</h2>
           </div>
@@ -100,7 +100,7 @@ export default function AdminReputationPage() {
             {data.topBuyers.map((b: TrustEntry) => (
               <div key={b.id} className="p-4">
                 <div className="flex items-center justify-between">
-                  <span className="font-medium text-gray-900">{b.name}</span>
+                  <span className="font-medium text-text">{b.name}</span>
                   <span className="text-sm font-bold text-blue-700">{b.score} - {b.level}</span>
                 </div>
                 {renderBreakdown(b.breakdown)}
@@ -112,7 +112,7 @@ export default function AdminReputationPage() {
       </div>
 
       {/* Suspicious Accounts */}
-      <div className="bg-white rounded-xl border border-red-200 shadow-sm overflow-hidden">
+      <div className="bg-surface rounded-lg border border-red-200 overflow-hidden">
         <div className="px-6 py-4 border-b border-gray-100 bg-red-50">
           <h2 className="font-semibold text-red-900 flex items-center gap-2"><AlertTriangle className="w-4 h-4" /> Suspicious Accounts (Score &lt; 40)</h2>
         </div>
@@ -126,7 +126,7 @@ export default function AdminReputationPage() {
               <span className="text-sm font-bold text-red-600">{s.score} - {s.level}</span>
             </div>
           ))}
-          {data.suspiciousAccounts.length === 0 && <p className="p-4 text-center text-gray-400 text-sm">No suspicious accounts detected. 🎉</p>}
+          {data.suspiciousAccounts.length === 0 && <p className="p-4 text-center text-gray-400 text-sm">No suspicious accounts detected.</p>}
         </div>
       </div>
     </div>

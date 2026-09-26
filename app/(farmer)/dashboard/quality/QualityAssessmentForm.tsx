@@ -80,7 +80,7 @@ export default function QualityAssessmentForm({ transactionId, transactionRef }:
   if (done) {
     return (
       <p className="text-xs text-green-700 font-medium mt-1">
-        ✓ Quality info submitted
+        Quality info submitted
       </p>
     );
   }

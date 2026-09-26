@@ -72,7 +72,7 @@ export default function BuyersPage() {
   return (
     <div>
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">Buyers</h1>
+        <h1 className="text-2xl font-bold text-text">Buyers</h1>
         <p className="text-gray-500 text-sm mt-1">Manage verified grain buyers</p>
       </div>
 
@@ -87,7 +87,7 @@ export default function BuyersPage() {
           </button>
         ) : (
           <form onSubmit={handleCreate} className="bg-surface rounded-lg border border-border shadow-sm p-6 mb-8">
-            <h2 className="text-lg font-bold text-gray-900 mb-4">Register New Buyer</h2>
+            <h2 className="text-lg font-bold text-text mb-4">Register New Buyer</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
               <div>
                 <label className="block text-xs font-medium text-gray-700 mb-1">Company Name *</label>
@@ -102,11 +102,11 @@ export default function BuyersPage() {
                 <input type="text" required value={formData.location} onChange={e => setFormData({...formData, location: e.target.value})} className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-admin-primary" />
               </div>
               <div>
-                <label className="block text-xs font-medium text-gray-700 mb-1">Price Per Bag (KSh) *</label>
+                <label className="block text-xs font-medium text-gray-700 mb-1">Price per bag (KSh) *</label>
                 <input type="number" required min="0" value={formData.pricePerBag} onChange={e => setFormData({...formData, pricePerBag: e.target.value})} className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-admin-primary" />
               </div>
               <div>
-                <label className="block text-xs font-medium text-gray-700 mb-1">Capacity (Bags) *</label>
+                <label className="block text-xs font-medium text-gray-700 mb-1">Capacity (bags) *</label>
                 <input type="number" required min="1" value={formData.capacityBags} onChange={e => setFormData({...formData, capacityBags: e.target.value})} className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-admin-primary" />
               </div>
             </div>
@@ -124,16 +124,16 @@ export default function BuyersPage() {
 
       <div className="grid gap-4">
         {buyers.map((buyer) => (
-          <div key={buyer.id} className={`bg-white rounded-xl border shadow-sm p-6 transition-all ${buyer.active ? 'border-gray-200' : 'border-gray-100 opacity-60'}`}>
+          <div key={buyer.id} className={`bg-surface rounded-lg border border-border p-6 transition-all ${buyer.active ? 'border-gray-200' : 'border-gray-100 opacity-60'}`}>
             <div className="flex items-start justify-between gap-4">
               <div className="flex-1">
                 <div className="flex items-center gap-2 flex-wrap">
-                  <h2 className="text-lg font-semibold text-gray-900">{buyer.name}</h2>
-                  {buyer.verified && <span className="bg-admin-secondary text-admin-primary text-xs px-2 py-0.5 rounded-full font-medium">✓ Verified</span>}
+                  <h2 className="text-lg font-semibold text-text">{buyer.name}</h2>
+                  {buyer.verified && <span className="bg-admin-secondary text-admin-primary text-xs px-2 py-0.5 rounded-full font-medium">Verified</span>}
                   {!buyer.active && <span className="bg-gray-100 text-gray-500 text-xs px-2 py-0.5 rounded-full font-medium">Inactive</span>}
                 </div>
-                <p className="text-gray-500 text-sm mt-1">📍 {buyer.location}</p>
-                <p className="text-gray-500 text-sm mt-1">📞 {buyer.phone ?? 'N/A'}</p>
+                <p className="text-gray-500 text-sm mt-1">{buyer.location}</p>
+                <p className="text-gray-500 text-sm mt-1">{buyer.phone ?? 'N/A'}</p>
                 <div className="mt-4 flex gap-8">
                   <div>
                     <p className="text-xs text-gray-400 uppercase">Price per bag</p>
@@ -141,13 +141,13 @@ export default function BuyersPage() {
                   </div>
                   <div>
                     <p className="text-xs text-gray-400 uppercase">Capacity</p>
-                    <p className="text-2xl font-bold text-gray-900">{buyer.capacityBags.toLocaleString()} bags</p>
+                    <p className="text-2xl font-bold text-text">{buyer.capacityBags.toLocaleString()} bags</p>
                   </div>
                 </div>
               </div>
               <div className="flex flex-col gap-2 items-end shrink-0">
                 <button onClick={() => handleVerify(buyer.id, buyer.verified)} className={`text-xs font-medium px-3 py-1.5 rounded-lg transition-colors ${buyer.verified ? 'bg-gray-100 text-gray-600 hover:bg-gray-200' : 'bg-blue-50 text-blue-700 hover:bg-blue-100 border border-blue-200'}`}>
-                  {buyer.verified ? 'Unverify' : 'Verify'}
+                  {buyer.verified ? 'Remove verification' : 'Verify buyer'}
                 </button>
               </div>
             </div>

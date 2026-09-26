@@ -146,8 +146,8 @@ export default function TransportDashboardPage() {
                   <p className="text-xs text-gray-500 mt-1">{req.quantityBags} bags</p>
                 </div>
                 <div className="flex gap-2 w-full md:w-auto">
-                  <Button onClick={() => setAcceptModal(req.id)} disabled={updatingId === req.id} className="flex-1 md:flex-none">Accept</Button>
-                  <Button onClick={() => handleDecline(req.id)} disabled={updatingId === req.id} variant="outline" className="flex-1 md:flex-none">Decline</Button>
+                  <Button onClick={() => setAcceptModal(req.id)} disabled={updatingId === req.id} className="flex-1 md:flex-none">Accept request</Button>
+                  <Button onClick={() => handleDecline(req.id)} disabled={updatingId === req.id} variant="outline" className="flex-1 md:flex-none">Decline request</Button>
                 </div>
               </div>
             ))}
@@ -185,22 +185,22 @@ export default function TransportDashboardPage() {
                 <div className="flex gap-2">
                   {b.status === 'ACCEPTED' && (
                     <button onClick={() => updateStatus(b.id, 'LOADED')} disabled={updatingId === b.id} className="flex-1 bg-yellow-500 text-white py-2.5 rounded-md text-sm font-semibold hover:bg-yellow-600 disabled:opacity-50 flex items-center justify-center gap-2">
-                      {updatingId === b.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <Package className="w-4 h-4" />} Mark Loaded
+                      {updatingId === b.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <Package className="w-4 h-4" />} Mark loaded
                     </button>
                   )}
                   {b.status === 'LOADED' && (
                     <button onClick={() => updateStatus(b.id, 'IN_TRANSIT')} disabled={updatingId === b.id} className="flex-1 bg-transport-route text-white py-2.5 rounded-md text-sm font-semibold hover:bg-transport-route/90 disabled:opacity-50 flex items-center justify-center gap-2">
-                      {updatingId === b.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <Truck className="w-4 h-4" />} Start Transit
+                      {updatingId === b.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <Truck className="w-4 h-4" />} Start transit
                     </button>
                   )}
                   {b.status === 'IN_TRANSIT' && (
                     <button onClick={() => setPodModal(b.id)} disabled={updatingId === b.id} className="flex-1 bg-green-600 text-white py-2.5 rounded-md text-sm font-semibold hover:bg-green-700 disabled:opacity-50 flex items-center justify-center gap-2">
-                      <Camera className="w-4 h-4" /> Capture POD
+                      <Camera className="w-4 h-4" /> Record proof of delivery
                     </button>
                   )}
                   {b.status === 'DELIVERED' && (
                     <button onClick={() => updateStatus(b.id, 'COMPLETED')} disabled={updatingId === b.id} className="flex-1 bg-transport-primary text-white py-2.5 rounded-md text-sm font-semibold hover:bg-transport-primary/90 disabled:opacity-50 flex items-center justify-center gap-2">
-                      <CheckCircle className="w-4 h-4" /> Mark Completed
+                      <CheckCircle className="w-4 h-4" /> Mark completed
                     </button>
                   )}
                 </div>
@@ -226,7 +226,7 @@ export default function TransportDashboardPage() {
             <div className="flex gap-2">
               <Button onClick={() => setAcceptModal(null)} variant="outline" className="flex-1">Cancel</Button>
               <Button onClick={() => handleAccept(acceptModal)} disabled={!selectedVehicle || updatingId === acceptModal} className="flex-1">
-                {updatingId === acceptModal ? <Loader2 className="w-4 h-4 animate-spin mx-auto" /> : 'Confirm Accept'}
+                {updatingId === acceptModal ? <Loader2 className="w-4 h-4 animate-spin mx-auto" /> : 'Confirm accept'}
               </Button>
             </div>
           </Card>
@@ -243,7 +243,7 @@ export default function TransportDashboardPage() {
             <div className="flex gap-2">
               <Button onClick={() => setPodModal(null)} variant="outline" className="flex-1">Cancel</Button>
               <button onClick={() => updateStatus(podModal, 'DELIVERED', podName)} disabled={updatingId === podModal || !podName.trim()} className="flex-1 bg-green-600 text-white py-2 rounded-md text-sm font-semibold hover:bg-green-700 disabled:opacity-50">
-                {updatingId === podModal ? <Loader2 className="w-4 h-4 animate-spin mx-auto" /> : 'Confirm Delivery'}
+                {updatingId === podModal ? <Loader2 className="w-4 h-4 animate-spin mx-auto" /> : 'Confirm delivery'}
               </button>
             </div>
           </Card>
