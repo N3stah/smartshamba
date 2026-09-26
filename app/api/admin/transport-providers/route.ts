@@ -5,7 +5,8 @@ import { requireRoleAuth, getStaffSession } from '@/lib/auth';
 import { StaffRole } from '@prisma/client';
 import bcrypt from 'bcryptjs';
 import * as Sentry from '@sentry/nextjs';
-
+import { assignSmartShambaId } from '@/lib/smartshamba-id';
+import { sendNotification } from '@/lib/notifications';
 
 export async function GET(req: NextRequest) {
   try {
@@ -34,26 +35,38 @@ export async function POST(req: NextRequest) {
 
     const body = await req.json();
     
-    // Generate a secure temporary password
+    if (!body.countyId) {
+      return NextResponse.json({ error: 'countyId is required' }, { status: 400 });
+    }
+
+    const county = await prisma.county.findUnique({ where: { id: body.countyId } });
+    if (!county) {
+      return NextResponse.json({ error: 'Invalid countyId' }, { status: 400 });
+    }
+
     const tempPassword = Math.random().toString(36).slice(-8) + Math.random().toString(36).toUpperCase().slice(-2);
     const hash = await bcrypt.hash(tempPassword, 10);
 
-    const provider = await prisma.transportProvider.create({
-      data: {
-        name: body.name,
-        phone: body.phone,
-        email: body.email || null,
-        contactPerson: body.contactPerson || null,
-        nationalId: body.nationalId || null,
-        baseLocation: body.baseLocation || null,
-        countyId: body.countyId || null,
-        ratePerKm: body.ratePerKm ? parseFloat(body.ratePerKm) : null,
-        passwordHash: hash,
-        verificationStatus: 'PENDING' // Default status
-      }
+    const { provider, smartshambaId } = await prisma.$transaction(async (tx) => {
+      const provider = await tx.transportProvider.create({
+        data: {
+          name: body.name,
+          phone: body.phone,
+          email: body.email || null,
+          contactPerson: body.contactPerson || null,
+          nationalId: body.nationalId || null,
+          baseLocation: body.baseLocation || null,
+          countyId: body.countyId,
+          ratePerKm: body.ratePerKm ? parseFloat(body.ratePerKm) : null,
+          passwordHash: hash,
+          verificationStatus: 'PENDING'
+        }
+      });
+
+      const sid = await assignSmartShambaId('TRANSPORT', provider.id, county.code, tx);
+      return { provider, smartshambaId: sid };
     });
 
-    // Audit Log
     await prisma.auditLog.create({
       data: {
         action: 'TRANSPORT_PROVIDER_CREATED',
@@ -62,12 +75,19 @@ export async function POST(req: NextRequest) {
         staffId: staff.id,
         entityType: 'TransportProvider',
         entityId: provider.id,
-        after: { name: provider.name, phone: provider.phone }
+        after: { name: provider.name, phone: provider.phone, smartshambaId: smartshambaId }
       }
     });
 
-    // Return the temporary password ONLY on creation so CTO can give it to the provider securely
-    return NextResponse.json({ success: true, provider, temporaryPassword: tempPassword });
+    if (provider.phone) {
+      await sendNotification({
+        type: 'TRANSACTION_CONFIRMATION',
+        recipientPhone: provider.phone,
+        body: `SmartShamba: Registration successful. Your ID is ${smartshambaId}.`
+      }).catch(e => console.error('[ADMIN] Transport SMS failed:', e));
+    }
+
+    return NextResponse.json({ success: true, provider, temporaryPassword: tempPassword, smartshambaId });
   } catch (error) {
     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') {
       const target = (error.meta?.target as string[]) || ['Field'];

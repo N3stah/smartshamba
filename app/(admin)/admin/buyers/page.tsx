@@ -13,26 +13,40 @@ interface Buyer {
   active: boolean;
 }
 
+interface County {
+  id: string;
+  name: string;
+}
+
 export default function BuyersPage() {
   const [buyers, setBuyers] = useState<Buyer[]>([]);
+  const [counties, setCounties] = useState<County[]>([]);
   const [showForm, setShowForm] = useState(false);
   const [submitting, setSubmitting] = useState(false);
-  const [formData, setFormData] = useState({ name: '', phone: '', location: '', pricePerBag: '', capacityBags: '' });
+  const [formData, setFormData] = useState({ name: '', phone: '', location: '', countyId: '', pricePerBag: '', capacityBags: '' });
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    async function fetchBuyers() {
+    async function fetchData() {
       try {
-        const res = await fetch('/api/admin/buyers');
-        if (res.ok) setBuyers(await res.json());
+        const [buyersRes, countiesRes] = await Promise.all([
+          fetch('/api/admin/buyers'),
+          fetch('/api/counties')
+        ]);
+        if (buyersRes.ok) setBuyers(await buyersRes.json());
+        if (countiesRes.ok) setCounties(await countiesRes.json());
       } catch (err) { console.error(err); }
       finally { setLoading(false); }
     }
-    fetchBuyers();
+    fetchData();
   }, []);
 
   async function handleCreate(e: React.FormEvent) {
     e.preventDefault();
+    if (!formData.countyId) {
+      alert('Please select a county');
+      return;
+    }
     setSubmitting(true);
     try {
       const res = await fetch('/api/admin/buyers', {
@@ -49,7 +63,7 @@ export default function BuyersPage() {
         alert(data.error || 'Failed to create buyer');
       } else {
         setBuyers(prev => [data, ...prev]);
-        setFormData({ name: '', phone: '', location: '', pricePerBag: '', capacityBags: '' });
+        setFormData({ name: '', phone: '', location: '', countyId: '', pricePerBag: '', capacityBags: '' });
         setShowForm(false);
       }
     } catch (err) {
@@ -76,7 +90,6 @@ export default function BuyersPage() {
         <p className="text-gray-500 text-sm mt-1">Manage verified grain buyers</p>
       </div>
 
-
       <div className="mb-6">
         {!showForm ? (
           <button 
@@ -102,8 +115,20 @@ export default function BuyersPage() {
                 <input type="text" required value={formData.location} onChange={e => setFormData({...formData, location: e.target.value})} className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-admin-primary" />
               </div>
               <div>
+                <label className="block text-xs font-medium text-gray-700 mb-1">County *</label>
+                <select 
+                  required 
+                  value={formData.countyId} 
+                  onChange={e => setFormData({...formData, countyId: e.target.value})}
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-admin-primary bg-white"
+                >
+                  <option value="">Select County...</option>
+                  {counties.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                </select>
+              </div>
+              <div>
                 <label className="block text-xs font-medium text-gray-700 mb-1">Price per bag (KSh) *</label>
-                <input type="number" required min="0" value={formData.pricePerBag} onChange={e => setFormData({...formData, pricePerBag: e.target.value})} className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-admin-primary" />
+                <input type="number" required min="0" value={formData.pricePerBag} onChange={e=> setFormData({...formData, pricePerBag: e.target.value})} className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-admin-primary" />
               </div>
               <div>
                 <label className="block text-xs font-medium text-gray-700 mb-1">Capacity (bags) *</label>

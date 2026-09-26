@@ -68,7 +68,7 @@ export const menuTree: Record<number, MenuScreen> = {
     render: (ctx) => {
       const lang = ctx.data?.lang ?? 'en';
       const countyList = PILOT_COUNTIES.map((c, i) => `${i + 1}. ${c}`).join('\\n');
-      return con(getUssdText(lang, `reg_county_${lang}`, { counties: countyList }));
+      return con(getUssdText(lang, `reg_county_${lang}`, { counties: countyList}));
     },
     onInput: async (input, ctx) => {
       const lang = ctx.data?.lang ?? 'en';
@@ -78,7 +78,7 @@ export const menuTree: Record<number, MenuScreen> = {
         const countyName = PILOT_COUNTIES[countyChoice - 1];
         const county = await prisma.county.findUnique({ where: { name: countyName } });
         if (!county) return { nextState: USSD_STATE.FARMER_REG_COUNTY };
-        const wards = await prisma.ward.findMany({ where: { countyId: county.id }, orderBy: { name: 'asc' }, take: 8 });
+        const wards = await prisma.ward.findMany({ where: { countyId: county.id}, orderBy: { name: 'asc' }, take: 8 });
         const wardList = wards.map((w, i) => `${i + 1}. ${w.name}`).join('\\n');
         return { nextState: USSD_STATE.FARMER_REG_WARD_SELECT, data: { ...ctx.data, countyId: county.id, countyName, wards } };
       }
@@ -92,20 +92,9 @@ export const menuTree: Record<number, MenuScreen> = {
       const name = sanitizeInput(ctx.data?.name);
       const nationalId = sanitizeNationalId(ctx.data?.nationalId);
       const location = sanitizeInput(input);
-      const farmer = await prisma.farmer.create({ data: { phone: ctx.phone, name, location, nationalId, language: lang } });
       
-      // Generate and assign SmartShamba ID
-      const countyCode = 'XX'; // Unknown for "Other County"
-      const smartshambaId = await assignSmartShambaId('FARMER', farmer.id, countyCode);
-      
-      // Send SMS with ID
-      await sendNotification({
-        type: 'TRANSACTION_CONFIRMATION',
-        recipientPhone: ctx.phone,
-        body: `SmartShamba: Registration successful. Your ID is ${smartshambaId}.`
-      }).catch(e => console.error('[USSD] SMS failed:', e));
-
-      return { nextState: USSD_STATE.FARMER_REG_OTP_PROMPT, data: { ...ctx.data, farmerId: farmer.id, smartshambaId } };
+      // Reject registration if county is not mapped
+      throw new Error('County code is required for SmartShamba ID. Cannot register via free-text location.');
     }
   },
   [USSD_STATE.FARMER_REG_WARD_SELECT]: {
@@ -130,22 +119,25 @@ export const menuTree: Record<number, MenuScreen> = {
       const countyId = ctx.data?.countyId;
       const countyName = ctx.data?.countyName;
       
-      const farmer = await prisma.farmer.create({
-        data: {
-          phone: ctx.phone,
-          name,
-          nationalId,
-          location: `${selectedWard.name}, ${countyName}`,
-          countyId,
-          wardId: selectedWard.id,
-          language: lang,
-        }
-      });
-
-      // Generate and assign SmartShamba ID
       const county = await prisma.county.findUnique({ where: { id: countyId } });
-      const countyCode = county?.code ?? 'XX';
-      const smartshambaId = await assignSmartShambaId('FARMER', farmer.id, countyCode);
+      if (!county?.code) throw new Error('County code missing for SmartShamba ID');
+      const countyCode = county.code;
+
+      const { farmer, smartshambaId } = await prisma.$transaction(async (tx) => {
+        const farmer = await tx.farmer.create({
+          data: {
+            phone: ctx.phone,
+            name,
+            nationalId,
+            location: `${selectedWard.name}, ${countyName}`,
+            countyId,
+            wardId: selectedWard.id,
+            language: lang,
+          }
+        });
+        const sid = await assignSmartShambaId('FARMER', farmer.id, countyCode, tx);
+        return { farmer, smartshambaId: sid };
+      });
       
       // Send SMS with ID
       await sendNotification({
@@ -170,24 +162,27 @@ export const menuTree: Record<number, MenuScreen> = {
       const selectedWard = wards[wardChoice - 1];
       const village = sanitizeInput(input);
       
-      const farmer = await prisma.farmer.create({
-        data: {
-          phone: ctx.phone,
-          name,
-          nationalId,
-          location: `${selectedWard?.name ?? village}, ${countyName}`,
-          countyId,
-          wardId: selectedWard?.id,
-          village,
-          language: lang,
-        }
+      const county = await prisma.county.findUnique({ where: { id: countyId } });
+      if (!county?.code) throw new Error('County code missing for SmartShamba ID');
+      const countyCode = county.code;
+
+      const { farmer, smartshambaId } = await prisma.$transaction(async (tx) => {
+        const farmer = await tx.farmer.create({
+          data: {
+            phone: ctx.phone,
+            name,
+            nationalId,
+            location: `${selectedWard?.name ?? village}, ${countyName}`,
+            countyId,
+            wardId: selectedWard?.id,
+            village,
+            language: lang,
+          }
+        });
+        const sid = await assignSmartShambaId('FARMER', farmer.id, countyCode, tx);
+        return { farmer, smartshambaId: sid };
       });
 
-      // Generate and assign SmartShamba ID
-      const county = await prisma.county.findUnique({ where: { id: countyId } });
-      const countyCode = county?.code ?? 'XX';
-      const smartshambaId = await assignSmartShambaId('FARMER', farmer.id, countyCode);
-      
       // Send SMS with ID
       await sendNotification({
         type: 'TRANSACTION_CONFIRMATION',
@@ -207,7 +202,7 @@ export const menuTree: Record<number, MenuScreen> = {
         if (error) return { nextState: USSD_STATE.ROOT }; // End session on error
         const body = otpTemplate({ code: code!, expiresMinutes: 5 });
         await sendNotification({ type: 'OTP', recipientPhone: ctx.phone, body }).catch(err => console.error('[USSD] SMS failed:', err));
-        return { nextState: USSD_STATE.ROOT, data: { ...ctx.data, otpSent: true } }; // End session
+        return { nextState: USSD_STATE.ROOT, data: { ...ctx.data, otpSent: true} }; // End session
       }
       return { nextState: USSD_STATE.ROOT, data: { ...ctx.data, otpSent: false } };
     }
@@ -257,7 +252,7 @@ export const menuTree: Record<number, MenuScreen> = {
     render: (ctx) => {
       const lang = ctx.farmer?.language ?? 'en';
       const product = ctx.data?.product === '1' ? (lang === 'sw' ? 'Mahindi' : 'Maize') : (lang === 'sw' ? 'Maharage' : 'Beans');
-      return con(getUssdText(lang, `sell_confirm_${lang}`, { product, quantity: ctx.data?.qty, price: ctx.data?.price }));
+      return con(getUssdText(lang, `sell_confirm_${lang}`, { product, quantity:ctx.data?.qty, price: ctx.data?.price }));
     },
     onInput: async (input, ctx) => {
       const lang = ctx.farmer?.language ?? 'en';
@@ -287,7 +282,7 @@ export const menuTree: Record<number, MenuScreen> = {
     onInput: async (input, ctx) => {
       const lang = ctx.farmer?.language ?? 'en';
       if (input === '1') {
-        const topBuyer = await prisma.buyer.findFirst({ orderBy: { pricePerBag: 'desc' } });
+        const topBuyer = await prisma.buyer.findFirst({ orderBy: { pricePerBag:'desc' } });
         return { nextState: USSD_STATE.FARMER_MAIN, data: { price: topBuyer?.pricePerBag } };
       }
       if (input === '2') return { nextState: USSD_STATE.FARMER_MAIN, data: { subscribeAlerts: true } };
@@ -320,7 +315,7 @@ export const menuTree: Record<number, MenuScreen> = {
       const txIndex = parseInt(input) - 1;
       const selectedTx = transactions[txIndex];
       if (!selectedTx) return { nextState: USSD_STATE.FARMER_MAIN };
-      return { nextState: USSD_STATE.FARMER_MAIN, data: { txDetails: selectedTx } };
+      return { nextState: USSD_STATE.FARMER_MAIN, data: { txDetails: selectedTx} };
     }
   },
 
@@ -353,13 +348,13 @@ export const menuTree: Record<number, MenuScreen> = {
 
   // ── BUYER SECTION ───────────────────────────────────────────
   [USSD_STATE.BUYER_MAIN]: {
-    render: () => end('Please visit smartshamba.vercel.app/buyer to manage your buyer account and offers.'),
+    render: () => end('Please visit smartshamba.vercel.app/buyer to manage yourbuyer account and offers.'),
     onInput: async () => ({ nextState: USSD_STATE.ROOT })
   },
 
   // ── ABOUT SECTION ──────────────────────────────────────────
   [USSD_STATE.ABOUT_MENU]: {
-    render: () => con(`About SmartShamba\n\n1. How it Works\n2. Bag Sizes (90kg & 50kg)\n3. Contact Support\n4. Website\n0. Back`),
+    render: () => con(`About SmartShamba\n\n1. How it Works\n2. Bag Sizes (90kg& 50kg)\n3. Contact Support\n4. Website\n0. Back`),
     onInput: async (input) => {
       if (input === '1') return { nextState: USSD_STATE.ROOT, data: { aboutText: 'How it Works:\n1. Register via USSD\n2. View buyer offers\n3. Confirm sale\n4. Get paid via M-Pesa' } };
       if (input === '2') return { nextState: USSD_STATE.ROOT, data: { aboutText: 'Bag Sizes:\nStandard bag is 90kg.\nSmall bag is 50kg.' } };

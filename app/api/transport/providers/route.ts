@@ -4,6 +4,8 @@ import { requireRoleAuth } from '@/lib/auth';
 import { StaffRole } from '@prisma/client';
 import { generateTransportRecommendation } from '@/lib/ai/transport-service';
 import * as Sentry from '@sentry/nextjs';
+import { assignSmartShambaId } from '@/lib/smartshamba-id';
+import { sendNotification } from '@/lib/notifications';
 
 export async function GET(req: NextRequest) {
   try {
@@ -21,7 +23,6 @@ export async function GET(req: NextRequest) {
       orderBy: { ratePerKm: 'asc' }
     });
 
-    // If transaction details are provided, get AI recommendation
     let aiRecommendation = null;
     if (bags > 0 && county) {
       aiRecommendation = await generateTransportRecommendation(bags, county, dropoff, providers.map(p => ({ ...p, vehicleType: 'Unknown', capacityBags: 0 })));
@@ -36,7 +37,6 @@ export async function GET(req: NextRequest) {
   }
 }
 
-// POST - Admin creates a transport provider (unchanged)
 export async function POST(req: NextRequest) {
   try {
     const authError = await requireRoleAuth(req, [StaffRole.CEO, StaffRole.CTO, StaffRole.CFO, StaffRole.PM]);
@@ -45,15 +45,30 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     const { name, phone, vehicleType, capacityBags, ratePerKm, countyId } = body;
 
-    if (!name || !phone || !vehicleType || !capacityBags || !ratePerKm) {
-      return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
+    if (!name || !phone || !vehicleType || !capacityBags || !ratePerKm || !countyId) {
+      return NextResponse.json({ error: 'Missing required fields including countyId' }, { status: 400 });
     }
 
-    const provider = await prisma.transportProvider.create({
-      data: { name, phone, ratePerKm, countyId }
+    const county = await prisma.county.findUnique({ where: { id: countyId } });
+    if (!county) {
+      return NextResponse.json({ error: 'Invalid countyId' }, { status: 400 });
+    }
+
+    const { provider, smartshambaId } = await prisma.$transaction(async (tx) => {
+      const provider = await tx.transportProvider.create({
+        data: { name, phone, ratePerKm, countyId }
+      });
+      const sid = await assignSmartShambaId('TRANSPORT', provider.id, county.code, tx);
+      return { provider, smartshambaId: sid };
     });
 
-    return NextResponse.json({ success: true, provider });
+    await sendNotification({
+      type: 'TRANSACTION_CONFIRMATION',
+      recipientPhone: provider.phone,
+      body: `SmartShamba: Registration successful. Your ID is ${smartshambaId}.`
+    }).catch(e => console.error('[API] Transport SMS failed:', e));
+
+    return NextResponse.json({ success: true, provider, smartshambaId });
   } catch (error) {
     console.error('[API] Create transport provider error:', error);
     Sentry.captureException(error);

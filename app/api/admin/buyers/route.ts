@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { requireRoleAuth } from '@/lib/auth';
 import { StaffRole } from '@prisma/client';
+import { assignSmartShambaId } from '@/lib/smartshamba-id';
+import { sendNotification } from '@/lib/notifications';
 
 export async function GET(req: NextRequest) {
   const authError = await requireRoleAuth(req, [StaffRole.CEO, StaffRole.CTO, StaffRole.CFO, StaffRole.PM]);
@@ -9,9 +11,7 @@ export async function GET(req: NextRequest) {
 
   try {
     const buyers = await prisma.buyer.findMany({
-      orderBy: { 
-        name: 'asc' 
-      },
+      orderBy: { name: 'asc' },
     });
     return NextResponse.json(buyers);
   } catch (error) {
@@ -26,21 +26,18 @@ export async function POST(req: NextRequest) {
 
   try {
     const body = await req.json();
-    const { name, location, pricePerBag, capacityBags, phone } = body;
+    const { name, location, pricePerBag, capacityBags, phone, countyId } = body;
 
-    if (!name || !location || !pricePerBag || !capacityBags) {
+    if (!name || !location || !pricePerBag || !capacityBags || !countyId) {
       return NextResponse.json(
-        { error: 'name, location, pricePerBag, and capacityBags are required' },
+        { error: 'name, location, pricePerBag, capacityBags, and countyId are required' },
         { status: 400 }
       );
     }
 
-    if (typeof pricePerBag !== 'number' || pricePerBag <= 0) {
-      return NextResponse.json({ error: 'pricePerBag must be a positive number' }, { status: 400 });
-    }
-
-    if (typeof capacityBags !== 'number' || capacityBags <= 0 || !Number.isInteger(capacityBags)) {
-      return NextResponse.json({ error: 'capacityBags must be a positive integer' }, { status: 400 });
+    const county = await prisma.county.findUnique({ where: { id: countyId } });
+    if (!county) {
+      return NextResponse.json({ error: 'Invalid countyId' }, { status: 400 });
     }
 
     const existing = await prisma.buyer.findFirst({
@@ -51,12 +48,24 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: `Buyer "${name}" already exists` }, { status: 409 });
     }
 
-    const buyer = await prisma.buyer.create({
-      data: { name, location, pricePerBag, capacityBags, phone, verified: true, active: true },
+    const { buyer, smartshambaId } = await prisma.$transaction(async (tx) => {
+      const buyer = await tx.buyer.create({
+        data: { name, location, pricePerBag, capacityBags, phone, countyId, verified: true, active: true },
+      });
+      const sid = await assignSmartShambaId('BUYER', buyer.id, county.code, tx);
+      return { buyer, smartshambaId: sid };
     });
 
-    console.log(`[ADMIN] Created buyer: ${buyer.name}`);
-    return NextResponse.json(buyer, { status: 201 });
+    if (buyer.phone) {
+      await sendNotification({
+        type: 'TRANSACTION_CONFIRMATION',
+        recipientPhone: buyer.phone,
+        body: `SmartShamba: Registration successful. Your ID is ${smartshambaId}.`
+      }).catch(e => console.error('[ADMIN] Buyer SMS failed:', e));
+    }
+
+    console.log(`[ADMIN] Created buyer: ${buyer.name} with ID: ${smartshambaId}`);
+    return NextResponse.json({ ...buyer, smartshambaId }, { status: 201 });
   } catch (error) {
     console.error('[ADMIN] Create buyer error:', (error as Error).message);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
