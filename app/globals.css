@@ -1,68 +1,12 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
-}
-
-/* ==========================================
-   GLOBAL TEXT CONTRAST & READABILITY IMPROVEMENTS
-   ========================================== */
-
-/* Darken default body text */
-body {
-  color: #1f2937; /* gray-800 */
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
-
-/* Headings and paragraphs use Tailwind utility classes for color and weight to support light/dark sections */
-
-/* Ensure text inside white cards is readable */
-.bg-white p, .bg-white li, .bg-white span, .bg-white label {
-  color: #374151; /* gray-700 */
-}
-
-/* Make small text more visible */
-.text-xs, .text-sm {
-  color: #4b5563; /* gray-600 */
-  font-weight: 500;
-}
-
-/* Darken muted text classes globally for better contrast */
-.text-gray-400 { color: #6b7280 !important; } /* gray-500 */
-.text-gray-500 { color: #4b5563 !important; } /* gray-600 */
-
-/* ── COUNTY TICKER MARQUEE ── */
+/* County Ticker Marquee */
 @keyframes marquee {
-  from { transform: translateX(0); }
-  to { transform: translateX(-50%); }
+  0% { transform: translateX(0%); }
+  100% { transform: translateX(-50%); }
 }
 .animate-marquee {
-  animation: marquee 40s linear infinite;
-}
-.animate-marquee:hover {
-  animation-play-state: paused;
+  animation: marquee 45s linear infinite;
 }
 @media (prefers-reduced-motion: reduce) {
   .animate-marquee {
@@ -70,15 +14,6 @@ body {
     overflow-x: auto;
     scrollbar-width: thin;
   }
-}
-
-/* Premium County Ticker Marquee */
-@keyframes marquee {
-  0% { transform: translateX(0%); }
-  100% { transform: translateX(-50%); }
-}
-.animate-marquee {
-  animation: marquee 45s linear infinite;
 }
 
 
