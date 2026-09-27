@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { getAuthenticatedUser } from '@/lib/auth'; // Assumed helper
+import { getFarmerSession, getBuyerSession } from '@/lib/auth';
 import { initiateStkPush } from '@/lib/mpesa-stk';
 import { getPlanDetails } from '@/lib/subscriptions/plans';
 import { normalizeMsisdn } from '@/lib/phone';
@@ -9,8 +9,34 @@ import * as Sentry from '@sentry/nextjs';
 
 export async function POST(req: NextRequest) {
   try {
-    const user = await getAuthenticatedUser(req);
-    if (!user) {
+    let userType: 'FARMER' | 'BUYER' | null = null;
+    let userId: string | null = null;
+    let phone: string | null = null;
+
+    // 1. Authenticate Farmer or Buyer
+    const farmerPhone = getFarmerSession(req);
+    if (farmerPhone) {
+      const farmer = await prisma.farmer.findUnique({ where: { phone: farmerPhone } });
+      if (farmer) {
+        userType = 'FARMER';
+        userId = farmer.id;
+        phone = farmer.phone;
+      }
+    }
+
+    if (!userId) {
+      const buyerPhone = getBuyerSession(req);
+      if (buyerPhone) {
+        const buyer = await prisma.buyer.findFirst({ where: { phone: buyerPhone } });
+        if (buyer) {
+          userType = 'BUYER';
+          userId = buyer.id;
+          phone = buyer.phone;
+        }
+      }
+    }
+
+    if (!userId || !phone || !userType) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
@@ -21,21 +47,22 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Subscription type and billing period are required' }, { status: 400 });
     }
 
+    // 2. Server-Side Pricing Authority
     const plan = getPlanDetails(type as SubscriptionType, billingPeriod as SubscriptionBillingPeriod);
     if (!plan) {
       return NextResponse.json({ error: 'Invalid subscription plan' }, { status: 400 });
     }
 
-    const normalizedPhone = normalizeMsisdn(user.phone);
+    const normalizedPhone = normalizeMsisdn(phone);
     if (!normalizedPhone) {
       return NextResponse.json({ error: 'Invalid phone number format' }, { status: 400 });
     }
 
-    // Idempotency: Check for existing PENDING_PAYMENT within the last 5 minutes
+    // 3. Initiation Idempotency (Check for existing PENDING_PAYMENT within last 5 mins)
     const fiveMinsAgo = new Date(Date.now() - 5 * 60 * 1000);
     const existingPending = await prisma.subscription.findFirst({
       where: {
-        OR: [{ farmerId: user.id }, { buyerId: user.id }],
+        OR: [{ farmerId: userId }, { buyerId: userId }],
         type: type as SubscriptionType,
         status: 'PENDING_PAYMENT',
         createdAt: { gte: fiveMinsAgo },
@@ -50,19 +77,19 @@ export async function POST(req: NextRequest) {
       });
     }
 
-    // Create/Reuse Subscription Record
+    // 4. Create PENDING_PAYMENT Subscription
     const subscription = await prisma.subscription.create({
       data: {
         type: type as SubscriptionType,
         billingPeriod: billingPeriod as SubscriptionBillingPeriod,
         status: 'PENDING_PAYMENT',
         priceKsh: plan.priceKsh,
-        farmerId: user.role === 'FARMER' ? user.id : null,
-        buyerId: user.role === 'BUYER' ? user.id : null,
+        farmerId: userType === 'FARMER' ? userId : null,
+        buyerId: userType === 'BUYER' ? userId : null,
       },
     });
 
-    // Initiate STK Push
+    // 5. Initiate STK Push
     const stkResult = await initiateStkPush(
       normalizedPhone,
       plan.priceKsh,
@@ -79,7 +106,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: stkResult.error || 'STK initiation failed' }, { status: 500 });
     }
 
-    // Save CheckoutRequestID
+    // 6. Save CheckoutRequestID
     await prisma.subscription.update({
       where: { id: subscription.id },
       data: { checkoutRequestId: stkResult.checkoutRequestId },
