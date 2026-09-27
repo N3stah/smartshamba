@@ -1089,6 +1089,11 @@ enum SubscriptionType {
   BUYER_VERIFICATION
 }
 
+enum SubscriptionBillingPeriod {
+  MONTHLY
+  YEARLY
+}
+
 enum SubscriptionStatus {
   ACTIVE
   EXPIRED
@@ -1105,6 +1110,7 @@ model Subscription {
   buyerId  String?
 
   priceKsh Float
+  billingPeriod SubscriptionBillingPeriod?
 
   startedAt DateTime?
   expiresAt DateTime?
