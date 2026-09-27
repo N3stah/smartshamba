@@ -61,12 +61,21 @@ export async function sendRawSms(to: string, message: string): Promise<SmsResult
       8000
     );
 
-    const data: ATResponse = await res.json();
-    const status  = data.SMSMessageData?.Recipients?.[0]?.status ?? 'Unknown';
-    const success = status === 'Success';
+    // Safely parse JSON, as AT sometimes returns plain text on errors
+    const rawText = await res.text();
+    try {
+      const data: ATResponse = JSON.parse(rawText);
+      const status  = data.SMSMessageData?.Recipients?.[0]?.status ?? 'Unknown';
+      const success = status === 'Success';
 
-    console.log('[SMS]', success ? 'sent' : 'failed', 'status:', status, 'to:', normalized);
-    return { success, providerResponse: status };
+      console.log('[SMS]', success ? 'sent' : 'failed', 'status:', status, 'to:', normalized);
+      return { success, providerResponse: status };
+    } catch (parseError) {
+      // Not a JSON response (e.g., "The supplied phone number is not registered in the sandbox")
+      console.error('[SMS] AT response not JSON:', rawText);
+      return { success: false, providerResponse: rawText };
+    }
+
   } catch (error) {
     const err = error as Error;
     console.error('[SMS] sendRawSms error:', err.message);

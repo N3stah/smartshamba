@@ -140,7 +140,7 @@ export const menuTree: Record<number, MenuScreen> = {
       });
       
       // Send SMS with ID
-      await sendNotification({
+      sendNotification({
         type: 'TRANSACTION_CONFIRMATION',
         recipientPhone: ctx.phone,
         body: `SmartShamba: Registration successful. Your ID is ${smartshambaId}.`
@@ -184,7 +184,7 @@ export const menuTree: Record<number, MenuScreen> = {
       });
 
       // Send SMS with ID
-      await sendNotification({
+      sendNotification({
         type: 'TRANSACTION_CONFIRMATION',
         recipientPhone: ctx.phone,
         body: `SmartShamba: Registration successful. Your ID is ${smartshambaId}.`
@@ -201,7 +201,7 @@ export const menuTree: Record<number, MenuScreen> = {
         const { code, error } = await createOtp(ctx.phone);
         if (error) return { nextState: USSD_STATE.ROOT }; // End session on error
         const body = otpTemplate({ code: code!, expiresMinutes: 5 });
-        await sendNotification({ type: 'OTP', recipientPhone: ctx.phone, body }).catch(err => console.error('[USSD] SMS failed:', err));
+        sendNotification({ type: 'OTP', recipientPhone: ctx.phone, body }).catch(err => console.error('[USSD] SMS failed:', err));
         return { nextState: USSD_STATE.ROOT, data: { ...ctx.data, otpSent: true} }; // End session
       }
       return { nextState: USSD_STATE.ROOT, data: { ...ctx.data, otpSent: false } };
@@ -339,7 +339,7 @@ export const menuTree: Record<number, MenuScreen> = {
         const { code, error } = await createOtp(ctx.phone);
         if (error) return { nextState: USSD_STATE.FARMER_MAIN };
         const body = otpTemplate({ code: code!, expiresMinutes: 5 });
-        await sendNotification({ type: 'OTP', recipientPhone: ctx.phone, body }).catch(err => console.error('[USSD] SMS failed:', err));
+        sendNotification({ type: 'OTP', recipientPhone: ctx.phone, body }).catch(err => console.error('[USSD] SMS failed:', err));
         return { nextState: USSD_STATE.FARMER_MAIN, data: { otpSent: true } };
       }
       return { nextState: USSD_STATE.FARMER_MAIN };
