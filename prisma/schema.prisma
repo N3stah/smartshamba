@@ -387,8 +387,8 @@ model NotificationPreference {
   weeklyMarketReport Boolean  @default(true)
   harvestTips        Boolean  @default(true)
   qualityAlerts      Boolean  @default(true)
-  weatherAlerts      Boolean  @default(true)
   buyerDemandAlerts  Boolean  @default(true)
+  weatherAlerts      Boolean  @default(true)
   disputeUpdates     Boolean  @default(true)
   createdAt          DateTime @default(now())
   updatedAt          DateTime @updatedAt
@@ -457,6 +457,7 @@ model ProduceListing {
   product            String // e.g., "Maize", "Beans"
   quantityBags       Int
   pricePerBag        Float
+  bagSizeKg          Int?
   status             String              @default("ACTIVE") // ACTIVE, CLOSED
   createdAt          DateTime            @default(now())
   farmer             Farmer              @relation(fields: [farmerId], references: [id])
