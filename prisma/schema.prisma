@@ -387,6 +387,8 @@ model NotificationPreference {
   weeklyMarketReport Boolean  @default(true)
   harvestTips        Boolean  @default(true)
   qualityAlerts      Boolean  @default(true)
+  weatherAlerts      Boolean  @default(true)
+  buyerDemandAlerts  Boolean  @default(true)
   disputeUpdates     Boolean  @default(true)
   createdAt          DateTime @default(now())
   updatedAt          DateTime @updatedAt
@@ -415,7 +417,7 @@ model Advisory {
 
 model QualityAssessment {
   id             String   @id @default(cuid())
-  transactionId  String   @unique
+  transactionId  String?  @unique
   moistureAnswer String?
   grainColour    String?
   brokenGrain    String?
