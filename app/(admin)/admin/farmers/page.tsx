@@ -4,7 +4,6 @@ import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import VerifyButton from '@/components/admin/VerifyButton';
 import CopyButton from '@/components/ui/CopyButton';
-import CopyButton from '@/components/ui/CopyButton';
 
 export const dynamic = 'force-dynamic';
 
