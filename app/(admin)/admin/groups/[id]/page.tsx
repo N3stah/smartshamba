@@ -26,8 +26,6 @@ export default async function AdminGroupDetailsPage({
       county: true,
       ward: true,
       createdBy: true,
-      verified: true,
-      whatsappApproved: true,
 
       members: {
         include: {
