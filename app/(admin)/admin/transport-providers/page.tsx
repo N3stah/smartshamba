@@ -1,6 +1,7 @@
 'use client';
 import { useEffect, useState } from 'react';
-import { Loader2, Truck, CheckCircle, XCircle, Phone, MapPin, Plus, ShieldCheck, Ban, RotateCcw, Car, Search, Edit, Pencil } from 'lucide-react';
+import { Loader2, Truck, CheckCircle, XCircle, Phone, MapPin, Plus, ShieldCheck, Ban, RotateCcw, Car, Search, Edit, Pencil, CreditCard } from 'lucide-react';
+import CopyButton from '@/components/ui/CopyButton';
 
 interface Vehicle {
   id: string;
@@ -22,6 +23,9 @@ interface Provider {
   verificationStatus: string;
   active: boolean;
   vehicles: Vehicle[];
+  smartshambaId?: string | null;
+  nationalId?: string | null;
+  licenseNumber?: string | null;
 }
 
 export default function AdminTransportProvidersPage() {
@@ -203,8 +207,24 @@ export default function AdminTransportProvidersPage() {
             <div className="flex flex-col md:flex-row justify-between mb-4">
               <div>
                 <h3 className="font-bold text-gray-900 text-lg">{p.name}</h3>
-                <p className="text-sm text-gray-500">{p.contactPerson || "N/A"} • {p.phone}</p>
-                <p className="text-xs text-gray-400">{p.email || "No email"} • {p.baseLocation || "No base location"}</p>
+                {p.smartshambaId && (
+                  <div className="flex items-center mt-0.5">
+                    <span className="text-xs text-gray-500 font-mono">{p.smartshambaId}</span>
+                    <CopyButton text={p.smartshambaId} />
+                  </div>
+                )}
+                <p className="text-sm text-gray-500 mt-1">{p.contactPerson || "N/A"} • {p.phone}</p>
+                <p className="text-xs text-gray-400 flex items-center gap-1">
+                  {p.email || "No email"} • {p.baseLocation || "No base location"}
+                </p>
+                <div className="flex flex-wrap gap-x-4 gap-y-1 mt-1 text-xs text-gray-500">
+                  {p.nationalId && <span>ID: {p.nationalId}</span>}
+                  {p.licenseNumber && <span>Lic: {p.licenseNumber}</span>}
+                </div>
+                <div className="flex gap-4 mt-1 text-xs text-gray-500">
+                  {p.nationalId && <span>ID: {p.nationalId}</span>}
+                  {p.licenseNumber && <span>Lic: {p.licenseNumber}</span>}
+                </div>
               </div>
               <div className="flex flex-col items-start md:items-end gap-2 mt-2 md:mt-0">
                 <div className="flex gap-2">

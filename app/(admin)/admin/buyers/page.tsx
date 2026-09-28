@@ -1,6 +1,7 @@
 'use client';
 import { useState, useEffect } from 'react';
-import { UserPlus, Loader2 } from 'lucide-react';
+import { UserPlus, Loader2, Mail, CreditCard, MapPin, Phone } from 'lucide-react';
+import CopyButton from '@/components/ui/CopyButton';
 
 interface Buyer {
   id: string;
@@ -11,6 +12,10 @@ interface Buyer {
   capacityBags: number;
   verified: boolean;
   active: boolean;
+  smartshambaId: string | null;
+  email: string | null;
+  nationalId: string | null;
+  poBox: string | null;
 }
 
 interface County {
@@ -157,8 +162,24 @@ export default function BuyersPage() {
                   {buyer.verified && <span className="bg-admin-secondary text-admin-primary text-xs px-2 py-0.5 rounded-full font-medium">Verified</span>}
                   {!buyer.active && <span className="bg-gray-100 text-gray-500 text-xs px-2 py-0.5 rounded-full font-medium">Inactive</span>}
                 </div>
-                <p className="text-gray-500 text-sm mt-1">{buyer.location}</p>
-                <p className="text-gray-500 text-sm mt-1">{buyer.phone ?? 'N/A'}</p>
+                
+                {buyer.smartshambaId ? (
+                  <div className="flex items-center mt-1">
+                    <span className="text-xs text-gray-500 font-mono">{buyer.smartshambaId}</span>
+                    <CopyButton text={buyer.smartshambaId} />
+                  </div>
+                ) : (
+                  <p className="text-xs text-gray-400 italic mt-1">SmartShamba ID: Not assigned</p>
+                )}
+
+                <div className="mt-3 space-y-1 text-sm text-gray-500">
+                  <p className="flex items-center gap-2"><MapPin className="w-4 h-4 text-gray-400" /> {buyer.location}</p>
+                  <p className="flex items-center gap-2"><Phone className="w-4 h-4 text-gray-400" /> {buyer.phone ?? 'N/A'}</p>
+                  {buyer.email && <p className="flex items-center gap-2"><Mail className="w-4 h-4 text-gray-400" /> {buyer.email}</p>}
+                  {buyer.nationalId && <p className="flex items-center gap-2"><CreditCard className="w-4 h-4 text-gray-400" /> ID: {buyer.nationalId}</p>}
+                  {buyer.poBox && <p className="flex items-center gap-2"><MapPin className="w-4 h-4 text-gray-400" /> P.O. Box: {buyer.poBox}</p>}
+                </div>
+
                 <div className="mt-4 flex gap-8">
                   <div>
                     <p className="text-xs text-gray-400 uppercase">Price per bag</p>

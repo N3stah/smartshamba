@@ -6,7 +6,8 @@ import Link from 'next/link';
 import { prisma } from '@/lib/prisma';
 import EditFarmerForm from '@/components/admin/EditFarmerForm';
 import StatusBadge from '@/components/ui/StatusBadge';
-import { ArrowLeft, ShieldCheck, MapPin, Phone, User, Globe, Calendar } from 'lucide-react';
+import { ArrowLeft, ShieldCheck, MapPin, Phone, User, Globe, Calendar, CreditCard, Mail } from 'lucide-react';
+import CopyButton from '@/components/ui/CopyButton';
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -73,7 +74,20 @@ export default async function AdminFarmerDetailPage({ params }: PageProps) {
             </div>
             
             <div className="space-y-3 text-sm text-gray-600 border-t border-gray-100 pt-4">
+              {farmer.smartshambaId && (
+                <p className="flex items-center gap-2">
+                  <CreditCard className="w-4 h-4 text-gray-400" />
+                  <span className="font-mono text-xs">{farmer.smartshambaId}</span>
+                  <CopyButton text={farmer.smartshambaId} />
+                </p>
+              )}
               <p className="flex items-center gap-2"><Phone className="w-4 h-4 text-gray-400" /> {farmer.phone}</p>
+              {farmer.nationalId && (
+                <p className="flex items-center gap-2"><User className="w-4 h-4 text-gray-400" /> ID: {farmer.nationalId}</p>
+              )}
+              {farmer.email && (
+                <p className="flex items-center gap-2"><Mail className="w-4 h-4 text-gray-400" /> {farmer.email}</p>
+              )}
               <p className="flex items-center gap-2"><MapPin className="w-4 h-4 text-gray-400" /> {farmer.village ?? farmer.location ?? 'N/A'}</p>
               <p className="flex items-center gap-2"><Globe className="w-4 h-4 text-gray-400" /> {farmer.language.toUpperCase()}</p>
               <p className="flex items-center gap-2"><Calendar className="w-4 h-4 text-gray-400" /> Joined: {new Date(farmer.createdAt).toLocaleDateString()}</p>

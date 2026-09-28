@@ -3,6 +3,8 @@ import { getAdminSession } from '@/lib/auth';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import VerifyButton from '@/components/admin/VerifyButton';
+import CopyButton from '@/components/ui/CopyButton';
+import CopyButton from '@/components/ui/CopyButton';
 
 export const dynamic = 'force-dynamic';
 
@@ -26,6 +28,8 @@ export default async function FarmersPage() {
           <thead>
             <tr className="border-b border-gray-200 bg-gray-50">
               <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase">Farmer</th>
+              <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase">SmartShamba ID</th>
+              <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase">SmartShamba ID</th>
               <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase">Phone</th>
               <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase">Location</th>
               <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase">Status</th>
@@ -39,6 +43,26 @@ export default async function FarmersPage() {
                   <Link href={`/admin/farmers/${farmer.id}`} className="text-admin-primary hover:underline">
                     {farmer.name ?? <span className="text-gray-400 italic">No name</span>}
                   </Link>
+                </td>
+                <td className="px-4 py-3 text-xs text-gray-500 flex items-center">
+                  {farmer.smartshambaId ? (
+                    <>
+                      <span className="font-mono">{farmer.smartshambaId}</span>
+                      <CopyButton text={farmer.smartshambaId} />
+                    </>
+                  ) : (
+                    <span className="text-gray-400 italic">Not assigned</span>
+                  )}
+                </td>
+                <td className="px-4 py-3 text-xs text-gray-500 flex items-center">
+                  {farmer.smartshambaId ? (
+                    <>
+                      <span className="font-mono">{farmer.smartshambaId}</span>
+                      <CopyButton text={farmer.smartshambaId} />
+                    </>
+                  ) : (
+                    <span className="text-gray-400 italic">Not assigned</span>
+                  )}
                 </td>
                 <td className="px-4 py-3 text-gray-600 font-mono text-xs">{farmer.phone}</td>
                 <td className="px-4 py-3 text-gray-600">{farmer.location ?? '—'}</td>
