@@ -2,6 +2,7 @@ export const dynamic = 'force-dynamic';
 
 
 import { notFound } from "next/navigation";
+import GroupApprovalControls from "./GroupApprovalControls";
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 
@@ -25,6 +26,8 @@ export default async function AdminGroupDetailsPage({
       county: true,
       ward: true,
       createdBy: true,
+      verified: true,
+      whatsappApproved: true,
 
       members: {
         include: {
@@ -120,6 +123,19 @@ export default async function AdminGroupDetailsPage({
             KSh {totalSales.toLocaleString()}
           </p>
         </div>
+      </div>
+
+      {/* Approval Controls */}
+      <div className="rounded-xl border bg-white shadow-sm p-6 space-y-4">
+        <div className="border-b pb-4">
+          <h2 className="font-semibold">Approval Status</h2>
+          <p className="text-sm text-gray-500">Manage group verification and WhatsApp link exposure.</p>
+        </div>
+        <GroupApprovalControls 
+          groupId={group.id} 
+          initialVerified={group.verified} 
+          initialWhatsappApproved={group.whatsappApproved} 
+        />
       </div>
 
       {/* Group Information */}

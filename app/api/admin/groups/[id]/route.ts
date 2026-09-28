@@ -56,7 +56,7 @@ export async function PATCH(
   try {
     const { id } = await params;
     const body = await req.json();
-    const { name, description, village, countyId, wardId, active } = body;
+    const { name, description, village, countyId, wardId, active, verified, whatsappApproved } = body;
 
     const existing = await prisma.farmerGroup.findUnique({ where: { id } });
     if (!existing) {
@@ -72,6 +72,8 @@ export async function PATCH(
         ...(countyId !== undefined && { countyId }),
         ...(wardId !== undefined && { wardId }),
         ...(active !== undefined && { active }),
+        ...(verified !== undefined && { verified }),
+        ...(whatsappApproved !== undefined && { whatsappApproved }),
       },
     });
 

@@ -999,6 +999,8 @@ model Warehouse {
   groupId      String?
   houseNumber  String?
   size         String?
+  whatsappLink String?
+  whatsappApproved Boolean @default(false)
   group        FarmerGroup? @relation("WarehouseGroup", fields: [groupId], references: [id])
 }
 
