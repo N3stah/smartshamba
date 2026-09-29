@@ -5,10 +5,8 @@ import { con, end } from '@/lib/africastalking';
 import { checkRateLimit } from '@/lib/rateLimit';
 import { getUssdText } from '@/lib/ussd/i18n';
 import { menuTree } from '@/lib/ussd/menu-tree';
-import { sendNotification } from '@/lib/notifications';
 import { USSD_STATE } from '@/lib/ussd/states';
-import { initiateStkPush } from '@/lib/mpesa-stk';
-import { SubscriptionType } from '@prisma/client';
+import { sendNotification } from '@/lib/notifications';
 
 function validateAtRequest(req: NextRequest): boolean {
   if (process.env.AT_USERNAME === 'sandbox') return true;
@@ -38,6 +36,7 @@ export async function POST(req: NextRequest) {
     }
 
     const farmer = await prisma.farmer.findUnique({ where: { phone: phoneNumber } });
+    const buyer = await prisma.buyer.findFirst({ where: { phone: phoneNumber } });
 
     const steps = text.split('*').filter(Boolean);
     const currentInput = steps.length > 0 ? steps[steps.length - 1] : '';
@@ -48,13 +47,14 @@ export async function POST(req: NextRequest) {
       state: session.state,
       data: session.data as Record<string, unknown> | null,
       farmer,
+      buyer,
     };
 
     const currentScreen = menuTree[ctx.state];
     if (!currentScreen) {
       console.error(`[USSD] State ${ctx.state} not found. Resetting.`);
       await prisma.ussdSession.update({ where: { sessionId }, data: { state: USSD_STATE.ROOT, data: {} } });
-      return new NextResponse(con(getUssdText(farmer?.language ?? 'en', 'main_menu')), { status: 200, headers: { 'Content-Type': 'text/plain' } });
+      return new NextResponse(con(getUssdText(farmer?.language ?? buyer?.language ?? 'en', 'main_menu')), { status: 200, headers: { 'Content-Type': 'text/plain' } });
     }
 
     if (text === '') {
@@ -66,10 +66,10 @@ export async function POST(req: NextRequest) {
     }
 
     const { nextState, data } = await currentScreen.onInput(currentInput, ctx);
-    const lang = ctx.farmer?.language ?? 'en';
+    const lang = ctx.farmer?.language ?? ctx.buyer?.language ?? 'en';
 
     // Handle terminal states
-    if (nextState === USSD_STATE.ROOT || nextState === USSD_STATE.FARMER_MAIN) {
+    if (nextState === USSD_STATE.ROOT || nextState === USSD_STATE.FARMER_MAIN || nextState === USSD_STATE.BUYER_MAIN) {
       const terminalData = data || {};
       let endResponse = '';
 
@@ -81,8 +81,11 @@ export async function POST(req: NextRequest) {
         const product = ctx.data?.product === '1' ? (lang === 'sw' ? 'Mahindi' : 'Maize') : (lang === 'sw' ? 'Maharage' : 'Beans');
         endResponse = end(getUssdText(lang, `sell_success_${lang}`, { quantity: ctx.data?.qty as number, product, price: ctx.data?.price as number }));
         sendNotification({ type: 'TRANSACTION_CONFIRMATION', recipientPhone: ctx.phone, body: `SmartShamba: Produce posted! ${ctx.data?.qty} bags of ${product} at KSh ${ctx.data?.price}.` }).catch(e => console.error('[USSD] SMS failed:', e));
+      } else if (terminalData.buyerDemandCreated) {
+        endResponse = end(getUssdText(lang, `buyer_demand_success_${lang}`));
+        sendNotification({ type: 'TRANSACTION_CONFIRMATION', recipientPhone: ctx.phone, body: `SmartShamba: Demand posted! ${ctx.data?.qty} bags of Maize at KSh ${ctx.data?.price}.` }).catch(e => console.error('[USSD] SMS failed:', e));
       } else if (terminalData.groupsJoinSuccess) {
-        const waLink = terminalData.waLink as string | null;
+        const waLink = terminalData.waLink as string | undefined;
         if (waLink) {
           endResponse = end(getUssdText(lang, `groups_join_success_${lang}`, { name: terminalData.groupName as string, link: waLink }));
           sendNotification({ type: 'TRANSACTION_CONFIRMATION', recipientPhone: ctx.phone, body: `SmartShamba: You joined ${terminalData.groupName}. WhatsApp: ${waLink}` }).catch(e => console.error('[USSD] SMS failed:', e));
@@ -122,14 +125,6 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    // Handle STK Push for paid alerts
-    if (nextState === USSD_STATE.FARMER_ALERTS_PAID_CONFIRM && data) {
-      const plan = data as any;
-      const endResponse = await handleStkPush(ctx.farmer!, plan.subType, plan.planName, plan.price, lang);
-      await prisma.ussdSession.delete({ where: { sessionId } }).catch(() => {});
-      return new NextResponse(endResponse, { status: 200, headers: { 'Content-Type': 'text/plain' } });
-    }
-
     // Persist and render next screen
     const nextScreen = menuTree[nextState];
     if (!nextScreen) {
@@ -155,24 +150,5 @@ export async function POST(req: NextRequest) {
     Sentry.captureException(error);
     await Sentry.flush(2000);
     return new NextResponse(getUssdText('en', 'error_service_en'), { status: 200, headers: { 'Content-Type': 'text/plain' } });
-  }
-}
-
-async function handleStkPush(farmer: any, subType: string, planName: string, price: number, lang: string): Promise<string> {
-  try {
-    const sub = await prisma.subscription.create({
-      data: { type: subType as SubscriptionType, billingPeriod: 'MONTHLY', status: 'PENDING_PAYMENT', priceKsh: price, farmerId: farmer.id }
-    });
-    const stkResult = await initiateStkPush(farmer.phone, price, sub.id, `Subscription ${planName}`);
-    if (stkResult.success) {
-      await prisma.subscription.update({ where: { id: sub.id }, data: { checkoutRequestId: stkResult.checkoutRequestId } });
-      return end(getUssdText(lang, `alerts_paid_initiated_${lang}`));
-    } else {
-      await prisma.subscription.update({ where: { id: sub.id }, data: { status: 'CANCELLED' } });
-      return end(getUssdText(lang, `alerts_paid_failed_${lang}`));
-    }
-  } catch (error) {
-    console.error('[STK] USSD initiation failed:', (error as Error).message);
-    return end(getUssdText(lang, `alerts_paid_failed_${lang}`));
   }
 }

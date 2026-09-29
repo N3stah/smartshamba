@@ -471,6 +471,7 @@ model BuyerDemand {
   buyerId      String
   product      String
   quantityBags Int
+  pricePerBag  Float?
   location     String
   status       String    @default("ACTIVE") // ACTIVE, CLOSED
   createdAt    DateTime  @default(now())
