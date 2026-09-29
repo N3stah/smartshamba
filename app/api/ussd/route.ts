@@ -123,6 +123,7 @@ export async function POST(req: NextRequest) {
         endResponse = end(getUssdText(lang, `bank_sub_cancelled_${lang}`));
       } else if (terminalData.qcSuccess) {
         endResponse = end(getUssdText(lang, `qc_success_${lang}`));
+        sendNotification({ type: 'QUALITY_ADVISORY', recipientPhone: ctx.phone, body: `SmartShamba: Quality check submitted successfully.` }).catch(e => console.error('[USSD] SMS failed:', e));
       } else if (terminalData.loadsNone) {
         endResponse = end(getUssdText(lang, `transport_loads_none_${lang}`));
       } else if (terminalData.loadAcceptSuccess) {

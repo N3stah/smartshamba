@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { requireRoleAuth } from '@/lib/auth';
 import { StaffRole } from '@prisma/client';
+import { sendNotification } from '@/lib/notifications';
 
 export async function GET(
   req: NextRequest,
@@ -36,7 +37,6 @@ export async function GET(
       return NextResponse.json({ error: 'Group not found' }, { status: 404 });
     }
 
-    console.log('[ADMIN GROUPS] GET group:', id);
     return NextResponse.json(group);
   } catch (error) {
     console.error('[ADMIN GROUPS] GET error:', (error as Error).message);
@@ -58,7 +58,11 @@ export async function PATCH(
     const body = await req.json();
     const { name, description, village, countyId, wardId, active, verified, whatsappApproved } = body;
 
-    const existing = await prisma.farmerGroup.findUnique({ where: { id } });
+    const existing = await prisma.farmerGroup.findUnique({ 
+      where: { id },
+      include: { createdBy: { select: { phone: true } } }
+    });
+    
     if (!existing) {
       return NextResponse.json({ error: 'Group not found' }, { status: 404 });
     }
@@ -77,7 +81,24 @@ export async function PATCH(
       },
     });
 
-    console.log('[ADMIN GROUPS] Updated group:', id);
+    // Send SMS if group was just verified
+    if (verified === true && !existing.verified && existing.createdBy?.phone) {
+      await sendNotification({
+        type: 'TRANSACTION_CONFIRMATION',
+        recipientPhone: existing.createdBy.phone,
+        body: `SmartShamba: Your group "${existing.name}" has been approved! Farmers can now join via USSD.`
+      }).catch(e => console.error('[ADMIN] Group approval SMS failed:', e));
+    }
+
+    // Send SMS if WhatsApp link was just approved
+    if (whatsappApproved === true && !existing.whatsappApproved && existing.createdBy?.phone) {
+      await sendNotification({
+        type: 'TRANSACTION_CONFIRMATION',
+        recipientPhone: existing.createdBy.phone,
+        body: `SmartShamba: The WhatsApp link for group "${existing.name}" has been approved and is now visible to members.`
+      }).catch(e => console.error('[ADMIN] WhatsApp approval SMS failed:', e));
+    }
+
     return NextResponse.json(updated);
   } catch (error) {
     console.error('[ADMIN GROUPS] PATCH error:', (error as Error).message);
