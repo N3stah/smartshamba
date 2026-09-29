@@ -106,3 +106,54 @@ export async function verifyBuyerPin(buyerId: string, pin: string): Promise<{ su
     return { success: false, error: 'Verification failed. Try again.' };
   }
 }
+
+export async function verifyTransportPin(providerId: string, pin: string): Promise<{ success: boolean; error?: string; locked?: boolean }> {
+  try {
+    const provider = await prisma.transportProvider.findUnique({
+      where: { id: providerId },
+      select: { pin: true, pinFailedAttempts: true, pinLockedUntil: true }
+    });
+
+    if (!provider) return { success: false, error: 'Provider not found' };
+    if (!provider.pin) return { success: false, error: 'PIN not set. Please set your PIN on the web dashboard first.' };
+
+    if (provider.pinLockedUntil && provider.pinLockedUntil > new Date()) {
+      const minsLeft = Math.ceil((provider.pinLockedUntil.getTime() - Date.now()) / 60000);
+      return { success: false, locked: true, error: `Account locked. Try again in ${minsLeft} minutes.` };
+    }
+
+    const valid = await bcrypt.compare(pin, provider.pin);
+    
+    if (valid) {
+      if (provider.pinFailedAttempts > 0) {
+        await prisma.transportProvider.update({
+          where: { id: providerId },
+          data: { pinFailedAttempts: 0, pinLockedUntil: null }
+        });
+      }
+      return { success: true };
+    }
+
+    const newAttempts = provider.pinFailedAttempts + 1;
+    const shouldLock = newAttempts >= MAX_ATTEMPTS;
+    
+    await prisma.transportProvider.update({
+      where: { id: providerId },
+      data: {
+        pinFailedAttempts: newAttempts,
+        ...(shouldLock && { pinLockedUntil: new Date(Date.now() + LOCKOUT_MINUTES * 60000) })
+      }
+    });
+
+    if (shouldLock) {
+      return { success: false, locked: true, error: `Too many failed attempts. Account locked for ${LOCKOUT_MINUTES} minutes.` };
+    }
+
+    return { success: false, error: `Wrong PIN. ${MAX_ATTEMPTS - newAttempts} attempts remaining.` };
+  } catch (error) {
+    console.error('[PIN] Transport verification error:', (error as Error).message);
+    Sentry.captureException(error);
+    await Sentry.flush(2000);
+    return { success: false, error: 'Verification failed. Try again.' };
+  }
+}

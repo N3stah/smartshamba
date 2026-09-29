@@ -19,6 +19,9 @@ const PRICING_MATRIX: Record<string, Partial<Record<SubscriptionBillingPeriod, P
     MONTHLY: { priceKsh: 200, durationDays: 30 },
     YEARLY: { priceKsh: 2000, durationDays: 365 },
   },
+  TRANSPORT_PRIORITY_ALERTS: {
+    MONTHLY: { priceKsh: 100, durationDays: 30 },
+  },
 };
 
 export function getPlanDetails(

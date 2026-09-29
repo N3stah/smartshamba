@@ -1093,6 +1093,7 @@ enum SubscriptionType {
   BUYER_DEMAND_ALERTS
   PEST_ALERTS
   BUYER_VERIFICATION
+  TRANSPORT_PRIORITY_ALERTS
 }
 
 enum SubscriptionBillingPeriod {

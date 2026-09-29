@@ -3,21 +3,20 @@ import { Language } from '@/lib/i18n/types';
 type USSDParams = Record<string, string | number>;
 
 const en: Record<string, string> = {
-  'main_menu': 'Welcome to SmartShamba\nRift Valley & Western Kenya\n\n1. Farmer\n2. Buyer\n3. About / Help\n0. Exit',
+  'main_menu': 'Welcome to SmartShamba\nRift Valley & Western Kenya\n\n1. Farmer\n2. Buyer\n3. Transport\n4. About / Help\n0. Exit',
   'farmer_menu': 'Farmer Menu\n\n1. Sell Produce\n2. My Group\n3. Market Price & Alerts\n4. Notification/Bank\n5. Quality Check\n6. Web Login\n0. Back',
   'buyer_menu': 'Buyer Menu\n\n1. Post Demand\n2. Live Market Produce\n3. Notification/Bank\n4. Buyer Verification\n5. Web Login\n0. Back',
   
-  'buyer_post_demand_product_en': 'Select Product:\n1. Maize\n0. Back',
-  'buyer_post_demand_bag_size_en': 'Select Bag Size:\n1. 50kg\n2. 90kg\n0. Back',
-  'buyer_post_demand_qty_en': 'Enter number of bags required:',
-  'buyer_post_demand_duration_en': 'Select Duration:\n1. 1 Week\n2. 2 Weeks\n3. 1 Month\n0. Back',
-  'buyer_post_demand_price_en': 'Enter price per bag (KSh):',
-  'buyer_post_demand_confirm_en': 'Confirm Demand:\nProduct: {product}\nBags: {qty}\nSize: {bagSize}kg\nDuration: {duration}\nPrice: KSh{price}/bag\n\n1. Confirm\n2. Cancel',
-  'buyer_demand_success_en': 'Demand posted!\nFarmers will see your offer.',
+  'transport_menu': 'Transport Menu\n\n1. Register\n2. My Account\n3. Available Loads\n4. Priority Alerts\n5. Web Login\n0. Back',
   
-  'buyer_market_menu_en': 'Live Market\n1. Individual Posts\n2. Group Posts\n0. Back',
-  'buyer_market_list_en': 'Available Maize:\n{list}\n\n0. Back',
-  'buyer_market_none_en': 'No active produce available.',
+  'transport_reg_name_en': 'Enter your full name or business name:',
+  'transport_reg_national_id_en': 'Enter your National ID or Business Reg:',
+  'transport_reg_location_en': 'Enter your base location (County, Town):',
+  'transport_reg_plate_en': 'Enter vehicle registration number (e.g. KDA 123A):',
+  'transport_reg_license_en': 'Enter your driving license number:',
+  'transport_reg_capacity_en': 'Enter vehicle capacity in bags (e.g. 50):',
+  'transport_reg_pin_en': 'Set a 4-digit PIN for your account:',
+  'transport_reg_success_en': 'Registration successful!\nYour SmartShamba ID is {id}\nPending admin approval.',
   
   'bank_menu_en': 'Notification/Bank\n1. My Account (Balance/Withdraw)\n2. Subscriptions\n0. Back',
   'bank_smartshamba_id_en': 'Enter your SmartShamba ID:',
@@ -34,8 +33,14 @@ const en: Record<string, string> = {
   'bank_sub_cancel_en': 'Cancel {type} subscription?\n1. Yes\n2. No',
   'bank_sub_cancelled_en': 'Subscription cancelled.',
   
-  'buyer_verify_menu_en': 'Buyer Verification\n1. Monthly (KSh 200)\n2. Yearly (KSh 2000)\n0. Back',
-  'buyer_verify_confirm_en': 'Pay KSh {price} for {plan} verification?\n\n1. Pay via M-PESA\n2. Cancel',
+  'transport_loads_county_en': 'Select County:\n1. Trans Nzoia\n2. Uasin Gishu\n3. Nakuru\n4. All Counties\n0. Back',
+  'transport_loads_list_en': 'Available Loads:\n{list}\n\nReply with number to accept:',
+  'transport_loads_none_en': 'No loads available in this area.',
+  'transport_loads_confirm_en': 'Accept Load?\nFrom: {pickup}\nTo: {dropoff}\nBags: {bags}\n\n1. Accept\n2. Cancel',
+  'transport_loads_success_en': 'Load accepted!\nPickup: {pickup}\nDropoff: {dropoff}',
+  
+  'transport_sub_menu_en': 'Priority Load Alerts\n1. Monthly (KSh 100)\n0. Back',
+  'transport_sub_confirm_en': 'Pay KSh {price} for {plan}?\n\n1. Pay via M-PESA\n2. Cancel',
   'alerts_paid_initiated_en': 'Payment request sent.\nCheck your phone for M-PESA prompt.',
   'alerts_paid_failed_en': 'Payment initiation failed. Try again later.',
   
@@ -47,21 +52,20 @@ const en: Record<string, string> = {
 };
 
 const sw: Record<string, string> = {
-  'main_menu': 'Karibu SmartShamba\nBonde la Ufa & Magharibi mwa Kenya\n\n1. Mkulima\n2. Mnunuzi\n3. Kuhusu / Msaada\n0. Toka',
+  'main_menu': 'Karibu SmartShamba\nBonde la Ufa & Magharibi mwa Kenya\n\n1. Mkulima\n2. Mnunuzi\n3. Usafirishaji\n4. Kuhusu / Msaada\n0. Toka',
   'farmer_menu': 'Menyu ya Mkulima\n\n1. Uza Mazao\n2. Kundi Langu\n3. Bei ya Soko & Arifa\n4. Arifa/Benki\n5. Ukaguzi wa Ubora\n6. Ingia Tovuti\n0. Rudi',
   'buyer_menu': 'Menyu ya Mnunuzi\n\n1. Weka Hitaji\n2. Soko la Haraka\n3. Arifa/Benki\n4. Uthibitisho wa Mnunuzi\n5. Ingia Tovuti\n0. Rudi',
   
-  'buyer_post_demand_product_sw': 'Chagua Bidhaa:\n1. Mahindi\n0. Rudi',
-  'buyer_post_demand_bag_size_sw': 'Chagua Ukubwa wa Gunia:\n1. 50kg\n2. 90kg\n0. Rudi',
-  'buyer_post_demand_qty_sw': 'Ingiza idadi ya gunia inayohitajika:',
-  'buyer_post_demand_duration_sw': 'Chagua Muda:\n1. Wiki 1\n2. Wiki 2\n3. Mwezi 1\n0. Rudi',
-  'buyer_post_demand_price_sw': 'Ingiza bei kwa kila gunia (KSh):',
-  'buyer_post_demand_confirm_sw': 'Thibitisha Hitaji:\nBidhaa: {product}\nMakuba: {qty}\nUkubwa: {bagSize}kg\nMuda: {duration}\nBei: KSh{price}/gunia\n\n1. Thibitisha\n2. Ghairi',
-  'buyer_demand_success_sw': 'Hitaji limewekwa!\nWakulima wataona ofa yako.',
+  'transport_menu': 'Menyu ya Usafirishaji\n\n1. Jisajili\n2. Akaunti Yangu\n3. Mizigo Inayopatikana\n4. Arifa za Kipaumbele\n5. Ingia Tovuti\n0. Rudi',
   
-  'buyer_market_menu_sw': 'Soko la Haraka\n1. Machapisho ya Binafsi\n2. Machapisho ya Kundi\n0. Rudi',
-  'buyer_market_list_sw': 'Mahindi Yaliyopo:\n{list}\n\n0. Rudi',
-  'buyer_market_none_sw': 'Hakuna mazao yaliyopo sasa.',
+  'transport_reg_name_sw': 'Ingiza jina lako au jina la biashara:',
+  'transport_reg_national_id_sw': 'Ingiza Kitambulisho chako au Usajili wa Biashara:',
+  'transport_reg_location_sw': 'Ingiza eneo lako la msingi (Kaunti, Mji):',
+  'transport_reg_plate_sw': 'Ingiza namba ya usajili ya gari (mfano KDA 123A):',
+  'transport_reg_license_sw': 'Ingiza namba ya leseni ya udereva:',
+  'transport_reg_capacity_sw': 'Ingiza uwezo wa gari kwa gunia (mfano 50):',
+  'transport_reg_pin_sw': 'Weka PIN ya tarakimu 4 kwa akaunti yako:',
+  'transport_reg_success_sw': 'Usajili umefanikiwa!\nKitambulisho chako cha SmartShamba ni {id}\nInasubiri kuidhinishwa.',
   
   'bank_menu_sw': 'Arifa/Benki\n1. Akaunti Yangu\n2. Michango\n0. Rudi',
   'bank_smartshamba_id_sw': 'Ingiza Kitambulisho chako:',
@@ -78,8 +82,14 @@ const sw: Record<string, string> = {
   'bank_sub_cancel_sw': 'Ghairi {type}?\n1. Ndiyo\n2. Hapana',
   'bank_sub_cancelled_sw': 'Michango imeghairiwa.',
   
-  'buyer_verify_menu_sw': 'Uthibitisho wa Mnunuzi\n1. Ya Mwezi (KSh 200)\n2. Ya Mwaka (KSh 2000)\n0. Rudi',
-  'buyer_verify_confirm_sw': 'Lipa KSh {price} kwa {plan}?\n\n1. Lipa kwa M-PESA\n2. Ghairi',
+  'transport_loads_county_sw': 'Chagua Kaunti:\n1. Trans Nzoia\n2. Uasin Gishu\n3. Nakuru\n4. Kaunti Zote\n0. Rudi',
+  'transport_loads_list_sw': 'Mizigo Inayopatikana:\n{list}\n\nJibu kwa namba kukubali:',
+  'transport_loads_none_sw': 'Hakuna mizigo inayopatikana kwenye eneo hili.',
+  'transport_loads_confirm_sw': 'Kubali Mizigo?\nKutoka: {pickup}\nKwenda: {dropoff}\nMakuba: {bags}\n\n1. Kubali\n2. Ghairi',
+  'transport_loads_success_sw': 'Mzigo umekubaliwa!\nKuchukua: {pickup}\nKupeleka: {dropoff}',
+  
+  'transport_sub_menu_sw': 'Arifa za Kipaumbele za Mizigo\n1. Ya Mwezi (KSh 100)\n0. Rudi',
+  'transport_sub_confirm_sw': 'Lipa KSh {price} kwa {plan}?\n\n1. Lipa kwa M-PESA\n2. Ghairi',
   'alerts_paid_initiated_sw': 'Ombi la malipo limetumwa.\nAngalia simu yako kwa M-PESA.',
   'alerts_paid_failed_sw': 'Imeshindwa kuanzisha malipo. Jaribu tena.',
   
