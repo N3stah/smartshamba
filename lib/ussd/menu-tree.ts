@@ -8,11 +8,12 @@ import { assignSmartShambaId } from '@/lib/smartshamba-id';
 import { sendNotification } from '@/lib/notifications';
 import { otpTemplate } from '@/lib/notifications/templates';
 import { createOtp } from '@/lib/otp';
-import { verifyFarmerPin, verifyBuyerPin } from '@/lib/auth/pin';
+import { verifyFarmerPin, verifyBuyerPin, verifyTransportPin } from '@/lib/auth/pin';
 import { getWalletBalance } from '@/lib/finance/ledger-service';
 import { initiateStkPush } from '@/lib/mpesa-stk';
 import { getPlanDetails } from '@/lib/subscriptions/plans';
 import { SubscriptionType, SubscriptionBillingPeriod } from '@prisma/client';
+import bcrypt from 'bcryptjs';
 
 interface UssdSessionContext {
   sessionId: string;
@@ -21,6 +22,7 @@ interface UssdSessionContext {
   data: Record<string, any> | null;
   farmer: Awaited<ReturnType<typeof prisma.farmer.findUnique>>;
   buyer: Awaited<ReturnType<typeof prisma.buyer.findFirst>>;
+  provider: Awaited<ReturnType<typeof prisma.transportProvider.findUnique>>;
 }
 
 export interface MenuScreen {
@@ -41,10 +43,362 @@ export const menuTree: Record<number, MenuScreen> = {
     render: (ctx) => con(getUssdText(ctx.farmer?.language ?? ctx.buyer?.language ?? 'en', 'main_menu')),
     onInput: async (input, ctx) => {
       if (input === '1') return { nextState: ctx.farmer ? USSD_STATE.FARMER_MAIN : USSD_STATE.FARMER_REG_LANG };
-      if (input === '2') return { nextState: ctx.buyer ? USSD_STATE.BUYER_MAIN : USSD_STATE.BUYER_OTP_MENU }; // Fallback if not registered
-      if (input === '3') return { nextState: USSD_STATE.ABOUT_MENU };
+      if (input === '2') return { nextState: ctx.buyer ? USSD_STATE.BUYER_MAIN : USSD_STATE.BUYER_OTP_MENU };
+      if (input === '3') return { nextState: ctx.provider ? USSD_STATE.TRANSPORT_MAIN : USSD_STATE.TRANSPORT_REGISTER_NAME };
+      if (input === '4') return { nextState: USSD_STATE.ABOUT_MENU };
       if (input === '0') return { nextState: USSD_STATE.ROOT };
       return { nextState: USSD_STATE.ROOT };
+    }
+  },
+
+  // ── TRANSPORT REGISTRATION ─────────────────────────────────
+  [USSD_STATE.TRANSPORT_REGISTER_NAME]: {
+    render: (ctx) => con(getUssdText('en', 'transport_reg_name_en')),
+    onInput: async (input, ctx) => ({ nextState: USSD_STATE.TRANSPORT_REGISTER_NATIONAL_ID, data: { name: input } })
+  },
+  [USSD_STATE.TRANSPORT_REGISTER_NATIONAL_ID]: {
+    render: (ctx) => con(getUssdText('en', 'transport_reg_national_id_en')),
+    onInput: async (input, ctx) => ({ nextState: USSD_STATE.TRANSPORT_REGISTER_LOCATION, data: { ...ctx.data, nationalId: input } })
+  },
+  [USSD_STATE.TRANSPORT_REGISTER_LOCATION]: {
+    render: (ctx) => con(getUssdText('en', 'transport_reg_location_en')),
+    onInput: async (input, ctx) => ({ nextState: USSD_STATE.TRANSPORT_REGISTER_PLATE, data: { ...ctx.data, location: input } })
+  },
+  [USSD_STATE.TRANSPORT_REGISTER_PLATE]: {
+    render: (ctx) => con(getUssdText('en', 'transport_reg_plate_en')),
+    onInput: async (input, ctx) => ({ nextState: USSD_STATE.TRANSPORT_REGISTER_LICENSE, data: { ...ctx.data, plate: input } })
+  },
+  [USSD_STATE.TRANSPORT_REGISTER_LICENSE]: {
+    render: (ctx) => con(getUssdText('en', 'transport_reg_license_en')),
+    onInput: async (input, ctx) => ({ nextState: USSD_STATE.TRANSPORT_REGISTER_CAPACITY, data: { ...ctx.data, license: input } })
+  },
+  [USSD_STATE.TRANSPORT_REGISTER_CAPACITY]: {
+    render: (ctx) => con(getUssdText('en', 'transport_reg_capacity_en')),
+    onInput: async (input, ctx) => {
+      const capacity = parseInt(input);
+      if (isNaN(capacity) || capacity <= 0) return { nextState: USSD_STATE.ROOT };
+      return { nextState: USSD_STATE.TRANSPORT_REGISTER_PIN, data: { ...ctx.data, capacity } };
+    }
+  },
+  [USSD_STATE.TRANSPORT_REGISTER_PIN]: {
+    render: (ctx) => con(getUssdText('en', 'transport_reg_pin_en')),
+    onInput: async (input, ctx) => {
+      if (!/^\d{4}$/.test(input)) return { nextState: USSD_STATE.ROOT };
+      
+      const name = sanitizeInput(ctx.data?.name);
+      const nationalId = sanitizeInput(ctx.data?.nationalId);
+      const location = sanitizeInput(ctx.data?.location);
+      const plate = sanitizeInput(ctx.data?.plate).toUpperCase();
+      const license = sanitizeInput(ctx.data?.license);
+      const capacity = parseInt(ctx.data?.capacity);
+      const pinHash = await bcrypt.hash(input, 10);
+      
+      // Atomic Registration: Provider + Identity + Vehicle
+      try {
+        const { provider, smartshambaId } = await prisma.$transaction(async (tx) => {
+          const provider = await tx.transportProvider.create({
+            data: {
+              phone: ctx.phone,
+              name,
+              nationalId,
+              baseLocation: location,
+              licenseNumber: license,
+              pin: pinHash,
+              verificationStatus: 'PENDING'
+            }
+          });
+          
+          await tx.transportVehicle.create({
+            data: {
+              providerId: provider.id,
+              registrationNumber: plate,
+              vehicleType: 'General', // Default type
+              capacityBags: capacity,
+              status: 'AVAILABLE'
+            }
+          });
+          
+          const sid = await assignSmartShambaId('TRANSPORT', provider.id, 'TRP', tx); // Using 'TRP' as county code placeholder
+          return { provider, smartshambaId: sid };
+        });
+        
+        sendNotification({ 
+          type: 'TRANSACTION_CONFIRMATION', 
+          recipientPhone: ctx.phone, 
+          body: `SmartShamba: Registration successful. Your ID is ${smartshambaId}. Pending admin approval.`
+        }).catch(e => console.error('[USSD] SMS failed:', e));
+        
+        return { nextState: USSD_STATE.TRANSPORT_MAIN, data: { transportRegSuccess: true, smartshambaId } };
+      } catch (error) {
+        console.error('[USSD] Transport registration failed:', (error as Error).message);
+        return { nextState: USSD_STATE.ROOT, data: { transportRegFailed: true } };
+      }
+    }
+  },
+
+  // ── TRANSPORT MAIN MENU ───────────────────────────────────
+  [USSD_STATE.TRANSPORT_MAIN]: {
+    render: (ctx) => con(getUssdText('en', 'transport_menu')),
+    onInput: async (input, ctx) => {
+      if (input === '1') return { nextState: USSD_STATE.TRANSPORT_ACCOUNT_MENU };
+      if (input === '2') return { nextState: USSD_STATE.TRANSPORT_LOADS_COUNTY };
+      if (input === '3') return { nextState: USSD_STATE.TRANSPORT_SUB_MENU };
+      if (input === '4') return { nextState: USSD_STATE.TRANSPORT_OTP_MENU };
+      if (input === '0') return { nextState: USSD_STATE.ROOT };
+      return { nextState: USSD_STATE.TRANSPORT_MAIN };
+    }
+  },
+
+  // ── TRANSPORT > ACCOUNT ────────────────────────────────────
+  [USSD_STATE.TRANSPORT_ACCOUNT_MENU]: {
+    render: (ctx) => con(getUssdText('en', 'bank_menu_en')),
+    onInput: async (input, ctx) => {
+      if (input === '1') return { nextState: USSD_STATE.TRANSPORT_ACCOUNT_SMARTSHAMBA_ID };
+      if (input === '2') return { nextState: USSD_STATE.TRANSPORT_SUB_MENU }; // Reusing Sub menu for view/cancel
+      if (input === '0') return { nextState: USSD_STATE.TRANSPORT_MAIN };
+      return { nextState: USSD_STATE.TRANSPORT_ACCOUNT_MENU };
+    }
+  },
+  [USSD_STATE.TRANSPORT_ACCOUNT_SMARTSHAMBA_ID]: {
+    render: (ctx) => con(getUssdText('en', 'bank_smartshamba_id_en')),
+    onInput: async (input, ctx) => {
+      if (input !== ctx.provider?.smartshambaId) {
+        return { nextState: USSD_STATE.TRANSPORT_MAIN, data: { bankIdMismatch: true } };
+      }
+      return { nextState: USSD_STATE.TRANSPORT_ACCOUNT_PIN, data: { ...ctx.data, smartshambaIdVerified: true } };
+    }
+  },
+  [USSD_STATE.TRANSPORT_ACCOUNT_PIN]: {
+    render: (ctx) => con(getUssdText('en', 'bank_pin_en')),
+    onInput: async (input, ctx) => {
+      const result = await verifyTransportPin(ctx.provider!.id, input);
+      if (!result.success) {
+        return { nextState: USSD_STATE.TRANSPORT_MAIN, data: { bankPinError: result.error } };
+      }
+      const wallet = await prisma.wallet.findFirst({ where: { providerId: ctx.provider!.id } });
+      const balance = wallet?.balance ?? 0;
+      return { nextState: USSD_STATE.TRANSPORT_ACCOUNT_BALANCE_RESULT, data: { ...ctx.data, balance } };
+    }
+  },
+  [USSD_STATE.TRANSPORT_ACCOUNT_BALANCE_RESULT]: {
+    render: (ctx) => con(getUssdText('en', 'bank_balance_en', { balance: ctx.data?.balance?.toLocaleString() ?? '0' })),
+    onInput: async (input, ctx) => {
+      if (input === '1') return { nextState: USSD_STATE.TRANSPORT_ACCOUNT_WITHDRAW_AMOUNT };
+      return { nextState: USSD_STATE.TRANSPORT_MAIN };
+    }
+  },
+  [USSD_STATE.TRANSPORT_ACCOUNT_WITHDRAW_AMOUNT]: {
+    render: (ctx) => con(getUssdText('en', 'bank_withdraw_amount_en')),
+    onInput: async (input, ctx) => {
+      const amount = parseFloat(input);
+      if (isNaN(amount) || amount <= 0) return { nextState: USSD_STATE.TRANSPORT_MAIN };
+      const balance = ctx.data?.balance as number;
+      if (amount > balance) return { nextState: USSD_STATE.TRANSPORT_MAIN, data: { bankWithdrawInsufficient: true } };
+      return { nextState: USSD_STATE.TRANSPORT_ACCOUNT_WITHDRAW_PIN, data: { ...ctx.data, withdrawAmount: amount } };
+    }
+  },
+  [USSD_STATE.TRANSPORT_ACCOUNT_WITHDRAW_PIN]: {
+    render: (ctx) => con(getUssdText('en', 'bank_withdraw_pin_en')),
+    onInput: async (input, ctx) => {
+      const result = await verifyTransportPin(ctx.provider!.id, input);
+      if (!result.success) return { nextState: USSD_STATE.TRANSPORT_MAIN, data: { bankPinError: result.error } };
+      
+      try {
+        await prisma.$transaction(async (tx) => {
+          const wallet = await tx.wallet.findFirst({ where: { providerId: ctx.provider!.id } });
+          if (!wallet) throw new Error('Wallet not found');
+          if (wallet.balance < ctx.data?.withdrawAmount) throw new Error('Insufficient balance');
+          
+          await tx.wallet.update({
+            where: { id: wallet.id },
+            data: { balance: { decrement: ctx.data?.withdrawAmount }, lockedBalance: { increment: ctx.data?.withdrawAmount } }
+          });
+          
+          await tx.withdrawalRequest.create({
+            data: { walletId: wallet.id, amount: ctx.data?.withdrawAmount, mpesaPhone: ctx.phone }
+          });
+        });
+        return { nextState: USSD_STATE.TRANSPORT_MAIN, data: { bankWithdrawSuccess: true, withdrawAmount: ctx.data?.withdrawAmount } };
+      } catch (error) {
+        console.error('[WITHDRAW] Transport failed:', (error as Error).message);
+        return { nextState: USSD_STATE.TRANSPORT_MAIN, data: { bankWithdrawInsufficient: true } };
+      }
+    }
+  },
+
+  // ── TRANSPORT > AVAILABLE LOADS ────────────────────────────
+  [USSD_STATE.TRANSPORT_LOADS_COUNTY]: {
+    render: (ctx) => con(getUssdText('en', 'transport_loads_county_en')),
+    onInput: async (input, ctx) => {
+      const countyMap: Record<string, string> = { '1': 'Trans Nzoia', '2': 'Uasin Gishu', '3': 'Nakuru' };
+      const countyName = countyMap[input];
+      if (!countyName && input !== '4') return { nextState: USSD_STATE.TRANSPORT_MAIN };
+      
+      const countyFilter = input === '4' ? {} : { transaction: { farmer: { county: { name: countyName } } } };
+      const requests = await prisma.transportRequest.findMany({
+        where: { status: 'REQUESTED', ...countyFilter },
+        include: { transaction: { include: { farmer: true } } },
+        take: 5,
+        orderBy: { createdAt: 'desc' }
+      });
+      
+      if (requests.length === 0) return { nextState: USSD_STATE.TRANSPORT_MAIN, data: { loadsNone: true } };
+      
+      const list = requests.map((r, i) => `${i + 1}. ${r.quantityBags} bags: ${r.pickupLocation} -> ${r.dropoffLocation}`).join('\\n');
+      return { nextState: USSD_STATE.TRANSPORT_LOADS_LIST, data: { requests, list } };
+    }
+  },
+  [USSD_STATE.TRANSPORT_LOADS_LIST]: {
+    render: (ctx) => con(getUssdText('en', 'transport_loads_list_en', { list: ctx.data?.list })),
+    onInput: async (input, ctx) => {
+      const requests = ctx.data?.requests as any[];
+      const selected = requests[parseInt(input) - 1];
+      if (!selected) return { nextState: USSD_STATE.TRANSPORT_MAIN };
+      return { nextState: USSD_STATE.TRANSPORT_LOADS_CONFIRM, data: { ...ctx.data, selectedRequest: selected } };
+    }
+  },
+  [USSD_STATE.TRANSPORT_LOADS_CONFIRM]: {
+    render: (ctx) => {
+      const req = ctx.data?.selectedRequest;
+      return con(getUssdText('en', 'transport_loads_confirm_en', { 
+        pickup: req.pickupLocation, 
+        dropoff: req.dropoffLocation, 
+        bags: req.quantityBags 
+      }));
+    },
+    onInput: async (input, ctx) => {
+      if (input !== '1') return { nextState: USSD_STATE.TRANSPORT_MAIN };
+      
+      const req = ctx.data?.selectedRequest;
+      // Reuse existing atomic acceptance logic
+      const claimedRequest = await prisma.transportRequest.updateMany({
+        where: { id: req.id, status: 'REQUESTED' },
+        data: { status: 'MATCHED', providerId: ctx.provider!.id }
+      });
+      
+      if (claimedRequest.count === 0) {
+        return { nextState: USSD_STATE.TRANSPORT_MAIN, data: { loadAcceptFailed: true } };
+      }
+      
+      // Fetch the claimed request to build the booking
+      const request = await prisma.transportRequest.findUnique({
+        where: { id: req.id },
+        include: { transaction: true, groupTransaction: true }
+      });
+      
+      if (!request) return { nextState: USSD_STATE.TRANSPORT_MAIN, data: { loadAcceptFailed: true } };
+      
+      // Get provider's first available vehicle
+      const vehicle = await prisma.transportVehicle.findFirst({
+        where: { providerId: ctx.provider!.id, isActive: true, status: 'AVAILABLE' }
+      });
+      
+      if (!vehicle) {
+        // Release the claim if no vehicle
+        await prisma.transportRequest.update({ where: { id: req.id }, data: { status: 'REQUESTED', providerId: null } });
+        return { nextState: USSD_STATE.TRANSPORT_MAIN, data: { loadAcceptFailed: true } };
+      }
+      
+      // Create TransportBooking
+      const booking = await prisma.transportBooking.create({
+        data: {
+          requestId: request.id,
+          transactionId: request.transactionId,
+          groupTransactionId: request.groupTransactionId,
+          providerId: ctx.provider!.id,
+          vehicleId: vehicle.id,
+          farmerId: request.transaction?.farmerId || '',
+          pickupLocation: request.pickupLocation,
+          dropoffLocation: request.dropoffLocation,
+          distanceKm: 0, // Placeholder, can calculate if needed
+          cost: 0, // Placeholder, can calculate if needed
+          bookedById: ctx.provider!.id,
+          bookedByType: 'FARMER', // Placeholder
+          status: 'ACCEPTED'
+        }
+      });
+      
+      // Update Request to ACCEPTED
+      await prisma.transportRequest.update({
+        where: { id: req.id },
+        data: { status: 'ACCEPTED' }
+      });
+      
+      // Update Vehicle status to IN_SERVICE
+      await prisma.transportVehicle.update({
+        where: { id: vehicle.id },
+        data: { status: 'IN_SERVICE' }
+      });
+      
+      // Send SMS
+      sendNotification({ 
+        type: 'TRANSACTION_CONFIRMATION', 
+        recipientPhone: ctx.phone, 
+        body: `SmartShamba: Load accepted! Pickup: ${request.pickupLocation}, Dropoff: ${request.dropoffLocation}.`
+      }).catch(e => console.error('[USSD] SMS failed:', e));
+      
+      return { nextState: USSD_STATE.TRANSPORT_MAIN, data: { loadAcceptSuccess: true, pickup: request.pickupLocation, dropoff: request.dropoffLocation } };
+    }
+  },
+
+  // ── TRANSPORT > SUBSCRIPTIONS ──────────────────────────────
+  [USSD_STATE.TRANSPORT_SUB_MENU]: {
+    render: async (ctx) => {
+      const subs = await prisma.subscription.findMany({
+        where: { status: 'ACTIVE' }, // Note: Transport provider doesn't have direct sub relation. We'll just list all for now or assume it's tied to phone.
+        orderBy: { createdAt: 'desc' },
+        take: 5,
+      });
+      // Since TransportProvider doesn't have a direct subscriptions relation in schema, we can't filter by providerId easily.
+      // We will just show the purchase menu.
+      return con(getUssdText('en', 'transport_sub_menu_en'));
+    },
+    onInput: async (input, ctx) => {
+      if (input === '1') {
+        const plan = getPlanDetails('TRANSPORT_PRIORITY_ALERTS', 'MONTHLY');
+        if (!plan) return { nextState: USSD_STATE.TRANSPORT_MAIN };
+        return { nextState: USSD_STATE.TRANSPORT_SUB_CONFIRM, data: { price: plan.priceKsh, planName: 'Monthly Priority Alerts' } };
+      }
+      return { nextState: USSD_STATE.TRANSPORT_MAIN };
+    }
+  },
+  [USSD_STATE.TRANSPORT_SUB_CONFIRM]: {
+    render: (ctx) => con(getUssdText('en', 'transport_sub_confirm_en', { price: ctx.data?.price, plan: ctx.data?.planName })),
+    onInput: async (input, ctx) => {
+      if (input !== '1') return { nextState: USSD_STATE.TRANSPORT_MAIN };
+      try {
+        // Note: Schema doesn't link Subscription to TransportProvider. 
+        // We'll create a generic subscription record for MVP, but this is a known schema gap.
+        const sub = await prisma.subscription.create({
+          data: { type: 'TRANSPORT_PRIORITY_ALERTS', billingPeriod: 'MONTHLY', status: 'PENDING_PAYMENT', priceKsh: ctx.data?.price }
+        });
+        const stkResult = await initiateStkPush(ctx.provider!.phone, ctx.data?.price, sub.id, `Transport Priority Alerts`);
+        if (stkResult.success && stkResult.checkoutRequestId) {
+          await prisma.subscription.update({ where: { id: sub.id }, data: { checkoutRequestId: stkResult.checkoutRequestId } });
+          return { nextState: USSD_STATE.TRANSPORT_MAIN, data: { alertsPaidInitiated: true } };
+        } else {
+          await prisma.subscription.update({ where: { id: sub.id }, data: { status: 'CANCELLED' } });
+          return { nextState: USSD_STATE.TRANSPORT_MAIN, data: { alertsPaidFailed: true } };
+        }
+      } catch (error) {
+        console.error('[STK] Transport Priority Alerts failed:', (error as Error).message);
+        return { nextState: USSD_STATE.TRANSPORT_MAIN, data: { alertsPaidFailed: true } };
+      }
+    }
+  },
+
+  // ── TRANSPORT > WEB LOGIN ─────────────────────────────────
+  [USSD_STATE.TRANSPORT_OTP_MENU]: {
+    render: (ctx) => con(getUssdText('en', 'otp_menu_en')),
+    onInput: async (input, ctx) => {
+      if (input === '1') {
+        const { code, error } = await createOtp(ctx.phone);
+        if (error) return { nextState: USSD_STATE.TRANSPORT_MAIN };
+        const body = otpTemplate({ code: code!, expiresMinutes: 5 });
+        sendNotification({ type: 'OTP', recipientPhone: ctx.phone, body }).catch(err => console.error('[USSD] SMS failed:', err));
+        return { nextState: USSD_STATE.TRANSPORT_MAIN, data: { otpSent: true } };
+      }
+      return { nextState: USSD_STATE.TRANSPORT_MAIN };
     }
   },
 

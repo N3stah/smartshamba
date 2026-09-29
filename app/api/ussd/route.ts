@@ -37,6 +37,7 @@ export async function POST(req: NextRequest) {
 
     const farmer = await prisma.farmer.findUnique({ where: { phone: phoneNumber } });
     const buyer = await prisma.buyer.findFirst({ where: { phone: phoneNumber } });
+    const provider = await prisma.transportProvider.findUnique({ where: { phone: phoneNumber } });
 
     const steps = text.split('*').filter(Boolean);
     const currentInput = steps.length > 0 ? steps[steps.length - 1] : '';
@@ -48,6 +49,7 @@ export async function POST(req: NextRequest) {
       data: session.data as Record<string, unknown> | null,
       farmer,
       buyer,
+      provider,
     };
 
     const currentScreen = menuTree[ctx.state];
@@ -69,7 +71,7 @@ export async function POST(req: NextRequest) {
     const lang = ctx.farmer?.language ?? ctx.buyer?.language ?? 'en';
 
     // Handle terminal states
-    if (nextState === USSD_STATE.ROOT || nextState === USSD_STATE.FARMER_MAIN || nextState === USSD_STATE.BUYER_MAIN) {
+    if (nextState === USSD_STATE.ROOT || nextState === USSD_STATE.FARMER_MAIN || nextState === USSD_STATE.BUYER_MAIN || nextState === USSD_STATE.TRANSPORT_MAIN) {
       const terminalData = data || {};
       let endResponse = '';
 
@@ -77,6 +79,10 @@ export async function POST(req: NextRequest) {
         endResponse = end(getUssdText(lang, `otp_sent_${lang}`));
       } else if (terminalData.aboutText) {
         endResponse = end(terminalData.aboutText as string);
+      } else if (terminalData.transportRegSuccess) {
+        endResponse = end(getUssdText(lang, `transport_reg_success_${lang}`, { id: terminalData.smartshambaId as string }));
+      } else if (terminalData.transportRegFailed) {
+        endResponse = end(getUssdText(lang, `error_generic_${lang}`));
       } else if (terminalData.sellSuccess) {
         const product = ctx.data?.product === '1' ? (lang === 'sw' ? 'Mahindi' : 'Maize') : (lang === 'sw' ? 'Maharage' : 'Beans');
         endResponse = end(getUssdText(lang, `sell_success_${lang}`, { quantity: ctx.data?.qty as number, product, price: ctx.data?.price as number }));
@@ -117,6 +123,12 @@ export async function POST(req: NextRequest) {
         endResponse = end(getUssdText(lang, `bank_sub_cancelled_${lang}`));
       } else if (terminalData.qcSuccess) {
         endResponse = end(getUssdText(lang, `qc_success_${lang}`));
+      } else if (terminalData.loadsNone) {
+        endResponse = end(getUssdText(lang, `transport_loads_none_${lang}`));
+      } else if (terminalData.loadAcceptSuccess) {
+        endResponse = end(getUssdText(lang, `transport_loads_success_${lang}`, { pickup: terminalData.pickup as string, dropoff: terminalData.dropoff as string }));
+      } else if (terminalData.loadAcceptFailed) {
+        endResponse = end(getUssdText(lang, `error_generic_${lang}`));
       }
 
       if (endResponse) {
