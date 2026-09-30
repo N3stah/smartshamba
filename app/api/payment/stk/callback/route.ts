@@ -86,7 +86,7 @@ export async function POST(req: NextRequest) {
         eventKey: `sub_activated_${updatedSub.id}`,
         payload: { 
           subscriptionId: updatedSub.id, 
-          userId: updatedSub.farmerId || updatedSub.buyerId 
+          userId: updatedSub.farmerId || updatedSub.buyerId || updatedSub.providerId 
         },
       }).catch(e => console.error('[STK] EventOutbox publish failed:', e));
 

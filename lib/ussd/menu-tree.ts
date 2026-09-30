@@ -41,7 +41,7 @@ const PILOT_COUNTIES = [
 export const menuTree: Record<number, MenuScreen> = {
   // ── ROOT MENU ──────────────────────────────────────────────
   [USSD_STATE.ROOT]: {
-    render: (ctx) => con(getUssdText(ctx.farmer?.language ?? ctx.buyer?.language ?? 'en', 'main_menu')),
+    render: (ctx) => con(getUssdText(ctx.farmer?.language ?? ctx.buyer?.language ?? ctx.provider?.language ?? 'en', 'main_menu')),
     onInput: async (input, ctx) => {
       if (input === '1') return { nextState: ctx.farmer ? USSD_STATE.FARMER_MAIN : USSD_STATE.FARMER_REG_LANG };
       if (input === '2') return { nextState: ctx.buyer ? USSD_STATE.BUYER_MAIN : USSD_STATE.BUYER_OTP_MENU };
@@ -346,13 +346,13 @@ export const menuTree: Record<number, MenuScreen> = {
   [USSD_STATE.TRANSPORT_SUB_MENU]: {
     render: async (ctx) => {
       const subs = await prisma.subscription.findMany({
-        where: { status: 'ACTIVE' }, // Note: Transport provider doesn't have direct sub relation. We'll just list all for now or assume it's tied to phone.
+        where: { providerId: ctx.provider!.id, status: 'ACTIVE' },
         orderBy: { createdAt: 'desc' },
         take: 5,
       });
-      // Since TransportProvider doesn't have a direct subscriptions relation in schema, we can't filter by providerId easily.
-      // We will just show the purchase menu.
-      return con(getUssdText('en', 'transport_sub_menu_en'));
+      if (subs.length === 0) return end(getUssdText(ctx.provider?.language ?? 'en', 'bank_subscriptions_none_en'));
+      const list = subs.map((s, i) => `${i + 1}. ${s.type.replace(/_/g, ' ')} - ${s.expiresAt ? new Date(s.expiresAt).toLocaleDateString() : 'N/A'}`).join('\\n');
+      return con(getUssdText(ctx.provider?.language ?? 'en', 'bank_subscriptions_en', { list }));
     },
     onInput: async (input, ctx) => {
       if (input === '1') {
@@ -371,7 +371,7 @@ export const menuTree: Record<number, MenuScreen> = {
         // Note: Schema doesn't link Subscription to TransportProvider. 
         // We'll create a generic subscription record for MVP, but this is a known schema gap.
         const sub = await prisma.subscription.create({
-          data: { type: 'TRANSPORT_PRIORITY_ALERTS', billingPeriod: 'MONTHLY', status: 'PENDING_PAYMENT', priceKsh: ctx.data?.price }
+          data: { type: 'TRANSPORT_PRIORITY_ALERTS', billingPeriod: 'MONTHLY', status: 'PENDING_PAYMENT', priceKsh: ctx.data?.price, providerId: ctx.provider!.id }
         });
         const stkResult = await initiateStkPush(ctx.provider!.phone, ctx.data?.price, sub.id, `Transport Priority Alerts`);
         if (stkResult.success && stkResult.checkoutRequestId) {

@@ -56,7 +56,7 @@ export async function POST(req: NextRequest) {
     if (!currentScreen) {
       console.error(`[USSD] State ${ctx.state} not found. Resetting.`);
       await prisma.ussdSession.update({ where: { sessionId }, data: { state: USSD_STATE.ROOT, data: {} } });
-      return new NextResponse(con(getUssdText(farmer?.language ?? buyer?.language ?? 'en', 'main_menu')), { status: 200, headers: { 'Content-Type': 'text/plain' } });
+      return new NextResponse(con(getUssdText(farmer?.language ?? buyer?.language ?? provider?.language ?? 'en', 'main_menu')), { status: 200, headers: { 'Content-Type': 'text/plain' } });
     }
 
     if (text === '') {
@@ -68,7 +68,7 @@ export async function POST(req: NextRequest) {
     }
 
     const { nextState, data } = await currentScreen.onInput(currentInput, ctx);
-    const lang = ctx.farmer?.language ?? ctx.buyer?.language ?? 'en';
+    const lang = ctx.farmer?.language ?? ctx.buyer?.language ?? ctx.provider?.language ?? 'en';
 
     // Handle terminal states
     if (nextState === USSD_STATE.ROOT || nextState === USSD_STATE.FARMER_MAIN || nextState === USSD_STATE.BUYER_MAIN || nextState === USSD_STATE.TRANSPORT_MAIN) {
