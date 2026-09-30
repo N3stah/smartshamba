@@ -2,75 +2,97 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { requireRoleAuth } from '@/lib/auth';
 import { StaffRole } from '@prisma/client';
-import { getOrCreateWalletId } from '@/lib/finance/ledger-service';
-import { postLedgerEntry } from '@/lib/finance/ledger-service';
 import * as Sentry from '@sentry/nextjs';
 
 export async function GET(req: NextRequest) {
-  try {
-    const authError = await requireRoleAuth(req, [StaffRole.CEO, StaffRole.CTO, StaffRole.CFO, StaffRole.PM]);
-    if (authError) return authError;
+  const authError = await requireRoleAuth(req, [StaffRole.CEO, StaffRole.CTO, StaffRole.CFO, StaffRole.PM]);
+  if (authError) return authError;
 
-    const requests = await (prisma as any).withdrawalRequest.findMany({
+  try {
+    // Fetch pending withdrawals and join with wallet to get user info
+    const withdrawals = await prisma.withdrawalRequest.findMany({
       where: { status: 'PENDING' },
+      include: {
+        wallet: {
+          select: { 
+            farmerId: true, 
+            buyerId: true, 
+            providerId: true 
+          }
+        }
+      },
       orderBy: { createdAt: 'asc' }
     });
 
-    return NextResponse.json(requests);
+    // Map to the format expected by the frontend
+    const result = withdrawals.map(w => {
+      let userId = 'Unknown';
+      let userType = 'Unknown';
+      if (w.wallet?.farmerId) { userId = w.wallet.farmerId; userType = 'FARMER'; }
+      else if (w.wallet?.buyerId) { userId = w.wallet.buyerId; userType = 'BUYER'; }
+      else if (w.wallet?.providerId) { userId = w.wallet.providerId; userType = 'TRANSPORT'; }
+      
+      return {
+        id: w.id,
+        amount: w.amount,
+        createdAt: w.createdAt,
+        userId,
+        userType
+      };
+    });
+
+    return NextResponse.json(result);
   } catch (error) {
-    console.error('[API] Fetch withdrawals error:', error);
+    console.error('[ADMIN WITHDRAWALS] GET error:', error);
+    Sentry.captureException(error);
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
 }
 
 export async function PATCH(req: NextRequest) {
+  const authError = await requireRoleAuth(req, [StaffRole.CEO, StaffRole.CTO, StaffRole.CFO, StaffRole.PM]);
+  if (authError) return authError;
+
   try {
-    const authError = await requireRoleAuth(req, [StaffRole.CEO, StaffRole.CTO, StaffRole.CFO, StaffRole.PM]);
-    if (authError) return authError;
-
     const { id, action, mpesaRef } = await req.json();
-    const request = await (prisma as any).withdrawalRequest.findUnique({ where: { id } });
-
-    if (!request || request.status !== 'PENDING') {
-      return NextResponse.json({ error: 'Request not found or already processed' }, { status: 400 });
-    }
 
     if (action === 'APPROVE') {
-      // 1. Update Request Status
-      await (prisma as any).withdrawalRequest.update({
+      if (!mpesaRef) return NextResponse.json({ error: 'M-PESA Ref is required' }, { status: 400 });
+      
+      // Update withdrawal status
+      const updated = await prisma.withdrawalRequest.update({
         where: { id },
-        data: { status: 'COMPLETED', processedAt: new Date(), mpesaRef }
+        data: { status: 'COMPLETED', mpesaRef, processedAt: new Date() }
       });
 
-      // 2. Debit Farmer Wallet (Double-Entry)
-      await postLedgerEntry({
-        walletId: request.walletId,
-        type: 'DEBIT',
-        amount: request.amount,
-        description: `Withdrawal to M-PESA (Ref: ${mpesaRef})`,
-        reference: `WDL-${id.substring(0, 8)}`
-      });
-
-      // 3. Credit Platform Cash Out Wallet
-      const cashoutWalletId = await getOrCreateWalletId(null, 'PLATFORM');
-      await postLedgerEntry({
-        walletId: cashoutWalletId,
-        type: 'CREDIT',
-        amount: request.amount,
-        description: `M-PESA B2C Payout to ${request.userId} (Ref: ${mpesaRef})`,
-        reference: `B2C-${id.substring(0, 8)}`
+      // Deduct from locked balance (funds were already moved to lockedBalance during USSD request)
+      await prisma.wallet.update({
+        where: { id: updated.walletId },
+        data: { lockedBalance: { decrement: updated.amount } }
       });
 
     } else if (action === 'REJECT') {
-      await (prisma as any).withdrawalRequest.update({
+      // Update withdrawal status
+      const updated = await prisma.withdrawalRequest.update({
         where: { id },
-        data: { status: 'REJECTED', processedAt: new Date() }
+        data: { status: 'FAILED', processedAt: new Date() }
       });
+
+      // Reverse the lock: move funds back from lockedBalance to balance
+      await prisma.wallet.update({
+        where: { id: updated.walletId },
+        data: { 
+          lockedBalance: { decrement: updated.amount },
+          balance: { increment: updated.amount }
+        }
+      });
+    } else {
+      return NextResponse.json({ error: 'Invalid action' }, { status: 400 });
     }
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error('[API] Process withdrawal error:', error);
+    console.error('[ADMIN WITHDRAWALS] PATCH error:', error);
     Sentry.captureException(error);
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
