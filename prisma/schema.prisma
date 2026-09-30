@@ -360,6 +360,7 @@ model Notification {
   recipientPhone   String
   farmerId         String?
   buyerId          String?
+  providerId        String?
   body             String
   status           NotificationStatus @default(PENDING)
   providerResponse String?
@@ -371,6 +372,7 @@ model Notification {
 
   farmer Farmer? @relation(fields: [farmerId], references: [id])
   buyer  Buyer?  @relation(fields: [buyerId], references: [id])
+  provider TransportProvider? @relation(fields: [providerId], references: [id])
 
   @@index([farmerId])
   @@index([type])
@@ -408,6 +410,7 @@ model Advisory {
   active    Boolean  @default(true)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  language             String                    @default("en")
 
   county County? @relation(fields: [countyId], references: [id])
 
@@ -795,13 +798,16 @@ model TransportProvider {
   active    Boolean  @default(true)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  language             String                    @default("en")
 
   county                 County?                 @relation(fields: [countyId], references: [id])
   wallet                 Wallet?                 @relation("ProviderWallet")
   notificationPreference NotificationPreference?
   bookings               TransportBooking[]
+  notifications          Notification[]
   vehicles               TransportVehicle[]
   requests               TransportRequest[]
+  subscriptions          Subscription[]
   smartshambaId          String?                 @unique
   licenseNumber          String?
   pin                    String?
@@ -1115,6 +1121,7 @@ model Subscription {
 
   farmerId String?
   buyerId  String?
+  providerId String?
 
   priceKsh Float
   billingPeriod SubscriptionBillingPeriod?
@@ -1129,6 +1136,7 @@ model Subscription {
 
   farmer Farmer? @relation(fields: [farmerId], references: [id])
   buyer  Buyer?  @relation(fields: [buyerId], references: [id])
+  provider TransportProvider? @relation(fields: [providerId], references: [id])
 
   @@index([farmerId])
   @@index([buyerId])
