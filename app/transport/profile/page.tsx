@@ -4,6 +4,7 @@ import { redirect } from 'next/navigation';
 import { prisma } from '@/lib/prisma';
 import { Truck, Phone, MapPin, Wallet, CheckCircle, Car } from 'lucide-react';
 import { Card } from '@/components/ui/Card';
+import PinSetter from '@/components/PinSetter';
 
 export default async function TransportProfilePage() {
   const cookieStore = await cookies();
@@ -81,6 +82,11 @@ export default async function TransportProfilePage() {
           <p className="flex items-center gap-2"><CheckCircle className={`w-4 h-4 ${provider.verificationStatus === 'VERIFIED' ? 'text-green-500' : 'text-yellow-500'}`} /> Status: {provider.verificationStatus}</p>
         </div>
       </Card>
-    </div>
+    
+      <Card className="p-6">
+        <h2 className="text-lg font-bold text-text mb-4">USSD PIN</h2>
+        <PinSetter role="TRANSPORT" hasPin={!!provider.pin} />
+      </Card>
+</div>
   );
 }

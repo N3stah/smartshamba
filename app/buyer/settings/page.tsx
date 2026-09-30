@@ -4,6 +4,7 @@ import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { prisma } from '@/lib/prisma';
 import PasswordSetter from '@/components/PasswordSetter';
+import PinSetter from '@/components/PinSetter';
 
 export default async function BuyerSettings() {
   const cookieStore = await cookies();
@@ -30,6 +31,11 @@ export default async function BuyerSettings() {
       <div className="bg-surface rounded-lg border border-border shadow-sm p-6">
         <h2 className="text-lg font-bold text-gray-900 mb-4">Security</h2>
         <PasswordSetter role="BUYER" hasPassword={!!buyer.password} />
+      </div>
+
+      <div className="bg-surface rounded-lg border border-border shadow-sm p-6">
+        <h2 className="text-lg font-bold text-gray-900 mb-4">USSD PIN</h2>
+        <PinSetter role="BUYER" hasPin={!!buyer.pin} />
       </div>
     </div>
   );

@@ -4,6 +4,7 @@ import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { prisma } from '@/lib/prisma';
 import PasswordSetter from '@/components/PasswordSetter';
+import PinSetter from '@/components/PinSetter';
 import { Card } from '@/components/ui/Card';
 
 export default async function FarmerSettings() {
@@ -46,6 +47,11 @@ export default async function FarmerSettings() {
       <Card className="p-6">
         <h2 className="text-lg font-bold text-text mb-4">Security</h2>
         <PasswordSetter role="FARMER" hasPassword={!!farmer.password} />
+      </Card>
+
+      <Card className="p-6">
+        <h2 className="text-lg font-bold text-text mb-4">USSD PIN</h2>
+        <PinSetter role="FARMER" hasPin={!!farmer.pin} />
       </Card>
     </div>
   );
