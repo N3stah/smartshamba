@@ -81,7 +81,7 @@ export async function POST(req: NextRequest) {
 
       // Publish Event for Notification (Idempotent)
       await publishEvent({
-        eventType: 'SUBSCRIPTION_ACTIVATED',
+        eventType: 'NOTIFY_SUBSCRIPTION_ACTIVATED',
         aggregateId: updatedSub.id,
         eventKey: `sub_activated_${updatedSub.id}`,
         payload: { 
