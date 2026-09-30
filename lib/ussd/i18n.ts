@@ -4,6 +4,27 @@ type USSDParams = Record<string, string | number>;
 
 const en: Record<string, string> = {
   'main_menu': 'Welcome to SmartShamba\nRift Valley & Western Kenya\n\n1. Farmer\n2. Buyer\n3. Transport\n4. About / Help\n0. Exit',
+  
+  // Farmer Registration
+  'reg_step1': 'Welcome to SmartShamba\nSelect Language:\n1. English\n2. Kiswahili',
+  'reg_step2_en': 'Enter your full name:',
+  'reg_step2_sw': 'Ingiza jina lako kamili:',
+  'reg_step3_en': 'Enter your National ID\n(8 digits):',
+  'reg_step3_sw': 'Ingiza Kitambulisho chako\n(tarakimu 8):',
+  'reg_invalid_id_en': 'Invalid ID. Must be 8 digits.\nPlease dial *384*53374# to try again.',
+  'reg_invalid_id_sw': 'Kitambulisho batili. Lazima kiwe tarakimu 8.\nTafadhali piga *384*53374# kujaribu tena.',
+  'reg_county_en': 'Select your county:\n{counties}\n8. Other county',
+  'reg_county_sw': 'Chagua kaunti yako:\n{counties}\n8. Kaunti nyingine',
+  'reg_ward_en': 'Select your ward:\n{wards}\n9. Other ward',
+  'reg_ward_sw': 'Chagua ward yako:\n{wards}\n9. Ward nyingine',
+  'reg_village_en': 'Enter your village or\nnearest town name:',
+  'reg_village_sw': 'Ingiza kijiji chako au\njina la mji karibu:',
+  'reg_location_en': 'Enter your location\n(county, town or village):',
+  'reg_location_sw': 'Ingiza eneo lako\n(kaunti, mji au kijiji):',
+  'reg_success_en': 'Registration successful!\nWe will send an OTP to login on the website.\n\n1. Send OTP\n2. Skip',
+  'reg_success_sw': 'Usajili umefanikiwa!\nTutatuma OTP kuingia kwenye tovuti.\n\n1. Tuma OTP\n2. Ruka',
+  'reg_other_county_success_en': 'Welcome {name}!\nYou are now registered.\nDial *384*53374# to start selling.',
+  'reg_other_county_success_sw': 'Karibu {name}!\nUmeshasajiliwa.\nPiga *384*53374# kuanza kuuza.',
   'farmer_menu': 'Farmer Menu\n\n1. Sell Produce\n2. My Group\n3. Market Price & Alerts\n4. Notification/Bank\n5. Quality Check\n6. Web Login\n0. Back',
   'buyer_menu': 'Buyer Menu\n\n1. Post Demand\n2. Live Market Produce\n3. Notification/Bank\n4. Buyer Verification\n5. Web Login\n0. Back',
   
@@ -53,6 +74,27 @@ const en: Record<string, string> = {
 
 const sw: Record<string, string> = {
   'main_menu': 'Karibu SmartShamba\nBonde la Ufa & Magharibi mwa Kenya\n\n1. Mkulima\n2. Mnunuzi\n3. Usafirishaji\n4. Kuhusu / Msaada\n0. Toka',
+  
+  // Farmer Registration
+  'reg_step1': 'Karibu SmartShamba\nChagua Lugha:\n1. Kiingereza\n2. Kiswahili',
+  'reg_step2_en': 'Enter your full name:',
+  'reg_step2_sw': 'Ingiza jina lako kamili:',
+  'reg_step3_en': 'Enter your National ID\n(8 digits):',
+  'reg_step3_sw': 'Ingiza Kitambulisho chako\n(tarakimu 8):',
+  'reg_invalid_id_en': 'Invalid ID. Must be 8 digits.\nPlease dial *384*53374# to try again.',
+  'reg_invalid_id_sw': 'Kitambulisho batili. Lazima kiwe tarakimu 8.\nTafadhali piga *384*53374# kujaribu tena.',
+  'reg_county_en': 'Select your county:\n{counties}\n8. Other county',
+  'reg_county_sw': 'Chagua kaunti yako:\n{counties}\n8. Kaunti nyingine',
+  'reg_ward_en': 'Select your ward:\n{wards}\n9. Other ward',
+  'reg_ward_sw': 'Chagua ward yako:\n{wards}\n9. Ward nyingine',
+  'reg_village_en': 'Enter your village or\nnearest town name:',
+  'reg_village_sw': 'Ingiza kijiji chako au\njina la mji karibu:',
+  'reg_location_en': 'Enter your location\n(county, town or village):',
+  'reg_location_sw': 'Ingiza eneo lako\n(kaunti, mji au kijiji):',
+  'reg_success_en': 'Registration successful!\nWe will send an OTP to login on the website.\n\n1. Send OTP\n2. Skip',
+  'reg_success_sw': 'Usajili umefanikiwa!\nTutatuma OTP kuingia kwenye tovuti.\n\n1. Tuma OTP\n2. Ruka',
+  'reg_other_county_success_en': 'Welcome {name}!\nYou are now registered.\nDial *384*53374# to start selling.',
+  'reg_other_county_success_sw': 'Karibu {name}!\nUmeshasajiliwa.\nPiga *384*53374# kuanza kuuza.',
   'farmer_menu': 'Menyu ya Mkulima\n\n1. Uza Mazao\n2. Kundi Langu\n3. Bei ya Soko & Arifa\n4. Arifa/Benki\n5. Ukaguzi wa Ubora\n6. Ingia Tovuti\n0. Rudi',
   'buyer_menu': 'Menyu ya Mnunuzi\n\n1. Weka Hitaji\n2. Soko la Haraka\n3. Arifa/Benki\n4. Uthibitisho wa Mnunuzi\n5. Ingia Tovuti\n0. Rudi',
   
