@@ -9,22 +9,16 @@ export async function GET(req: NextRequest) {
   if (authError) return authError;
 
   try {
-    // Fetch pending withdrawals and join with wallet to get user info
     const withdrawals = await prisma.withdrawalRequest.findMany({
       where: { status: 'PENDING' },
       include: {
         wallet: {
-          select: { 
-            farmerId: true, 
-            buyerId: true, 
-            providerId: true 
-          }
+          select: { farmerId: true, buyerId: true, providerId: true }
         }
       },
       orderBy: { createdAt: 'asc' }
     });
 
-    // Map to the format expected by the frontend
     const result = withdrawals.map(w => {
       let userId = 'Unknown';
       let userType = 'Unknown';
@@ -32,13 +26,7 @@ export async function GET(req: NextRequest) {
       else if (w.wallet?.buyerId) { userId = w.wallet.buyerId; userType = 'BUYER'; }
       else if (w.wallet?.providerId) { userId = w.wallet.providerId; userType = 'TRANSPORT'; }
       
-      return {
-        id: w.id,
-        amount: w.amount,
-        createdAt: w.createdAt,
-        userId,
-        userType
-      };
+      return { id: w.id, amount: w.amount, createdAt: w.createdAt, userId, userType };
     });
 
     return NextResponse.json(result);
@@ -59,32 +47,44 @@ export async function PATCH(req: NextRequest) {
     if (action === 'APPROVE') {
       if (!mpesaRef) return NextResponse.json({ error: 'M-PESA Ref is required' }, { status: 400 });
       
-      // Update withdrawal status
-      const updated = await prisma.withdrawalRequest.update({
-        where: { id },
-        data: { status: 'COMPLETED', mpesaRef, processedAt: new Date() }
-      });
+      // Transactional approval with PENDING guard
+      await prisma.$transaction(async (tx) => {
+        // 1. Update withdrawal status (only if PENDING)
+        const updated = await tx.withdrawalRequest.updateMany({
+          where: { id, status: 'PENDING' },
+          data: { status: 'COMPLETED', mpesaRef, processedAt: new Date() }
+        });
 
-      // Deduct from locked balance (funds were already moved to lockedBalance during USSD request)
-      await prisma.wallet.update({
-        where: { id: updated.walletId },
-        data: { lockedBalance: { decrement: updated.amount } }
+        if (updated.count === 0) throw new Error('Withdrawal not found or already processed');
+
+        // 2. Deduct from locked balance
+        const withdrawal = await tx.withdrawalRequest.findUnique({ where: { id } });
+        await tx.wallet.update({
+          where: { id: withdrawal.walletId },
+          data: { lockedBalance: { decrement: withdrawal.amount } }
+        });
       });
 
     } else if (action === 'REJECT') {
-      // Update withdrawal status
-      const updated = await prisma.withdrawalRequest.update({
-        where: { id },
-        data: { status: 'FAILED', processedAt: new Date() }
-      });
+      // Transactional rejection with PENDING guard
+      await prisma.$transaction(async (tx) => {
+        // 1. Update withdrawal status (only if PENDING)
+        const updated = await tx.withdrawalRequest.updateMany({
+          where: { id, status: 'PENDING' },
+          data: { status: 'FAILED', processedAt: new Date() }
+        });
 
-      // Reverse the lock: move funds back from lockedBalance to balance
-      await prisma.wallet.update({
-        where: { id: updated.walletId },
-        data: { 
-          lockedBalance: { decrement: updated.amount },
-          balance: { increment: updated.amount }
-        }
+        if (updated.count === 0) throw new Error('Withdrawal not found or already processed');
+
+        // 2. Reverse lock: move funds back to balance
+        const withdrawal = await tx.withdrawalRequest.findUnique({ where: { id } });
+        await tx.wallet.update({
+          where: { id: withdrawal.walletId },
+          data: { 
+            lockedBalance: { decrement: withdrawal.amount },
+            balance: { increment: withdrawal.amount }
+          }
+        });
       });
     } else {
       return NextResponse.json({ error: 'Invalid action' }, { status: 400 });
@@ -94,6 +94,6 @@ export async function PATCH(req: NextRequest) {
   } catch (error) {
     console.error('[ADMIN WITHDRAWALS] PATCH error:', error);
     Sentry.captureException(error);
-    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+    return NextResponse.json({ error: (error as Error).message || 'Internal Server Error' }, { status: 500 });
   }
 }
