@@ -38,6 +38,7 @@ model Ward {
 }
 
 model Farmer {
+  farmCropCycles       FarmCropCycle[]
   latitude             Float?
   longitude            Float?
   isFrozen             Boolean                   @default(false)
@@ -314,18 +315,20 @@ model Rating {
 }
 
 model Dispute {
-  adminNotes    String? // Internal notes for escalated disputes
-  id            String        @id @default(cuid())
-  transactionId String        @unique
-  farmerId      String
-  buyerId       String
-  reason        DisputeReason
-  description   String?
-  status        DisputeStatus @default(OPEN)
-  adminNote     String?
-  resolvedAt    DateTime?
-  createdAt     DateTime      @default(now())
-  updatedAt     DateTime      @updatedAt
+  dealEvidenceId String?
+  resolution     String?       @db.Text
+  adminNotes     String? // Internal notes for escalated disputes
+  id             String        @id @default(cuid())
+  transactionId  String        @unique
+  farmerId       String
+  buyerId        String
+  reason         DisputeReason
+  description    String?
+  status         DisputeStatus @default(OPEN)
+  adminNote      String?
+  resolvedAt     DateTime?
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
 
   transaction Transaction @relation(fields: [transactionId], references: [id])
   farmer      Farmer      @relation(fields: [farmerId], references: [id])
@@ -360,7 +363,7 @@ model Notification {
   recipientPhone   String
   farmerId         String?
   buyerId          String?
-  providerId        String?
+  providerId       String?
   body             String
   status           NotificationStatus @default(PENDING)
   providerResponse String?
@@ -370,8 +373,8 @@ model Notification {
   createdAt        DateTime           @default(now())
   updatedAt        DateTime           @updatedAt
 
-  farmer Farmer? @relation(fields: [farmerId], references: [id])
-  buyer  Buyer?  @relation(fields: [buyerId], references: [id])
+  farmer   Farmer?            @relation(fields: [farmerId], references: [id])
+  buyer    Buyer?             @relation(fields: [buyerId], references: [id])
   provider TransportProvider? @relation(fields: [providerId], references: [id])
 
   @@index([farmerId])
@@ -410,7 +413,7 @@ model Advisory {
   active    Boolean  @default(true)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  language             String                    @default("en")
+  language  String   @default("en")
 
   county County? @relation(fields: [countyId], references: [id])
 
@@ -419,14 +422,15 @@ model Advisory {
 }
 
 model QualityAssessment {
-  id             String   @id @default(cuid())
-  transactionId  String?  @unique
+  farmBatches    FarmBatch[]
+  id             String      @id @default(cuid())
+  transactionId  String?     @unique
   moistureAnswer String?
   grainColour    String?
   brokenGrain    String?
   foreignMatter  String?
   notes          String?
-  createdAt      DateTime @default(now())
+  createdAt      DateTime    @default(now())
 
   transaction      Transaction?    @relation(fields: [transactionId], references: [id])
   produceListingId String?
@@ -538,6 +542,14 @@ enum AIRecommendation {
 }
 
 model MarketPrediction {
+  market          String?
+  county          String?
+  commodity       String?
+  horizonDays     Int?
+  lowerBound      Float?
+  upperBound      Float?
+  modelVersionId  String?
+  modelVersion    ModelVersion?    @relation(fields: [modelVersionId], references: [id])
   id              String           @id @default(cuid())
   crop            String
   region          String
@@ -798,7 +810,7 @@ model TransportProvider {
   active    Boolean  @default(true)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  language             String                    @default("en")
+  language  String   @default("en")
 
   county                 County?                 @relation(fields: [countyId], references: [id])
   wallet                 Wallet?                 @relation("ProviderWallet")
@@ -996,22 +1008,23 @@ model Geofence {
 }
 
 model Warehouse {
-  id           String       @id @default(cuid())
-  name         String
-  county       String?
-  location     String?
-  latitude     Float?
-  longitude    Float?
-  capacityBags Int?
-  pricePerBag  Float?
-  isActive     Boolean      @default(true)
-  createdAt    DateTime     @default(now())
-  groupId      String?
-  houseNumber  String?
-  size         String?
-  whatsappLink String?
-  whatsappApproved Boolean @default(false)
-  group        FarmerGroup? @relation("WarehouseGroup", fields: [groupId], references: [id])
+  iotDevices       IoTDevice[]
+  id               String       @id @default(cuid())
+  name             String
+  county           String?
+  location         String?
+  latitude         Float?
+  longitude        Float?
+  capacityBags     Int?
+  pricePerBag      Float?
+  isActive         Boolean      @default(true)
+  createdAt        DateTime     @default(now())
+  groupId          String?
+  houseNumber      String?
+  size             String?
+  whatsappLink     String?
+  whatsappApproved Boolean      @default(false)
+  group            FarmerGroup? @relation("WarehouseGroup", fields: [groupId], references: [id])
 }
 
 // --- V2-8: Event-Driven Architecture ---
@@ -1119,11 +1132,11 @@ model Subscription {
   type   SubscriptionType
   status SubscriptionStatus @default(PENDING_PAYMENT)
 
-  farmerId String?
-  buyerId  String?
+  farmerId   String?
+  buyerId    String?
   providerId String?
 
-  priceKsh Float
+  priceKsh      Float
   billingPeriod SubscriptionBillingPeriod?
 
   startedAt DateTime?
@@ -1134,8 +1147,8 @@ model Subscription {
 
   createdAt DateTime @default(now())
 
-  farmer Farmer? @relation(fields: [farmerId], references: [id])
-  buyer  Buyer?  @relation(fields: [buyerId], references: [id])
+  farmer   Farmer?            @relation(fields: [farmerId], references: [id])
+  buyer    Buyer?             @relation(fields: [buyerId], references: [id])
   provider TransportProvider? @relation(fields: [providerId], references: [id])
 
   @@index([farmerId])
@@ -1153,4 +1166,194 @@ model SmartShambaIdentity {
   createdAt     DateTime @default(now())
 
   @@index([userType, entityId])
+}
+
+// --- V3 PHASE 0: MAVUNOWISE FOUNDATION ---
+
+enum CropCycleStatus {
+  ACTIVE
+  HARVESTED
+  CLOSED
+}
+
+model FarmCropCycle {
+  id                  String          @id @default(cuid())
+  farmerId            String
+  crop                String
+  season              String
+  acreage             Float?
+  plantingDate        DateTime?
+  expectedHarvestDate DateTime?
+  actualHarvestDate   DateTime?
+  expectedYieldBags   Int?
+  actualYieldBags     Int?
+  status              CropCycleStatus @default(ACTIVE)
+  createdAt           DateTime        @default(now())
+
+  farmer      Farmer          @relation(fields: [farmerId], references: [id])
+  costEntries FarmCostEntry[]
+  farmBatches FarmBatch[]
+
+  @@index([farmerId])
+}
+
+enum FarmCostCategory {
+  SEED
+  FERTILIZER
+  LABOUR
+  CHEMICALS
+  TRANSPORT
+  HARVESTING
+  STORAGE
+  OTHER
+}
+
+model FarmCostEntry {
+  id          String           @id @default(cuid())
+  cropCycleId String
+  category    FarmCostCategory
+  description String?
+  amountKes   Float
+  quantity    Float?
+  unit        String?
+  date        DateTime
+  source      String           @default("FARMER_REPORTED")
+  createdAt   DateTime         @default(now())
+
+  cropCycle FarmCropCycle @relation(fields: [cropCycleId], references: [id], onDelete: Cascade)
+
+  @@index([cropCycleId])
+}
+
+model MarketPriceObservation {
+  id                String   @id @default(cuid())
+  source            String
+  sourceRecordId    String?
+  county            String
+  market            String
+  commodity         String
+  classification    String?
+  grade             String?
+  wholesaleKesPerKg Float?
+  retailKesPerKg    Float?
+  supplyVolume      Float?
+  observedAt        DateTime
+  importedAt        DateTime @default(now())
+
+  @@index([county, commodity, observedAt])
+}
+
+model FarmBatch {
+  id                  String   @id @default(cuid())
+  cropCycleId         String
+  batchReference      String   @unique
+  quantityBags        Int
+  bagSizeKg           Int
+  qualityAssessmentId String?  @unique
+  producedAt          DateTime
+  status              String   @default("PENDING")
+
+  cropCycle         FarmCropCycle      @relation(fields: [cropCycleId], references: [id])
+  qualityAssessment QualityAssessment? @relation(fields: [qualityAssessmentId], references: [id])
+  dealEvidence      DealEvidence?
+  provenanceAnchors ProvenanceAnchor[]
+
+  @@index([cropCycleId])
+}
+
+model DealEvidence {
+  id            String   @id @default(cuid())
+  batchId       String   @unique
+  photoRef      String?
+  weightKg      Float?
+  moistureLevel Float?
+  qualityNote   String?
+  capturedBy    String
+  capturedAt    DateTime @default(now())
+  evidenceHash  String
+
+  batch FarmBatch @relation(fields: [batchId], references: [id])
+}
+
+enum AnchorChain {
+  POLYGON
+}
+
+model ProvenanceAnchor {
+  id              String      @id @default(cuid())
+  batchId         String
+  certificateHash String
+  chain           AnchorChain @default(POLYGON)
+  transactionHash String?
+  blockNumber     Int?
+  anchoredAt      DateTime?
+  schemaVersion   String
+
+  batch FarmBatch @relation(fields: [batchId], references: [id])
+
+  @@index([batchId])
+}
+
+model IoTDevice {
+  id           String    @id @default(cuid())
+  warehouseId  String
+  deviceType   String
+  serialNumber String    @unique
+  status       String    @default("ACTIVE")
+  lastSeenAt   DateTime?
+  metadata     Json?
+
+  warehouse Warehouse       @relation(fields: [warehouseId], references: [id])
+  readings  SensorReading[]
+
+  @@index([warehouseId])
+}
+
+enum SensorMetric {
+  MOISTURE
+  TEMPERATURE
+  HUMIDITY
+}
+
+model SensorReading {
+  id         String       @id @default(cuid())
+  deviceId   String
+  metric     SensorMetric
+  value      Float
+  unit       String
+  recordedAt DateTime
+
+  device IoTDevice @relation(fields: [deviceId], references: [id])
+
+  @@index([deviceId, recordedAt])
+}
+
+model DataSource {
+  id               String  @id @default(cuid())
+  name             String
+  sourceType       String
+  licenseNotes     String? @db.Text
+  accessMethod     String?
+  refreshFrequency String?
+  active           Boolean @default(true)
+}
+
+enum ModelVersionStatus {
+  STAGING
+  PRODUCTION
+  ARCHIVED
+}
+
+model ModelVersion {
+  id                     String             @id @default(cuid())
+  name                   String
+  version                String
+  target                 String
+  trainingDatasetVersion String?
+  metrics                Json?
+  artifactLocation       String?
+  deployedAt             DateTime?
+  status                 ModelVersionStatus @default(STAGING)
+
+  marketPredictions MarketPrediction[]
 }
