@@ -59,6 +59,8 @@ export async function PATCH(req: NextRequest) {
 
         // 2. Deduct from locked balance
         const withdrawal = await tx.withdrawalRequest.findUnique({ where: { id } });
+        if (!withdrawal) throw new Error('Withdrawal not found');
+
         await tx.wallet.update({
           where: { id: withdrawal.walletId },
           data: { lockedBalance: { decrement: withdrawal.amount } }
@@ -78,6 +80,8 @@ export async function PATCH(req: NextRequest) {
 
         // 2. Reverse lock: move funds back to balance
         const withdrawal = await tx.withdrawalRequest.findUnique({ where: { id } });
+        if (!withdrawal) throw new Error('Withdrawal not found');
+
         await tx.wallet.update({
           where: { id: withdrawal.walletId },
           data: { 
