@@ -2,7 +2,7 @@
 import { prisma } from '@/lib/prisma';
 import { USSD_STATE } from './states';
 import { con, end } from '@/lib/africastalking';
-import { getUssdText } from './i18n';
+import { getUssdText, getFarmCostText } from './i18n';
 import { sanitizeInput } from '@/lib/sanitize';
 import { sanitizeNationalId } from '@/lib/kyc';
 import { assignSmartShambaId } from '@/lib/smartshamba-id';
@@ -15,6 +15,7 @@ import { initiateStkPush } from '@/lib/mpesa-stk';
 import { getPlanDetails } from '@/lib/subscriptions/plans';
 import { SubscriptionType, SubscriptionBillingPeriod } from '@prisma/client';
 import bcrypt from 'bcryptjs';
+import { calculateTotalCost } from '../farm-economics/calculator';
 
 interface UssdSessionContext {
   sessionId: string;
@@ -520,14 +521,19 @@ export const menuTree: Record<number, MenuScreen> = {
 
   // ── FARMER MAIN MENU ───────────────────────────────────────
   [USSD_STATE.FARMER_MAIN]: {
-    render: (ctx) => con(getUssdText(ctx.farmer?.language ?? 'en', 'farmer_menu')),
+    render: (ctx) => {
+      const lang = ctx.farmer?.language ?? 'en';
+      if (lang === 'sw') return con('1. Uza Mazao\n2. Gharama za Shamba\n3. Kikundi Changu\n4. Bei ya Soko\n5. Benki\n6. Ukaguzi wa Ubora\n7. Ingia Tovuti\n0. Toka');
+      return con('1. Sell Produce\n2. My Farm Costs\n3. My Group\n4. Market Price & Alerts\n5. Bank\n6. Quality Check\n7. Web Login\n0. Back');
+    },
     onInput: async (input, ctx) => {
       if (input === '1') return { nextState: USSD_STATE.FARMER_SELL_CROP };
-      if (input === '2') return { nextState: USSD_STATE.FARMER_GROUPS_MENU };
-      if (input === '3') return { nextState: USSD_STATE.FARMER_MARKET_MENU };
-      if (input === '4') return { nextState: USSD_STATE.FARMER_BANK_MENU };
-      if (input === '5') return { nextState: USSD_STATE.FARMER_QC_LISTING_SELECT };
-      if (input === '6') return { nextState: USSD_STATE.FARMER_OTP_MENU };
+      if (input === '2') return { nextState: USSD_STATE.FARMER_FARM_COSTS_MENU };
+      if (input === '3') return { nextState: USSD_STATE.FARMER_GROUPS_MENU };
+      if (input === '4') return { nextState: USSD_STATE.FARMER_MARKET_MENU };
+      if (input === '5') return { nextState: USSD_STATE.FARMER_BANK_MENU };
+      if (input === '6') return { nextState: USSD_STATE.FARMER_QC_LISTING_SELECT };
+      if (input === '7') return { nextState: USSD_STATE.FARMER_OTP_MENU };
       if (input === '0') return { nextState: USSD_STATE.ROOT };
       return { nextState: USSD_STATE.FARMER_MAIN };
     }
@@ -937,6 +943,7 @@ export const menuTree: Record<number, MenuScreen> = {
     },
     onInput: async (input, ctx) => {
       if (input === '1') return { nextState: USSD_STATE.FARMER_SELL_CROP };
+      if (input === '2') return { nextState: USSD_STATE.FARMER_FARM_COSTS_MENU };
       return { nextState: USSD_STATE.FARMER_MAIN };
     }
   },

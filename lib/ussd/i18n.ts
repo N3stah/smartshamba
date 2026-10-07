@@ -85,7 +85,7 @@ const en: Record<string, string> = {
   // Market Price & Alerts
   'market_menu_en': 'Market Price & Alerts\n1. Current Price\n2. Subscribe to Alerts\n0. Back',
   'market_menu_sw': 'Bei ya Soko & Arifa\n1. Bei za Sasa\n2. Jisajili kwa Arifa\n0. Rudi',
-  'market_prices_en': 'Active Buyer Demand:\n{list}\n\n0. Back',
+  'market_prices_en': 'Active Buyer demand:\n{list}\n\n0. Back',
   'market_prices_sw': 'Mahitaki ya Wanunuzi:\n{list}\n\n0. Rudi',
   'market_prices_none_en': 'No active buyer demand. Try selling produce first.',
   'market_prices_none_sw': 'Hakuna mahitaki ya wanunuzi. Jaribu kuuza bidhaa.',
@@ -243,4 +243,74 @@ export function getUssdText(lang: Language | string | undefined, key: string, pa
     });
   }
   return str;
+}
+
+// --- Phase 1C: Farm Costs i18n ---
+export function getFarmCostText(lang: string, key: string, params?: Record<string, string>): string {
+  const dict: Record<string, Record<string, string>> = {
+    en: {
+      menu: "My Farm Costs",
+      add_cost: "1. Add Cost",
+      view_total: "2. View Total",
+      back: "0. Back",
+      no_cycles: "No crop cycle found.",
+      create_cycle: "1. Create crop cycle",
+      enter_crop: "Enter crop name:",
+      enter_season: "Enter season:",
+      enter_amount: "Enter amount in KSh:",
+      select_category: "Select Cost:",
+      cat_seed: "1. Seed",
+      cat_fertilizer: "2. Fertilizer",
+      cat_labour: "3. Labour",
+      cat_chemicals: "4. Chemicals",
+      cat_transport: "5. Transport",
+      cat_harvesting: "6. Harvesting",
+      cat_storage: "7. Storage",
+      cat_other: "8. Other",
+      confirm: "Confirm cost:",
+      save: "1. Save",
+      cancel: "2. Cancel",
+      saved: "Cost saved successfully.",
+      total: "Total farm costs: KSh {amount}",
+      error_amount: "Invalid amount. Try again.",
+      error_cycle: "Error: Crop cycle not found.",
+      error_generic: "Service unavailable. Try again later."
+    },
+    sw: {
+      menu: "Gharama za Shamba",
+      add_cost: "1. Ongeza Gharama",
+      view_total: "2. Ona Jumla",
+      back: "0. Rudi",
+      no_cycles: "Hakuna mzunguko wa mazao uliopatikana.",
+      create_cycle: "1. Unda mzunguko wa mazao",
+      enter_crop: "Ingiza jina la zao:",
+      enter_season: "Ingiza msimu:",
+      enter_amount: "Ingiza kiasi kwa KSh:",
+      select_category: "Chagua Gharama:",
+      cat_seed: "1. Mbegu",
+      cat_fertilizer: "2. Mbolea",
+      cat_labour: "3. Kazi",
+      cat_chemicals: "4. Dawa",
+      cat_transport: "5. Usafirishaji",
+      cat_harvesting: "6. Kuvuna",
+      cat_storage: "7. Hifadhi",
+      cat_other: "8. Nyingine",
+      confirm: "Thibitisha gharama:",
+      save: "1. Hifadhi",
+      cancel: "2. Ghairi",
+      saved: "Gharama imehifadhiwa.",
+      total: "Jumla ya gharama: KSh {amount}",
+      error_amount: "Kiasi batili. Jaribu tena.",
+      error_cycle: "Hitilafu: Mzunguko wa mazao haujapatikana.",
+      error_generic: "Huduma haipatikani. Jaribu tena baadaye."
+    }
+  };
+  const langDict = dict[lang] || dict.en;
+  let text = langDict[key] || key;
+  if (params) {
+    Object.keys(params).forEach(p => {
+      text = text.replace(`{${p}}`, params[p]);
+    });
+  }
+  return text;
 }
