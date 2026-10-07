@@ -7,7 +7,7 @@ import LanguageSwitcher from '@/components/LanguageSwitcher';
 import NotificationPermission from '@/components/NotificationPermission';
 import SmartShambaLogo from '@/components/SmartShambaLogo';
 import { useI18n } from '@/lib/i18n';
-import { LayoutDashboard, ArrowLeftRight, AlertTriangle, Bell, Building2, Tag, Settings, LogOut, Menu, X, BarChart2, Brain, CloudRain, Wallet, FileText, MessageSquare, ClipboardList, ChevronDown, Users } from 'lucide-react';
+import { LayoutDashboard, ArrowLeftRight, AlertTriangle, Bell, Building2, Tag, Settings, LogOut, Menu, X, BarChart2, Brain, CloudRain, Wallet, FileText, MessageSquare, ClipboardList, ChevronDown, Users, Sprout } from 'lucide-react';
 
 export default function FarmerLayout({ children }: { children: React.ReactNode}) {
   const { t } = useI18n();
@@ -30,6 +30,7 @@ export default function FarmerLayout({ children }: { children: React.ReactNode})
       title: 'OVERVIEW',
       items: [
         { href: '/dashboard', label: 'Overview', icon: LayoutDashboard },
+        { href: '/dashboard/farm-economics', label: 'Farm Economics', icon: Sprout },
       ]
     },
     {
