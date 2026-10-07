@@ -1,0 +1,27 @@
+sources:
+  - name: KAMIS
+    source_type: external
+    access_method: manual_export_csv
+    canonical_unit: KES/kg
+    consent_required: false
+  - name: KNBS
+    source_type: external
+    access_method: manual_export_csv
+    canonical_unit: KES/kg
+    consent_required: false
+  - name: KMD
+    source_type: external
+    access_method: manual_export_csv
+    canonical_unit: raw
+    consent_required: false
+  - name: ERA5_Land
+    source_type: external
+    access_method: manual_export_netcdf
+    canonical_unit: raw
+    consent_required: false
+  - name: MavunoWise_Internal
+    source_type: internal
+    access_method: sql_export_csv
+    canonical_unit: KES/kg
+    consent_required: true
+    pii_fields_to_strip: [phone, name, nationalId, email, exact_location]

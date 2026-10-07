@@ -1,0 +1,16 @@
+imputation_rules:
+  target_price_kes_kg:
+    action: DROP_ROW
+  market_price_kes_kg:
+    action: FORWARD_FILL
+    limit: 3
+  temperature_c:
+    action: FORWARD_FILL
+    limit: 7
+  rainfall_mm:
+    action: FORWARD_FILL
+    limit: 7
+  farm_cost_amount_kes:
+    action: CONSTANT
+    value: 0
+    reason: "Missing cost implies unrecorded expense, default to 0 for baseline."
