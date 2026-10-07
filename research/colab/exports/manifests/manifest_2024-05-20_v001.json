@@ -1,0 +1,13 @@
+{
+  "dataset_version": "2024-05-20_v001",
+  "created_at": "2026-10-07T11:58:40.945447Z",
+  "sources": [
+    "NCPB_Bulletin"
+  ],
+  "row_count": 4,
+  "column_count": 6,
+  "date_range": "2023-05-15 to 2024-02-15",
+  "schema_reference": "research/colab/schemas/data_dictionary.md",
+  "checksum_md5": "00b06f834407e89c5cc049924c17011d",
+  "limitations": "This dataset contains only verified public NCPB bulletins. Internal MavunoWise transaction data was excluded due to PII/consent restrictions in this environment."
+}
