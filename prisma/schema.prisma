@@ -1227,6 +1227,7 @@ model FarmCostEntry {
 
 model MarketPriceObservation {
   id                String   @id @default(cuid())
+  observationKey    String   @unique // Deterministic idempotency key
   source            String
   sourceRecordId    String?
   county            String
