@@ -4,13 +4,16 @@ import joblib
 import os
 from config import ARTIFACT_PATH
 from schemas import PredictionRequest, PredictionResponse
+from train import train_and_export
 
 app = FastAPI(title="MavunoWise Intelligence: Pricing Model")
 
-# Load artifact on startup
+# Deployment Lifecycle (Option A): Generate artifact on startup if missing
 if not ARTIFACT_PATH.exists():
-    raise RuntimeError(f"Model artifact not found at {ARTIFACT_PATH}. Please run train.py first.")
+    print("Model artifact not found. Generating baseline model on startup...")
+    train_and_export()
 
+# Load artifact
 artifact = joblib.load(ARTIFACT_PATH)
 
 @app.get("/health")
@@ -37,6 +40,7 @@ async def predict_price_range(request: PredictionRequest):
         predictedPrice=predicted_price,
         lowerBound=artifact["lower_bound"],
         upperBound=artifact["upper_bound"],
+        boundType=artifact["bound_type"],
         confidence=artifact["confidence"],
         isFallback=artifact["is_fallback"],
         modelVersion=artifact["model_version"],

@@ -11,6 +11,7 @@ class PredictionResponse(BaseModel):
     predictedPrice: float
     lowerBound: float
     upperBound: float
+    boundType: Literal["HEURISTIC", "STATISTICAL"]
     confidence: Literal["LOW", "MEDIUM", "HIGH"]
     isFallback: bool
     modelVersion: str

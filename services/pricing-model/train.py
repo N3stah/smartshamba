@@ -2,7 +2,7 @@ import csv
 import joblib
 from datetime import datetime
 from pathlib import Path
-from config import ARTIFACT_PATH, DATASET_PATH, MODEL_VERSION, TRAINING_DATASET_VERSION, COMMODITY, MARKET, COUNTY
+from config import ARTIFACT_PATH, DATASET_PATH, MODEL_VERSION, TRAINING_DATASET_VERSION, COMMODITY, MARKET, COUNTY, BOUND_TYPE
 
 def train_and_export():
     print(f"Loading dataset from {DATASET_PATH}...")
@@ -12,7 +12,7 @@ def train_and_export():
     prices = []
     dates = []
     
-    # Pure Python CSV parsing (bypasses pandas 3.14 compilation issue)
+    # Pure Python CSV parsing
     with open(DATASET_PATH, 'r', encoding='utf-8') as f:
         reader = csv.DictReader(f)
         for row in reader:
@@ -41,14 +41,16 @@ def train_and_export():
         "mean_price": float(mean_price),
         "lower_bound": float(lower_bound),
         "upper_bound": float(upper_bound),
+        "bound_type": BOUND_TYPE,
         "model_version": MODEL_VERSION,
         "training_dataset_version": TRAINING_DATASET_VERSION,
         "training_data_cutoff": latest_date,
         "commodity": COMMODITY,
         "market": MARKET,
         "county": COUNTY,
-        "is_fallback": True, # Always true for this baseline prototype
-        "confidence": "LOW"  # Always low due to 4-row dataset
+        # The current model version operates in fallback mode due to insufficient training data.
+        "is_fallback": True, 
+        "confidence": "LOW"  
     }
     
     print(f"Exporting artifact to {ARTIFACT_PATH}...")

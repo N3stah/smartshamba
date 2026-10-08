@@ -10,3 +10,4 @@ TRAINING_DATASET_VERSION = "2024-05-20_v001"
 COMMODITY = "Maize"
 MARKET = "NCPB"
 COUNTY = "National"
+BOUND_TYPE = "HEURISTIC" # Explicitly stating bounds are heuristic, not statistical
