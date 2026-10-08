@@ -12,7 +12,7 @@ def train_and_export():
     prices = []
     dates = []
     
-    # Pure Python CSV parsing
+    # Pure Python CSV parsing (avoids pandas C-extension issues on Python 3.14)
     with open(DATASET_PATH, 'r', encoding='utf-8') as f:
         reader = csv.DictReader(f)
         for row in reader:
