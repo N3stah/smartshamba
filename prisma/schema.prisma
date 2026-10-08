@@ -128,30 +128,31 @@ model Buyer {
 }
 
 model Transaction {
+  batchAllocations  BatchTransactionAllocation[]
   transportBooking  TransportBooking?
   transportRequest  TransportRequest?
   negotiationOffers NegotiationOffer[]
   contract          Contract?
   ledgerEntries     LedgerEntry[]
-  id                String             @id @default(cuid())
+  id                String                       @id @default(cuid())
   farmerId          String
   buyerId           String
   produceListingId  String?
   buyerDemandId     String?
   conversation      Conversation?
   b2cPayout         B2CPayout?
-  createdAt         DateTime           @default(now())
+  createdAt         DateTime                     @default(now())
   mpesaRef          String?
   pricePerBag       Float
   quantityBags      Int
-  reference         String             @unique
+  reference         String                       @unique
   totalValue        Float
-  status            TxStatus           @default(PENDING)
+  status            TxStatus                     @default(PENDING)
   deliveryMethod    String? // "PICKUP" | "DELIVERY"
   deliveryLocation  String?
   scheduledDate     DateTime?
   fulfillmentNotes  String?
-  platformFee       Float              @default(0)
+  platformFee       Float                        @default(0)
   b2cRef            String? // M-PESA B2C ConversationID
 
   buyer  Buyer  @relation(fields: [buyerId], references: [id])
@@ -218,9 +219,10 @@ model GroupMember {
 }
 
 model GroupTransaction {
-  transportBookings TransportBooking[] @relation("TransportBookings")
-  transportRequests TransportRequest[]
-  id                String             @id @default(cuid())
+  groupBatchAllocations BatchGroupTransactionAllocation[]
+  transportBookings     TransportBooking[]                @relation("TransportBookings")
+  transportRequests     TransportRequest[]
+  id                    String                            @id @default(cuid())
 
   groupId String
   buyerId String
@@ -1254,10 +1256,12 @@ model FarmBatch {
   producedAt          DateTime
   status              String   @default("PENDING")
 
-  cropCycle         FarmCropCycle      @relation(fields: [cropCycleId], references: [id])
-  qualityAssessment QualityAssessment? @relation(fields: [qualityAssessmentId], references: [id])
-  dealEvidence      DealEvidence?
-  provenanceAnchors ProvenanceAnchor[]
+  cropCycle                       FarmCropCycle                     @relation(fields: [cropCycleId], references: [id])
+  qualityAssessment               QualityAssessment?                @relation(fields: [qualityAssessmentId], references: [id])
+  dealEvidence                    DealEvidence?
+  provenanceAnchors               ProvenanceAnchor[]
+  BatchTransactionAllocation      BatchTransactionAllocation[]
+  BatchGroupTransactionAllocation BatchGroupTransactionAllocation[]
 
   @@index([cropCycleId])
 }
@@ -1357,4 +1361,34 @@ model ModelVersion {
   status                 ModelVersionStatus @default(STAGING)
 
   marketPredictions MarketPrediction[]
+}
+
+// --- Phase 2C: Batch-to-Sale Linkage ---
+
+model BatchTransactionAllocation {
+  id            String   @id @default(cuid())
+  batchId       String
+  transactionId String
+  quantityBags  Int
+  createdAt     DateTime @default(now())
+
+  batch       FarmBatch   @relation(fields: [batchId], references: [id])
+  transaction Transaction @relation(fields: [transactionId], references: [id])
+
+  @@unique([batchId, transactionId])
+  @@index([transactionId])
+}
+
+model BatchGroupTransactionAllocation {
+  id                 String   @id @default(cuid())
+  batchId            String
+  groupTransactionId String
+  quantityBags       Int
+  createdAt          DateTime @default(now())
+
+  batch            FarmBatch        @relation(fields: [batchId], references: [id])
+  groupTransaction GroupTransaction @relation(fields: [groupTransactionId], references: [id])
+
+  @@unique([batchId, groupTransactionId])
+  @@index([groupTransactionId])
 }
