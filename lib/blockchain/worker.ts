@@ -4,7 +4,7 @@ import { anchorBatch } from './provenance-service';
 import { validateNetwork } from './config';
 
 const POLL_INTERVAL_MS = 60000; // 1 minute
-const STALE_TIMEOUT_MS = 5 * 60 * 1000; // 5 minutes
+const LEASE_DURATION_MS = 5 * 60 * 1000; // 5 minutes
 let isProcessing = false; // Single-flight guard
 
 async function discoverAndQueueAnchors() {
@@ -57,15 +57,15 @@ async function discoverAndQueueAnchors() {
 
 async function processOutboxEvents() {
   try {
-    const staleThreshold = new Date(Date.now() - STALE_TIMEOUT_MS);
+    const now = new Date();
     
-    // Claim PENDING events or stale PROCESSING events (using processedAt as lease time)
+    // Claim PENDING events or stale PROCESSING events (where nextAttemptAt is in the past)
     const targetEvent = await prisma.eventOutbox.findFirst({
       where: {
         eventType: 'PROVENANCE_ANCHOR_REQUESTED',
         OR: [
           { status: 'PENDING' },
-          { status: 'PROCESSING', nextAttemptAt: { lt: staleThreshold } }
+          { status: 'PROCESSING', nextAttemptAt: { lt: now } }
         ]
       },
       orderBy: { createdAt: 'asc' }
@@ -73,14 +73,18 @@ async function processOutboxEvents() {
 
     if (!targetEvent) return;
 
-    // Atomically claim the event
+    // Atomically claim the event using the lease expiration time
     const claimed = await prisma.eventOutbox.updateMany({
       where: { 
         id: targetEvent.id, 
         status: targetEvent.status,
         nextAttemptAt: targetEvent.nextAttemptAt // Ensure it hasn't been updated
       },
-      data: { status: 'PROCESSING', attempts: { increment: 1 }, nextAttemptAt: new Date(Date.now() + 300000) }
+      data: { 
+        status: 'PROCESSING', 
+        attempts: { increment: 1 }, 
+        nextAttemptAt: new Date(Date.now() + LEASE_DURATION_MS) 
+      }
     });
 
     if (claimed.count === 0) return;
@@ -95,10 +99,10 @@ async function processOutboxEvents() {
       });
     } catch (error: any) {
       console.error(`[WORKER] Failed to anchor batch ${batchId}:`, error.message);
-      // Revert to PENDING for retry, preserve processedAt as last attempt time
+      // Revert to PENDING for retry, set nextAttemptAt to now so it can be retried immediately
       await prisma.eventOutbox.update({
         where: { id: targetEvent.id },
-        data: { status: 'PENDING', lastError: error.message }
+        data: { status: 'PENDING', lastError: error.message, nextAttemptAt: now }
       });
     }
   } catch (error) {
