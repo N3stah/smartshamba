@@ -22,7 +22,9 @@ export async function GET(req: NextRequest) {
       where: {
         status: 'PROCESSING',
         // nextAttemptAt is used as a lease timestamp for PROCESSING events
-        nextAttemptAt: { lt: staleThreshold }
+        nextAttemptAt: { lt: staleThreshold },
+        // Exclude provenance events, which are handled by the dedicated blockchain worker
+        NOT: { eventType: 'PROVENANCE_ANCHOR_REQUESTED' }
       },
       data: {
         status: 'PENDING',
@@ -40,7 +42,9 @@ export async function GET(req: NextRequest) {
         OR: [
           { nextAttemptAt: null },
           { nextAttemptAt: { lte: new Date() } }
-        ]
+        ],
+        // Exclude provenance events, which are handled by the dedicated blockchain worker
+        NOT: { eventType: 'PROVENANCE_ANCHOR_REQUESTED' }
       },
       orderBy: { createdAt: 'asc' },
       take: BATCH_SIZE
