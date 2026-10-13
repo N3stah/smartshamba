@@ -5,6 +5,7 @@
 # dependencies
 .DS_Store
 .env*
+!.env.example
 # env files (can opt-in for committing if needed)
 .env.sentry-build-plugin
 # misc
@@ -40,3 +41,10 @@ __pycache__/
 .ipynb_checkpoints/
 services/pricing-model/model_artifact.joblib
 
+test/contracts/node_modules/
+
+# Hardhat Test Environment
+test/contracts/node_modules/
+test/contracts/artifacts/
+test/contracts/cache/
+test/contracts/contracts/
