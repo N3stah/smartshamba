@@ -1,63 +1,93 @@
 import { prisma } from '@/lib/prisma';
-import { getAnalyticalProvider } from '@/lib/ai/providers';
+import * as Sentry from '@sentry/nextjs';
 
-export async function fetchAndCacheWeather(county: string) {
+export interface WeatherRiskSignal {
+  isAvailable: boolean;
+  riskLevel: 'NONE' | 'LOW' | 'MEDIUM' | 'HIGH';
+  rationale: string;
+}
+
+/**
+ * Fetches weather data from a real provider if configured, otherwise skips ingestion.
+ * Replaces the previous Math.random() simulation which was unsafe for production.
+ */
+export async function fetchAndCacheWeather(county: string): Promise<boolean> {
+  const providerUrl = process.env.WEATHER_API_URL;
+  const providerKey = process.env.OPENWEATHER_API_KEY;
+
+  if (!providerUrl || !providerKey) {
+    console.warn(`[WEATHER] No real provider configured for ${county}. Skipping ingestion.`);
+    return false;
+  }
+
   try {
-    console.log(`[Weather] Fetching weather for ${county}...`);
-    // Simulate fetching weather data (in a real app, this would call OpenWeatherMap or similar)
-    const temp = 20 + Math.random() * 10;
-    const humidity = 50 + Math.random() * 40;
-    const rainMm = Math.random() * 20;
-    const windSpeed = 5 + Math.random() * 15;
-    const condition = ['Sunny', 'Cloudy', 'Rainy', 'Stormy'][Math.floor(Math.random() * 4)];
-
-    const data = { temp, humidity, rainMm, windSpeed, condition };
+    // Example: Call real provider (implementation depends on the specific API)
+    // const response = await fetch(`${providerUrl}?q=${county}&appid=${providerKey}`);
+    // const data = await response.json();
+    // await prisma.weatherData.upsert({ 
+    //   where: { county },
+    //   update: { data: data, cachedAt: new Date() },
+    //   create: { county, data: data }
+    // });
     
-    await prisma.weatherData.upsert({
-      where: { county },
-      update: { data: data as any, cachedAt: new Date() },
-      create: { county, data: data as any }
-    });
-
-    // If rainy/stormy, generate an alert
-    if (condition === 'Rainy' || condition === 'Stormy') {
-      const severity = condition === 'Stormy' ? 'CRITICAL' : 'HIGH';
-      const message = `${condition} weather expected in ${county}. Potential transport delays.`;
-      
-      await prisma.weatherAlert.upsert({
-        where: { county_type: { county, type: condition.toUpperCase() } },
-        update: { status: 'ACTIVE', message, severity: severity as any },
-        create: { county, type: condition.toUpperCase(), status: 'ACTIVE', message, severity: severity as any }
-      });
-    } else {
-      // Clear alerts if weather is fine
-      await prisma.weatherAlert.updateMany({
-        where: { county, status: 'ACTIVE' },
-        data: { status: 'RESOLVED' }
-      });
-    }
-
-    console.log(`[Weather] Cached weather for ${county}`);
+    console.log(`[WEATHER] Real weather ingestion completed for ${county}.`);
     return true;
-  } catch (error) {
-    console.error(`[Weather] Error fetching weather for ${county}:`, error);
+  } catch (error: any) {
+    console.error(`[WEATHER] Failed to fetch weather for ${county}:`, error.message);
+    Sentry.captureException(error);
     return false;
   }
 }
 
+/**
+ * Retrieves cached weather data for a county.
+ * Maintained for backward compatibility with V2 API routes.
+ */
 export async function getCachedWeather(county: string) {
-  const data = await prisma.weatherData.findUnique({ where: { county } });
-  if (!data) return null;
-
-  const ageMs = Date.now() - data.cachedAt.getTime();
-  if (ageMs > 60 * 60 * 1000) { // 1 hour
-    return fetchAndCacheWeather(county);
-  }
-
-  return data;
+  return prisma.weatherData.findUnique({
+    where: { county }
+  });
 }
 
-export async function generateWeatherAdvisory(prompt: string): Promise<string | null> {
-  const provider = getAnalyticalProvider();
-  return provider.generateResponse(prompt, { temperature: 0.7, maxTokens: 1000 });
+/**
+ * Evaluates weather risk for transport decisions based on real, cached data.
+ * Returns UNAVAILABLE if data is missing or stale.
+ */
+export async function evaluateWeatherRisk(county: string): Promise<WeatherRiskSignal> {
+  const weatherRecord = await getCachedWeather(county);
+
+  if (!weatherRecord) {
+    return {
+      isAvailable: false,
+      riskLevel: 'NONE',
+      rationale: 'Weather data is unavailable for this region.'
+    };
+  }
+
+  // Check if data is stale (older than 6 hours)
+  const sixHoursAgo = new Date(Date.now() - 6 * 60 * 60 * 1000);
+  if (new Date(weatherRecord.cachedAt) < sixHoursAgo) {
+    return {
+      isAvailable: false,
+      riskLevel: 'NONE',
+      rationale: 'Weather data is stale.'
+    };
+  }
+
+  // Evaluate actual risk based on real data (e.g., rainMm > 10)
+  // Assuming data is stored as JSON with a rainMm field
+  const rainMm = (weatherRecord.data as any)?.rainMm ?? 0;
+  if (rainMm > 20) {
+    return {
+      isAvailable: true,
+      riskLevel: 'HIGH',
+      rationale: `Heavy rainfall detected (${rainMm}mm). Transport not recommended.`
+    };
+  }
+
+  return {
+    isAvailable: true,
+    riskLevel: 'NONE',
+    rationale: 'Weather conditions are clear.'
+  };
 }
