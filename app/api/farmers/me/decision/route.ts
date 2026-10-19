@@ -4,7 +4,6 @@ import { requireFarmerAuth, getFarmerSession } from '@/lib/auth';
 import { evaluatePolicy } from '@/lib/decision-engine/policy';
 import { fetchForecast } from '@/lib/decision-engine/forecast-adapter';
 import { calculateFarmEconomics } from '@/lib/farm-economics/calculator';
-import { calculateDistance } from '@/lib/transport/transport-service';
 import * as Sentry from '@sentry/nextjs';
 
 export async function GET(req: NextRequest) {
@@ -64,23 +63,12 @@ export async function GET(req: NextRequest) {
       validUntil: d.endDate ?? undefined
     }));
 
-    // 4. Calculate Transport Cost (Estimate to nearest buyer market)
-    let transportCostPerBag: number | null = null;
-    if (farmer.countyId && currentOffers.length > 0) {
-      const farmerCounty = await prisma.county.findUnique({ where: { id: farmer.countyId } });
-      if (farmerCounty) {
-        // Find closest demand to estimate transport
-        const closestDemand = currentOffers.reduce((closest, current) => {
-          const dist = calculateDistance(farmerCounty.name, current.destinationCounty);
-          return dist < closest.dist ? { demand: current, dist } : closest;
-        }, { demand: currentOffers[0], dist: Infinity });
-
-        // Estimate cost: distance * rate * bag factor
-        // Assuming an average rate of 50 KES/km for pilot estimation
-        const estimatedCost = calculateDistance(farmerCounty.name, closestDemand.demand.destinationCounty) * 50 * (1 + (batch.quantityBags * 0.05));
-        transportCostPerBag = estimatedCost / batch.quantityBags;
-      }
-    }
+    // 4. Transport Cost
+    // AUDIT FIX: Remove hardcoded rate and fabricated distance.
+    // The Decision Engine requires a verified transport quote.
+    // Since no verified quote source exists in the system, we pass null.
+    // The Decision Engine will safely return INSUFFICIENT_EVIDENCE for missing transport cost.
+    const transportCostPerBag = null;
 
     // 5. Fetch Market Observations
     const marketObservations = await prisma.marketPriceObservation.findMany({
