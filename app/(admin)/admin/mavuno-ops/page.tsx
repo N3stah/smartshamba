@@ -35,7 +35,7 @@ export default function V3OpsDashboard() {
   const [error, setError] = useState(false);
 
   useEffect(() => {
-    fetch('/api/admin/v3-metrics')
+    fetch('/api/admin/mavuno-metrics')
       .then(res => res.ok ? res.json() : Promise.reject('Failed to fetch'))
       .then(setData)
       .catch(() => setError(true))

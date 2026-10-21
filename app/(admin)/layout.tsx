@@ -102,7 +102,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       title: 'SYSTEM',
       items: [
         { href: '/admin/settings', label: 'Settings', icon: Settings },
-        { href: '/admin/v3-ops', label: 'V3 Operations', icon: Activity },
+        { href: '/admin/mavuno-ops', label: 'MavunoWise Ops', icon: Activity },
       ]
     }
   ];
