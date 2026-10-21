@@ -1,7 +1,7 @@
 'use client';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Truck, MapPin, Package, Loader2, CheckCircle, Camera, XCircle, Car } from 'lucide-react';
+import { Truck, MapPin, Package, Loader2, CheckCircle, Camera, Scale, Droplet, Info, CheckCircle2, XCircle } from 'lucide-react';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 
@@ -34,6 +34,18 @@ interface Vehicle {
   status: string;
 }
 
+interface EvidenceForm {
+  photoRef: string;
+  weightKg: string;
+  moistureLevel: string;
+  qualityNote: string;
+}
+
+interface EvidenceError {
+  field: string;
+  message: string;
+}
+
 export default function TransportDashboardPage() {
   const [requests, setRequests] = useState<Request[]>([]);
   const [bookings, setBookings] = useState<Booking[]>([]);
@@ -42,8 +54,20 @@ export default function TransportDashboardPage() {
   const [updatingId, setUpdatingId] = useState('');
   const [acceptModal, setAcceptModal] = useState<string | null>(null);
   const [selectedVehicle, setSelectedVehicle] = useState('');
-  const [podModal, setPodModal] = useState<string | null>(null);
-  const [podName, setPodName] = useState('');
+  
+  // Evidence modal state
+  const [evidenceModal, setEvidenceModal] = useState<string | null>(null);
+  const [evidenceForm, setEvidenceForm] = useState<EvidenceForm>({
+    photoRef: '',
+    weightKg: '',
+    moistureLevel: '',
+    qualityNote: ''
+  });
+  const [evidenceErrors, setEvidenceErrors] = useState<EvidenceError[]>([]);
+  const [evidenceSubmitting, setEvidenceSubmitting] = useState(false);
+  const [evidenceSuccess, setEvidenceSuccess] = useState(false);
+  const [evidenceApiError, setEvidenceApiError] = useState('');
+
   const router = useRouter();
 
   const fetchData = async () => {
@@ -86,7 +110,7 @@ export default function TransportDashboardPage() {
         fetchData();
       } else {
         const data = await res.json();
-        alert(data.error || 'Failed to accept request');
+        console.error('Accept failed:', data.error);
       }
     } catch (e) { console.error(e); }
     finally { setUpdatingId(''); }
@@ -101,17 +125,85 @@ export default function TransportDashboardPage() {
     finally { setUpdatingId(''); }
   };
 
-  const updateStatus = async (id: string, status: string, podSignature?: string) => {
+  const validateEvidenceForm = (): boolean => {
+    const errors: EvidenceError[] = [];
+
+    if (evidenceForm.photoRef && evidenceForm.photoRef.length > 500) {
+      errors.push({ field: 'photoRef', message: 'Photo reference must not exceed 500 characters.' });
+    }
+
+    if (evidenceForm.weightKg) {
+      const weight = parseFloat(evidenceForm.weightKg);
+      if (isNaN(weight) || weight <= 0 || weight > 10000) {
+        errors.push({ field: 'weightKg', message: 'Weight must be a positive number between 0 and 10,000 kg.' });
+      }
+    }
+
+    if (evidenceForm.moistureLevel) {
+      const moisture = parseFloat(evidenceForm.moistureLevel);
+      if (isNaN(moisture) || moisture < 0 || moisture > 100) {
+        errors.push({ field: 'moistureLevel', message: 'Moisture level must be between 0 and 100%.' });
+      }
+    }
+
+    if (evidenceForm.qualityNote && evidenceForm.qualityNote.length > 1000) {
+      errors.push({ field: 'qualityNote', message: 'Quality note must not exceed 1,000 characters.' });
+    }
+
+    setEvidenceErrors(errors);
+    return errors.length === 0;
+  };
+
+  const submitEvidence = async () => {
+    if (!evidenceModal) return;
+    if (!validateEvidenceForm()) return;
+
+    setEvidenceSubmitting(true);
+    setEvidenceApiError('');
+
+    try {
+      const res = await fetch(`/api/transport/deliveries/${evidenceModal}/evidence`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          photoRef: evidenceForm.photoRef.trim() || undefined,
+          weightKg: evidenceForm.weightKg ? parseFloat(evidenceForm.weightKg) : undefined,
+          moistureLevel: evidenceForm.moistureLevel ? parseFloat(evidenceForm.moistureLevel) : undefined,
+          qualityNote: evidenceForm.qualityNote.trim() || undefined,
+        })
+      });
+
+      if (res.ok) {
+        setEvidenceSuccess(true);
+        fetchData();
+      } else {
+        const data = await res.json();
+        setEvidenceApiError(data.error || 'Failed to capture evidence. Please try again.');
+      }
+    } catch (e) {
+      setEvidenceApiError('Network error. Please check your connection and try again.');
+    } finally {
+      setEvidenceSubmitting(false);
+    }
+  };
+
+  const closeEvidenceModal = () => {
+    setEvidenceModal(null);
+    setEvidenceForm({ photoRef: '', weightKg: '', moistureLevel: '', qualityNote: '' });
+    setEvidenceErrors([]);
+    setEvidenceSuccess(false);
+    setEvidenceApiError('');
+  };
+
+  const updateStatus = async (id: string, status: string) => {
     setUpdatingId(id);
     try {
       const res = await fetch(`/api/transport/deliveries/${id}/status`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status, notes: podSignature ? `Signed by ${podSignature}` : undefined })
+        body: JSON.stringify({ status })
       });
       if (res.ok) {
-        setPodModal(null);
-        setPodName('');
         fetchData();
       }
     } catch (e) { console.error(e); }
@@ -119,6 +211,8 @@ export default function TransportDashboardPage() {
   };
 
   if (loading) return <div className="flex items-center justify-center h-full"><Loader2 className="w-8 h-8 animate-spin text-transport-primary" /></div>;
+
+  const getFieldError = (field: string) => evidenceErrors.find(e => e.field === field)?.message;
 
   return (
     <div className="space-y-8">
@@ -182,7 +276,7 @@ export default function TransportDashboardPage() {
                   <div><p className="text-xs text-gray-500 uppercase">Pickup</p><p className="font-medium text-text">{b.pickupLocation}</p></div>
                   <div><p className="text-xs text-gray-500 uppercase">Dropoff</p><p className="font-medium text-text">{b.dropoffLocation}</p></div>
                 </div>
-                <div className="flex gap-2">
+                <div className="flex gap-2 flex-wrap">
                   {b.status === 'ACCEPTED' && (
                     <button onClick={() => updateStatus(b.id, 'LOADED')} disabled={updatingId === b.id} className="flex-1 bg-yellow-500 text-white py-2.5 rounded-md text-sm font-semibold hover:bg-yellow-600 disabled:opacity-50 flex items-center justify-center gap-2">
                       {updatingId === b.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <Package className="w-4 h-4" />} Mark loaded
@@ -194,8 +288,18 @@ export default function TransportDashboardPage() {
                     </button>
                   )}
                   {b.status === 'IN_TRANSIT' && (
-                    <button onClick={() => setPodModal(b.id)} disabled={updatingId === b.id} className="flex-1 bg-green-600 text-white py-2.5 rounded-md text-sm font-semibold hover:bg-green-700 disabled:opacity-50 flex items-center justify-center gap-2">
-                      <Camera className="w-4 h-4" /> Record proof of delivery
+                    <>
+                      <button onClick={() => setEvidenceModal(b.id)} disabled={updatingId === b.id} className="flex-1 bg-green-600 text-white py-2.5 rounded-md text-sm font-semibold hover:bg-green-700 disabled:opacity-50 flex items-center justify-center gap-2">
+                        <Camera className="w-4 h-4" /> Capture evidence
+                      </button>
+                      <button onClick={() => updateStatus(b.id, 'DELIVERED')} disabled={updatingId === b.id} className="flex-1 bg-blue-600 text-white py-2.5 rounded-md text-sm font-semibold hover:bg-blue-700 disabled:opacity-50 flex items-center justify-center gap-2">
+                        <CheckCircle className="w-4 h-4" /> Mark delivered
+                      </button>
+                    </>
+                  )}
+                  {b.status === 'DELIVERED' && (
+                    <button onClick={() => setEvidenceModal(b.id)} disabled={updatingId === b.id} className="flex-1 bg-green-600 text-white py-2.5 rounded-md text-sm font-semibold hover:bg-green-700 disabled:opacity-50 flex items-center justify-center gap-2">
+                      <Camera className="w-4 h-4" /> Capture evidence
                     </button>
                   )}
                   {b.status === 'DELIVERED' && (
@@ -233,19 +337,102 @@ export default function TransportDashboardPage() {
         </div>
       )}
 
-      {/* POD Modal */}
-      {podModal && (
+      {/* Evidence Capture Modal */}
+      {evidenceModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <Card className="p-6 w-full max-w-md">
-            <h3 className="text-lg font-bold text-text mb-4">Proof of Delivery</h3>
-            <p className="text-sm text-gray-500 mb-4">Enter the name of the person receiving the goods to confirm delivery.</p>
-            <input type="text" value={podName} onChange={e => setPodName(e.target.value)} placeholder="Receiver's Full Name" className="w-full border border-border rounded-md px-4 py-2 text-sm text-text mb-4 focus:ring-transport-primary focus:border-transport-primary" />
-            <div className="flex gap-2">
-              <Button onClick={() => setPodModal(null)} variant="outline" className="flex-1">Cancel</Button>
-              <button onClick={() => updateStatus(podModal, 'DELIVERED', podName)} disabled={updatingId === podModal || !podName.trim()} className="flex-1 bg-green-600 text-white py-2 rounded-md text-sm font-semibold hover:bg-green-700 disabled:opacity-50">
-                {updatingId === podModal ? <Loader2 className="w-4 h-4 animate-spin mx-auto" /> : 'Confirm delivery'}
-              </button>
-            </div>
+          <Card className="p-6 w-full max-w-lg max-h-[90vh] overflow-y-auto">
+            {evidenceSuccess ? (
+              <div className="text-center py-8">
+                <CheckCircle2 className="w-16 h-16 text-green-600 mx-auto mb-4" />
+                <h3 className="text-lg font-bold text-text mb-2">Evidence Captured Successfully</h3>
+                <p className="text-sm text-gray-500 mb-6">The evidence has been hashed and will be anchored on the blockchain for provenance verification.</p>
+                <Button onClick={closeEvidenceModal} className="w-full">Close</Button>
+              </div>
+            ) : (
+              <>
+                <h3 className="text-lg font-bold text-text mb-2 flex items-center gap-2">
+                  <Camera className="w-5 h-5 text-transport-primary" /> Capture Deal Evidence
+                </h3>
+                <p className="text-sm text-gray-500 mb-4">Record the condition of the produce at pickup. This will be hashed and anchored on the blockchain for provenance verification. Evidence capture does not change the booking status.</p>
+
+                <div className="space-y-4">
+                  <div>
+                    <label className="text-sm font-medium text-text flex items-center gap-1 mb-1">
+                      <Camera className="w-3 h-3" /> Photo Reference (URL)
+                    </label>
+                    <input
+                      type="text"
+                      value={evidenceForm.photoRef}
+                      onChange={e => setEvidenceForm({...evidenceForm, photoRef: e.target.value})}
+                      placeholder="https://storage.example.com/photo123.jpg"
+                      className={`w-full border rounded-md px-3 py-2 text-sm text-text focus:ring-transport-primary focus:border-transport-primary ${getFieldError('photoRef') ? 'border-red-500' : 'border-border'}`}
+                    />
+                    {getFieldError('photoRef') && <p className="text-xs text-red-500 mt-1">{getFieldError('photoRef')}</p>}
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="text-sm font-medium text-text flex items-center gap-1 mb-1">
+                        <Scale className="w-3 h-3" /> Weight (kg)
+                      </label>
+                      <input
+                        type="number"
+                        value={evidenceForm.weightKg}
+                        onChange={e => setEvidenceForm({...evidenceForm, weightKg: e.target.value})}
+                        placeholder="e.g., 90"
+                        className={`w-full border rounded-md px-3 py-2 text-sm text-text focus:ring-transport-primary focus:border-transport-primary ${getFieldError('weightKg') ? 'border-red-500' : 'border-border'}`}
+                      />
+                      {getFieldError('weightKg') && <p className="text-xs text-red-500 mt-1">{getFieldError('weightKg')}</p>}
+                    </div>
+
+                    <div>
+                      <label className="text-sm font-medium text-text flex items-center gap-1 mb-1">
+                        <Droplet className="w-3 h-3" /> Moisture Level (%)
+                      </label>
+                      <input
+                        type="number"
+                        step="0.1"
+                        value={evidenceForm.moistureLevel}
+                        onChange={e => setEvidenceForm({...evidenceForm, moistureLevel: e.target.value})}
+                        placeholder="e.g., 13.5"
+                        className={`w-full border rounded-md px-3 py-2 text-sm text-text focus:ring-transport-primary focus:border-transport-primary ${getFieldError('moistureLevel') ? 'border-red-500' : 'border-border'}`}
+                      />
+                      {getFieldError('moistureLevel') && <p className="text-xs text-red-500 mt-1">{getFieldError('moistureLevel')}</p>}
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="text-sm font-medium text-text mb-1">Quality Note</label>
+                    <textarea
+                      value={evidenceForm.qualityNote}
+                      onChange={e => setEvidenceForm({...evidenceForm, qualityNote: e.target.value})}
+                      placeholder="e.g., Good quality, minimal broken grain..."
+                      rows={3}
+                      className={`w-full border rounded-md px-3 py-2 text-sm text-text focus:ring-transport-primary focus:border-transport-primary ${getFieldError('qualityNote') ? 'border-red-500' : 'border-border'}`}
+                    />
+                    {getFieldError('qualityNote') && <p className="text-xs text-red-500 mt-1">{getFieldError('qualityNote')}</p>}
+                  </div>
+
+                  {evidenceApiError && (
+                    <div className="flex items-start gap-2 text-sm text-red-600 bg-red-50 p-3 rounded-md">
+                      <XCircle className="w-4 h-4 mt-0.5 shrink-0" />
+                      <span>{evidenceApiError}</span>
+                    </div>
+                  )}
+                </div>
+
+                <div className="flex gap-2 mt-6">
+                  <Button onClick={closeEvidenceModal} variant="outline" className="flex-1">Cancel</Button>
+                  <Button
+                    onClick={submitEvidence}
+                    disabled={evidenceSubmitting}
+                    className="flex-1"
+                  >
+                    {evidenceSubmitting ? <Loader2 className="w-4 h-4 animate-spin mx-auto" /> : 'Capture Evidence'}
+                  </Button>
+                </div>
+              </>
+            )}
           </Card>
         </div>
       )}

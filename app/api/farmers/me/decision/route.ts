@@ -4,6 +4,7 @@ import { requireFarmerAuth, getFarmerSession } from '@/lib/auth';
 import { evaluatePolicy } from '@/lib/decision-engine/policy';
 import { fetchForecast } from '@/lib/decision-engine/forecast-adapter';
 import { calculateFarmEconomics } from '@/lib/farm-economics/calculator';
+import { validateTransportCostEstimate } from '@/lib/decision-engine/validation';
 import * as Sentry from '@sentry/nextjs';
 
 export async function GET(req: NextRequest) {
@@ -64,11 +65,11 @@ export async function GET(req: NextRequest) {
     }));
 
     // 4. Transport Cost
-    // AUDIT FIX: Remove hardcoded rate and fabricated distance.
-    // The Decision Engine requires a verified transport quote.
-    // Since no verified quote source exists in the system, we pass null.
-    // The Decision Engine will safely return INSUFFICIENT_EVIDENCE for missing transport cost.
-    const transportCostPerBag = null;
+    // Accept farmer-provided transport cost estimate from query parameter
+    // This is explicitly labelled as an estimate, not a confirmed quote
+    const { searchParams } = new URL(req.url);
+    const transportCostParam = searchParams.get('transportCostPerBag');
+    const transportCostPerBag = validateTransportCostEstimate(transportCostParam);
 
     // 5. Fetch Market Observations
     const marketObservations = await prisma.marketPriceObservation.findMany({
@@ -109,6 +110,11 @@ export async function GET(req: NextRequest) {
       forecast,
       transportCostPerBag
     });
+
+    // Flag that transport cost is an estimate if provided
+    if (transportCostPerBag !== null) {
+      (decision as any).transportCostIsEstimate = true;
+    }
 
     return NextResponse.json(decision);
 

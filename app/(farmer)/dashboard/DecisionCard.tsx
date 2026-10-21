@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
-import { Inbox, AlertTriangle, TrendingUp, Scale, Wallet, ArrowRight, Sprout, Info } from 'lucide-react';
+import { AlertTriangle, TrendingUp, Scale, ArrowRight, Sprout, Info, Truck } from 'lucide-react';
 import Link from 'next/link';
 
 interface DecisionResult {
@@ -21,30 +21,55 @@ interface DecisionResult {
     forecastAvailable: boolean;
     forecastIsFallback: boolean;
   };
+  transportCostIsEstimate?: boolean;
 }
 
 export default function DecisionCard() {
   const [decision, setDecision] = useState<DecisionResult | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
+  const [transportCost, setTransportCost] = useState('');
+  const [showTransportInput, setShowTransportInput] = useState(false);
+  const [transportError, setTransportError] = useState('');
+
+  const loadDecision = async (cost?: string) => {
+    setLoading(true);
+    setError(false);
+    setTransportError('');
+    try {
+      const url = cost ? `/api/farmers/me/decision?transportCostPerBag=${encodeURIComponent(cost)}` : '/api/farmers/me/decision';
+      const res = await fetch(url);
+      if (!res.ok) throw new Error('Failed to fetch decision');
+      const data = await res.json();
+      setDecision(data);
+      if (data.reason === 'MISSING_TRANSPORT_COST') {
+        setShowTransportInput(true);
+      } else {
+        setShowTransportInput(false);
+      }
+    } catch (e) {
+      setError(true);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    let isMounted = true;
-    const loadDecision = async () => {
-      try {
-        const res = await fetch('/api/farmers/me/decision');
-        if (!res.ok) throw new Error('Failed to fetch decision');
-        const data = await res.json();
-        if (isMounted) setDecision(data);
-      } catch (e) {
-        if (isMounted) setError(true);
-      } finally {
-        if (isMounted) setLoading(false);
-      }
-    };
     loadDecision();
-    return () => { isMounted = false; };
   }, []);
+
+  const handleTransportSubmit = () => {
+    const val = parseFloat(transportCost);
+    if (isNaN(val) || val < 0 || val > 10000) {
+      setTransportError('Enter a valid amount between 0 and 10,000 KSh per bag.');
+      return;
+    }
+    if (transportCost.includes('.') && transportCost.split('.')[1].length > 2) {
+      setTransportError('Use at most 2 decimal places.');
+      return;
+    }
+    loadDecision(transportCost);
+  };
 
   if (loading) return <LoadingSpinner />;
 
@@ -67,16 +92,13 @@ export default function DecisionCard() {
 
     if (decision.reason === 'NO_CROP_CYCLE') {
       actionText = 'Create a crop cycle & enter costs';
-      actionHref = '/dashboard/farm-economics';
     } else if (decision.reason === 'NO_BATCH') {
       actionText = 'Record a harvest batch';
-      actionHref = '/dashboard/farm-economics';
     } else if (decision.reason === 'NO_EXECUTABLE_OFFERS') {
       actionText = 'View buyer demands';
       actionHref = '/dashboard/demands';
     } else if (decision.reason === 'MISSING_TRANSPORT_COST') {
-      actionText = 'Enter transport estimate';
-      actionHref = '/dashboard/farm-economics';
+      actionText = '';
     }
 
     return (
@@ -88,13 +110,41 @@ export default function DecisionCard() {
           <div className="flex-1">
             <h3 className="text-sm font-semibold text-text mb-1">Insufficient data for recommendation</h3>
             <p className="text-xs text-gray-500 mb-3">{decision.rationale}</p>
-            <Link href={actionHref}>
-              <Button variant="outline" size="sm">
-                {icon}
-                <span className="ml-2">{actionText}</span>
-                <ArrowRight className="w-3 h-3 ml-1" />
-              </Button>
-            </Link>
+
+            {showTransportInput && (
+              <div className="mb-4 p-4 bg-gray-50 rounded-md">
+                <label className="text-xs font-medium text-text flex items-center gap-1 mb-2">
+                  <Truck className="w-3 h-3" /> Transport Cost Estimate (KSh per bag)
+                </label>
+                <div className="flex gap-2">
+                  <input
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    max="10000"
+                    value={transportCost}
+                    onChange={(e) => { setTransportCost(e.target.value); setTransportError(''); }}
+                    placeholder="e.g., 200"
+                    className="flex-1 border border-border rounded-md px-3 py-2 text-sm text-text focus:ring-farmer-primary focus:border-farmer-primary"
+                  />
+                  <Button size="sm" onClick={handleTransportSubmit}>
+                    Update
+                  </Button>
+                </div>
+                {transportError && <p className="text-xs text-red-500 mt-1">{transportError}</p>}
+                <p className="text-xs text-gray-400 mt-1">This is a farmer-provided estimate, not a confirmed quote. Recommendations using it are estimates.</p>
+              </div>
+            )}
+
+            {actionText && (
+              <Link href={actionHref}>
+                <Button variant="outline" size="sm">
+                  {icon}
+                  <span className="ml-2">{actionText}</span>
+                  <ArrowRight className="w-3 h-3 ml-1" />
+                </Button>
+              </Link>
+            )}
           </div>
         </div>
       </Card>
@@ -127,6 +177,13 @@ export default function DecisionCard() {
                     <p className="text-lg font-bold text-text">KSh {decision.breakEvenPricePerBag.toLocaleString(undefined, { maximumFractionDigits: 0 })}</p>
                   </div>
                 )}
+              </div>
+            )}
+
+            {decision.transportCostIsEstimate && (
+              <div className="flex items-start gap-2 text-xs text-blue-600 mb-2 bg-blue-50 p-2 rounded-md">
+                <Info className="w-3 h-3 mt-0.5 shrink-0" />
+                <span>Netback is based on a farmer-provided transport estimate, not a confirmed quote.</span>
               </div>
             )}
 
