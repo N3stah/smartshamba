@@ -9,7 +9,7 @@ import { useI18n } from '@/lib/i18n';
 import { 
   LayoutDashboard, ArrowLeftRight, Building2, Users, Bell, Megaphone, 
   ShieldCheck, LogOut, Menu, X, BarChart2, Package, 
-  ChevronDown, CloudRain, Truck, Map, Fence, Wallet, FileText, Brain, Settings
+  ChevronDown, CloudRain, Truck, Map, Fence, Wallet, FileText, Brain, Settings, Activity
 } from 'lucide-react';
 
 interface NavItem {
@@ -102,6 +102,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       title: 'SYSTEM',
       items: [
         { href: '/admin/settings', label: 'Settings', icon: Settings },
+        { href: '/admin/v3-ops', label: 'V3 Operations', icon: Activity },
       ]
     }
   ];
