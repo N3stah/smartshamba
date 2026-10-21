@@ -6,12 +6,13 @@ import { prisma } from '@/lib/prisma';
 import Link from 'next/link';
 import RateBuyerButton from './RateBuyerButton';
 import SyncPoller from './SyncPoller';
+import DecisionCard from './DecisionCard';
 import EmptyState from '@/components/ui/EmptyState';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import StatusBadge from '@/components/ui/StatusBadge';
 import { getDictionary } from '@/lib/i18n/server';
-import { Tag, ArrowRight, Wallet, Users, TrendingUp, Smartphone } from 'lucide-react';
+import { Tag, ArrowRight, Wallet, Users, TrendingUp, Smartphone, Sprout } from 'lucide-react';
 
 async function getFarmerData(phone: string) {
   const farmer = await prisma.farmer.findUnique({
@@ -67,34 +68,64 @@ export default async function FarmerDashboard() {
         </p>
       </div>
 
-      {/* Bento Grid: Main Actions */}
+      {/* MAVUNOWISE: Decision-First Layout */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <Card className="lg:col-span-2 p-6 flex flex-col justify-between">
+        {/* Recommendation (Wide) */}
+        <div className="lg:col-span-2 space-y-4">
           <div>
-            <h2 className="text-lg font-semibold text-text mb-2 font-serif">Ready to sell?</h2>
-            <p className="text-sm text-gray-500 mb-4">List your available maize harvest for buyers to see.</p>
+            <h2 className="text-sm font-semibold text-text mb-2 font-serif flex items-center gap-2">
+              <TrendingUp className="w-4 h-4 text-farmer-primary" />
+              Your MavunoWise Recommendation
+            </h2>
+            <DecisionCard />
           </div>
-          <Link href="/dashboard/listings" className="inline-block">
-            <Button size="lg" className="w-full md:w-auto">
-              <Tag className="w-4 h-4 mr-2" /> Post produce
-            </Button>
+
+          {/* Quick link to Farm Economics */}
+          <Link href="/dashboard/farm-economics">
+            <Card className="p-4 flex items-center justify-between hover:bg-gray-50 transition-colors cursor-pointer">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-farmer-secondary rounded-md flex items-center justify-center text-farmer-primary">
+                  <Sprout className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="font-semibold text-text text-sm">Farm Economics</h3>
+                  <p className="text-xs text-gray-500">Track costs & break-even price</p>
+                </div>
+              </div>
+              <ArrowRight className="w-4 h-4 text-gray-400" />
+            </Card>
           </Link>
-        </Card>
-        
-        <Card className="p-6 flex flex-col justify-between">
-          <div>
-            <h2 className="text-lg font-semibold text-text mb-2 font-serif">Buyer demands</h2>
-            <p className="text-sm text-gray-500 mb-4">See what buyers are actively purchasing right now.</p>
-          </div>
-          <Link href="/dashboard/demands" className="inline-block">
-            <Button variant="outline" size="lg" className="w-full md:w-auto">
-              View demands <ArrowRight className="w-4 h-4 ml-2" />
-            </Button>
-          </Link>
-        </Card>
+        </div>
+
+        {/* Quick Actions (Narrow) */}
+        <div className="space-y-4">
+          <Card className="p-6 flex flex-col justify-between">
+            <div>
+              <h2 className="text-lg font-semibold text-text mb-2 font-serif">Ready to sell?</h2>
+              <p className="text-sm text-gray-500 mb-4">List your available maize harvest for buyers to see.</p>
+            </div>
+            <Link href="/dashboard/listings" className="inline-block">
+              <Button size="lg" className="w-full md:w-auto">
+                <Tag className="w-4 h-4 mr-2" /> Post produce
+              </Button>
+            </Link>
+          </Card>
+
+          <Card className="p-6 flex flex-col justify-between">
+            <div>
+              <h2 className="text-lg font-semibold text-text mb-2 font-serif">Buyer demands</h2>
+              <p className="text-sm text-gray-500 mb-4">See what buyers are actively purchasing right now.</p>
+            </div>
+            <Link href="/dashboard/demands" className="inline-block">
+              <Button variant="outline" size="lg" className="w-full md:w-auto">
+                View demands <ArrowRight className="w-4 h-4 ml-2" />
+              </Button>
+            </Link>
+          </Card>
+        </div>
       </div>
 
-      {/* Bento Grid: Stats Row */}
+      {/* Stats Row */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <Card className="p-5">
           <p className="text-xs text-gray-500 uppercase tracking-wider">{t.dashboard.totalTransactions}</p>
@@ -116,9 +147,8 @@ export default async function FarmerDashboard() {
         </Card>
       </div>
 
-      {/* Bento Grid: Transactions + Intelligence */}
+      {/* Recent Transactions + Tools */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Recent Transactions (Wide) */}
         <Card className="lg:col-span-2 overflow-hidden">
           <div className="px-6 py-4 border-b border-border flex items-center justify-between">
             <h2 className="text-sm font-semibold text-text">{t.dashboard.recentTransactions}</h2>
@@ -154,7 +184,6 @@ export default async function FarmerDashboard() {
           </div>
         </Card>
 
-        {/* Intelligence & Tools (Narrow) */}
         <Card className="p-6">
           <h2 className="text-lg font-semibold text-text mb-4 font-serif">Tools & insights</h2>
           <div className="space-y-4">
