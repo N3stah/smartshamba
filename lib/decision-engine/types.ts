@@ -27,6 +27,23 @@ export interface ForecastData {
   confidence: 'LOW' | 'MEDIUM' | 'HIGH';
   isFallback: boolean;
   boundType: 'HEURISTIC' | 'STATISTICAL';
+  // Preserved provenance metadata (CTO Amendment §7)
+  modelVersion: string;
+  trainingDatasetVersion: string;
+  trainingDataCutoff: string;
+  forecastHorizon: number;
+  predictionTimestamp: string;
+}
+
+export interface ForecastMetadata {
+  modelVersion: string;
+  trainingDatasetVersion: string;
+  trainingDataCutoff: string;
+  forecastHorizon: number;
+  predictionTimestamp: string;
+  isFallback: boolean;
+  confidence: 'LOW' | 'MEDIUM' | 'HIGH';
+  boundType: 'HEURISTIC' | 'STATISTICAL';
 }
 
 export interface DecisionInput {
@@ -38,7 +55,7 @@ export interface DecisionInput {
   currentOffers: ExecutableOffer[];
   marketObservations: MarketObservation[];
   forecast?: ForecastData | null;
-  transportCostPerBag?: number | null; // Must be explicitly provided
+  transportCostPerBag?: number | null;
 }
 
 export interface DecisionResult {
@@ -55,4 +72,5 @@ export interface DecisionResult {
     forecastAvailable: boolean;
     forecastIsFallback: boolean;
   };
+  forecastMetadata?: ForecastMetadata | null;
 }

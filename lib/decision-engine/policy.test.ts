@@ -1,6 +1,6 @@
 import assert from 'assert';
 import { evaluatePolicy } from './policy';
-import { DecisionInput } from './types';
+import { DecisionInput, ForecastData } from './types';
 
 function runTests() {
   console.log("Running Decision Engine Policy Tests...");
@@ -57,23 +57,69 @@ function runTests() {
   });
   assert.strictEqual(test5.action, 'SELL');
   assert.ok(test5.warnings.some(w => w.includes('below break-even')));
-  console.log('✓ Test 4: Below break-even offer still recommended with warning');
+  console.log('✓ Test 5: Below break-even offer still recommended with warning');
 
   // Test 6: Fallback forecast does not trigger HOLD
+  const fallbackForecast: ForecastData = {
+    predictedPriceKesPerKg: 100,
+    lowerBound: 90,
+    upperBound: 110,
+    confidence: 'LOW',
+    isFallback: true,
+    boundType: 'HEURISTIC',
+    modelVersion: 'v0.1-baseline',
+    trainingDatasetVersion: '2024-05-20_v001',
+    trainingDataCutoff: '2024-02-15',
+    forecastHorizon: 7,
+    predictionTimestamp: '2026-10-22T12:00:00.000Z'
+  };
   const test6 = evaluatePolicy({ 
     ...baseInput, 
     currentOffers: [{ id: 'o1', buyerId: 'b1', commodity: 'Maize', pricePerBag: 4000, quantityBags: 10, destinationCounty: 'Nairobi' }],
-    forecast: {
-      predictedPriceKesPerKg: 100, // 9000/bag
-      lowerBound: 90,
-      upperBound: 110,
-      confidence: 'LOW',
-      isFallback: true,
-      boundType: 'HEURISTIC'
-    }
+    forecast: fallbackForecast
   });
   assert.strictEqual(test6.action, 'SELL');
   console.log('✓ Test 6: Fallback forecast does not block SELL or trigger HOLD');
+
+  // Test 7: Forecast metadata is preserved in INSUFFICIENT_EVIDENCE result
+  const test7 = evaluatePolicy({ 
+    ...baseInput, 
+    forecast: fallbackForecast
+  });
+  assert.strictEqual(test7.action, 'INSUFFICIENT_EVIDENCE');
+  assert.ok(test7.forecastMetadata, 'forecastMetadata should be present');
+  assert.strictEqual(test7.forecastMetadata!.modelVersion, 'v0.1-baseline');
+  assert.strictEqual(test7.forecastMetadata!.trainingDatasetVersion, '2024-05-20_v001');
+  assert.strictEqual(test7.forecastMetadata!.trainingDataCutoff, '2024-02-15');
+  assert.strictEqual(test7.forecastMetadata!.forecastHorizon, 7);
+  assert.strictEqual(test7.forecastMetadata!.predictionTimestamp, '2026-10-22T12:00:00.000Z');
+  assert.strictEqual(test7.forecastMetadata!.isFallback, true);
+  assert.strictEqual(test7.forecastMetadata!.confidence, 'LOW');
+  assert.strictEqual(test7.forecastMetadata!.boundType, 'HEURISTIC');
+  console.log('✓ Test 7: Forecast metadata fully preserved in INSUFFICIENT_EVIDENCE result');
+
+  // Test 8: Forecast metadata is preserved in SELL result
+  const test8 = evaluatePolicy({ 
+    ...baseInput, 
+    currentOffers: [{ id: 'o1', buyerId: 'b1', commodity: 'Maize', pricePerBag: 4000, quantityBags: 10, destinationCounty: 'Nairobi' }],
+    forecast: fallbackForecast
+  });
+  assert.strictEqual(test8.action, 'SELL');
+  assert.ok(test8.forecastMetadata, 'forecastMetadata should be present');
+  assert.strictEqual(test8.forecastMetadata!.modelVersion, 'v0.1-baseline');
+  assert.strictEqual(test8.forecastMetadata!.trainingDatasetVersion, '2024-05-20_v001');
+  assert.strictEqual(test8.forecastMetadata!.trainingDataCutoff, '2024-02-15');
+  assert.strictEqual(test8.forecastMetadata!.isFallback, true);
+  console.log('✓ Test 8: Forecast metadata fully preserved in SELL result');
+
+  // Test 9: forecastMetadata is null when no forecast is provided
+  const test9 = evaluatePolicy({ 
+    ...baseInput, 
+    currentOffers: [{ id: 'o1', buyerId: 'b1', commodity: 'Maize', pricePerBag: 4000, quantityBags: 10, destinationCounty: 'Nairobi' }]
+  });
+  assert.strictEqual(test9.action, 'SELL');
+  assert.strictEqual(test9.forecastMetadata, null);
+  console.log('✓ Test 9: forecastMetadata is null when no forecast is provided');
 
   console.log("\nAll policy tests passed successfully!");
 }

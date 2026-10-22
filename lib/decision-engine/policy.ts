@@ -1,4 +1,4 @@
-import { DecisionInput, DecisionResult, ExecutableOffer } from './types';
+import { DecisionInput, DecisionResult, ExecutableOffer, ForecastMetadata } from './types';
 import { calculateNetback } from './netback';
 
 export function evaluatePolicy(input: DecisionInput): DecisionResult {
@@ -16,7 +16,17 @@ export function evaluatePolicy(input: DecisionInput): DecisionResult {
         observationsEvaluated: input.marketObservations.length,
         forecastAvailable: !!input.forecast,
         forecastIsFallback: input.forecast?.isFallback ?? false
-      }
+      },
+      forecastMetadata: input.forecast ? {
+        modelVersion: input.forecast.modelVersion,
+        trainingDatasetVersion: input.forecast.trainingDatasetVersion,
+        trainingDataCutoff: input.forecast.trainingDataCutoff,
+        forecastHorizon: input.forecast.forecastHorizon,
+        predictionTimestamp: input.forecast.predictionTimestamp,
+        isFallback: input.forecast.isFallback,
+        confidence: input.forecast.confidence,
+        boundType: input.forecast.boundType
+      } : null
     };
   }
 
@@ -38,7 +48,17 @@ export function evaluatePolicy(input: DecisionInput): DecisionResult {
         observationsEvaluated: input.marketObservations.length,
         forecastAvailable: !!input.forecast,
         forecastIsFallback: input.forecast?.isFallback ?? false
-      }
+      },
+      forecastMetadata: input.forecast ? {
+        modelVersion: input.forecast.modelVersion,
+        trainingDatasetVersion: input.forecast.trainingDatasetVersion,
+        trainingDataCutoff: input.forecast.trainingDataCutoff,
+        forecastHorizon: input.forecast.forecastHorizon,
+        predictionTimestamp: input.forecast.predictionTimestamp,
+        isFallback: input.forecast.isFallback,
+        confidence: input.forecast.confidence,
+        boundType: input.forecast.boundType
+      } : null
     };
   }
 
@@ -59,7 +79,17 @@ export function evaluatePolicy(input: DecisionInput): DecisionResult {
         observationsEvaluated: input.marketObservations.length,
         forecastAvailable: !!input.forecast,
         forecastIsFallback: input.forecast?.isFallback ?? false
-      }
+      },
+      forecastMetadata: input.forecast ? {
+        modelVersion: input.forecast.modelVersion,
+        trainingDatasetVersion: input.forecast.trainingDatasetVersion,
+        trainingDataCutoff: input.forecast.trainingDataCutoff,
+        forecastHorizon: input.forecast.forecastHorizon,
+        predictionTimestamp: input.forecast.predictionTimestamp,
+        isFallback: input.forecast.isFallback,
+        confidence: input.forecast.confidence,
+        boundType: input.forecast.boundType
+      } : null
     };
   }
 
@@ -72,6 +102,18 @@ export function evaluatePolicy(input: DecisionInput): DecisionResult {
   if (input.breakEvenPricePerBag !== null && bestOption.netback < input.breakEvenPricePerBag) {
     warnings.push(`Best netback (${bestOption.netback.toFixed(2)} KES/bag) is below break-even price (${input.breakEvenPricePerBag.toFixed(2)} KES/bag). Accepting this offer will result in a net loss on production costs.`);
   }
+
+  // Build forecast metadata for ALL return paths
+  const forecastMetadata: ForecastMetadata | null = input.forecast ? {
+    modelVersion: input.forecast.modelVersion,
+    trainingDatasetVersion: input.forecast.trainingDatasetVersion,
+    trainingDataCutoff: input.forecast.trainingDataCutoff,
+    forecastHorizon: input.forecast.forecastHorizon,
+    predictionTimestamp: input.forecast.predictionTimestamp,
+    isFallback: input.forecast.isFallback,
+    confidence: input.forecast.confidence,
+    boundType: input.forecast.boundType
+  } : null;
 
   // HOLD/STORE Logic - Requires non-fallback, reliable forecast
   if (input.forecast) {
@@ -93,14 +135,12 @@ export function evaluatePolicy(input: DecisionInput): DecisionResult {
             observationsEvaluated: input.marketObservations.length,
             forecastAvailable: true,
             forecastIsFallback: false
-          }
+          },
+          forecastMetadata
         };
       }
     }
   }
-
-  // STORE Logic - Requires explicit storage cost inputs (omitted in Phase 3A)
-  // Returns INSUFFICIENT_EVIDENCE if no storage cost model is provided
 
   // Default to SELL if no better alternative exists
   return {
@@ -116,6 +156,7 @@ export function evaluatePolicy(input: DecisionInput): DecisionResult {
       observationsEvaluated: input.marketObservations.length,
       forecastAvailable: !!input.forecast,
       forecastIsFallback: input.forecast?.isFallback ?? false
-    }
+    },
+    forecastMetadata
   };
 }
