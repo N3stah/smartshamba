@@ -46,6 +46,10 @@ export interface ForecastMetadata {
   boundType: 'HEURISTIC' | 'STATISTICAL';
 }
 
+// Weather risk level. UNAVAILABLE means weather data was not assessed.
+// NONE means weather was assessed and conditions are clear.
+export type WeatherRiskLevel = 'UNAVAILABLE' | 'NONE' | 'LOW' | 'MEDIUM' | 'HIGH';
+
 export interface DecisionInput {
   batchId: string;
   bagSizeKg: number;
@@ -56,6 +60,7 @@ export interface DecisionInput {
   marketObservations: MarketObservation[];
   forecast?: ForecastData | null;
   transportCostPerBag?: number | null;
+  weatherRisk?: WeatherRiskLevel;
 }
 
 export interface DecisionResult {
