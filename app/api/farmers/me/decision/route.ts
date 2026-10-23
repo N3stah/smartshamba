@@ -5,6 +5,8 @@ import { evaluatePolicy } from '@/lib/decision-engine/policy';
 import { fetchForecast } from '@/lib/decision-engine/forecast-adapter';
 import { calculateFarmEconomics } from '@/lib/farm-economics/calculator';
 import { validateTransportCostEstimate } from '@/lib/decision-engine/validation';
+import { evaluateWeatherRisk } from '@/lib/weather/weather-service';
+import { WeatherRiskLevel } from '@/lib/decision-engine/types';
 import * as Sentry from '@sentry/nextjs';
 
 export async function GET(req: NextRequest) {
@@ -15,7 +17,10 @@ export async function GET(req: NextRequest) {
     const phone = getFarmerSession(req);
     if (!phone) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-    const farmer = await prisma.farmer.findUnique({ where: { phone } });
+    const farmer = await prisma.farmer.findUnique({ 
+      where: { phone },
+      include: { county: true }
+    });
     if (!farmer) return NextResponse.json({ error: 'Farmer not found' }, { status: 404 });
 
     // 1. Fetch the most recent active crop cycle
@@ -87,15 +92,29 @@ export async function GET(req: NextRequest) {
       console.warn('[Decision API] Forecast service unavailable');
     }
 
-    // 7. Calculate Farm Economics
+    // 7. Fetch Weather Risk (fail gracefully)
+    // Weather service failure should not turn a valid decision into an API failure.
+    let weatherRisk: WeatherRiskLevel = 'UNAVAILABLE';
+    try {
+      const countyName = farmer.county?.name || 'Unknown';
+      const weatherSignal = await evaluateWeatherRisk(countyName);
+      if (weatherSignal.isAvailable) {
+        weatherRisk = weatherSignal.riskLevel;
+      }
+    } catch (e) {
+      console.warn('[Decision API] Weather risk assessment failed');
+      // weatherRisk remains 'UNAVAILABLE'
+    }
+
+    // 8. Calculate Farm Economics
     const economics = calculateFarmEconomics(cropCycle, cropCycle.costEntries);
 
-    // 8. Execute Decision Policy
+    // 9. Execute Decision Policy
     const decision = evaluatePolicy({
       batchId: batch.id,
       bagSizeKg: batch.bagSizeKg,
       commodity: cropCycle.crop,
-      farmerCounty: farmer.countyId || 'Unknown',
+      farmerCounty: farmer.county?.name || 'Unknown',
       breakEvenPricePerBag: economics.breakEvenPrice,
       currentOffers,
       marketObservations: marketObservations.map(o => ({
@@ -108,7 +127,8 @@ export async function GET(req: NextRequest) {
         observedAt: o.observedAt
       })),
       forecast,
-      transportCostPerBag
+      transportCostPerBag,
+      weatherRisk
     });
 
     // Flag that transport cost is an estimate if provided

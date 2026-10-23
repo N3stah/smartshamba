@@ -1,0 +1,19 @@
+# Render Blueprint — MavunoWise V3 services
+# Docs: https://render.com/docs/blueprint-spec
+# After committing this file, go to:
+#   https://dashboard.render.com/blueprints → New Blueprint → connect your GitHub repo
+# Render will read this file and create all services automatically.
+
+services:
+  - type: web
+    name: mavuno-pricing-model
+    runtime: docker
+    # Build context = repo root (so Dockerfile can COPY research/colab/exports/)
+    dockerContext: .
+    dockerfilePath: ./services/pricing-model/Dockerfile
+    plan: free
+    healthCheckPath: /health
+    autoDeploy: true
+    envVars:
+      - key: PORT
+        value: 8000

@@ -27,11 +27,16 @@ export async function fetchForecast(
 
     const data = await response.json();
     
-    // Validate response shape strictly
+    // Validate response shape strictly - including required metadata fields
     if (typeof data.predictedPrice !== 'number' || 
         typeof data.isFallback !== 'boolean' ||
-        !['LOW', 'MEDIUM', 'HIGH'].includes(data.confidence)) {
-      console.warn('[Decision Engine] Malformed forecast response received.');
+        !['LOW', 'MEDIUM', 'HIGH'].includes(data.confidence) ||
+        typeof data.modelVersion !== 'string' ||
+        typeof data.trainingDatasetVersion !== 'string' ||
+        typeof data.trainingDataCutoff !== 'string' ||
+        typeof data.forecastHorizon !== 'number' ||
+        typeof data.predictionTimestamp !== 'string') {
+      console.warn('[Decision Engine] Malformed forecast response received - missing required metadata.');
       return null;
     }
 
@@ -41,7 +46,12 @@ export async function fetchForecast(
       upperBound: data.upperBound,
       confidence: data.confidence,
       isFallback: data.isFallback,
-      boundType: data.boundType
+      boundType: data.boundType,
+      modelVersion: data.modelVersion,
+      trainingDatasetVersion: data.trainingDatasetVersion,
+      trainingDataCutoff: data.trainingDataCutoff,
+      forecastHorizon: data.forecastHorizon,
+      predictionTimestamp: data.predictionTimestamp
     };
   } catch (error: any) {
     if (error.name === 'AbortError') {
