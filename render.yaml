@@ -17,3 +17,31 @@ services:
     envVars:
       - key: PORT
         value: 8000
+
+  # ---------------------------------------------------------------------
+  # Background Worker: anchors settled-batch provenance hashes on-chain
+  # (Polygon Amoy, chainId 80002). Entry: lib/blockchain/worker.ts
+  # Dormant until env vars are set in the Render dashboard.
+  # ---------------------------------------------------------------------
+  - type: worker
+    name: mavuno-provenance-worker
+    runtime: node
+    plan: free
+    autoDeploy: true
+    buildCommand: npm ci --include=dev
+    startCommand: npx tsx lib/blockchain/worker.ts
+    envVars:
+      - key: DATABASE_URL
+        sync: false
+      - key: DIRECT_URL
+        sync: false
+      - key: BLOCKCHAIN_RPC_URL
+        sync: false
+      - key: PROVENANCE_SIGNER_PRIVATE_KEY
+        sync: false
+      - key: PROVENANCE_CONTRACT_ADDRESS
+        sync: false
+      - key: EXPECTED_CHAIN_ID
+        value: "80002"
+      - key: NODE_ENV
+        value: production
