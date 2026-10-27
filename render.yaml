@@ -17,52 +17,31 @@ services:
     envVars:
       - key: PORT
         value: 8000
-# ============================================================================
-# MAVUNOWISE — P0 BLOCKER #2: Blockchain Provenance Worker (Render Blueprint)
-# ============================================================================
-# HOW TO APPLY:
-#   1. Open render.yaml at the REPO ROOT (same file that holds the
-#      mavuno-pricing-model web service).
-#   2. Paste the block below as an ADDITIONAL list item under `services:`
-#      (same indentation level as the pricing-model entry: 2 spaces + "- type:").
-#   3. Confirm the two <CONFIRM ...> placeholders (see README.md §1).
-#   4. Commit + push to main → Render Blueprint sync will create the worker
-#      but keep it suspended until the env vars are filled in the dashboard.
-#
-# PRE-REQUISITE (P0 Blocker #3 — do this FIRST):
-#   cd test/contracts && npx hardhat run scripts/deploy.js --network amoy
-#   → copy the deployed BatchProvenance address into PROVENANCE_CONTRACT_ADDRESS
-#     (Render Dashboard → mavuno-provenance-worker → Environment)
-# ============================================================================
 
-  # ---------------------------------------------------------------------------
-  # Background Worker: listens for provenance events and writes batch hashes
-  # on-chain via BatchProvenance.sol (Polygon Amoy, chainId 80002).
-  # ---------------------------------------------------------------------------
-  - type: worker                      # Render Background Worker (no public URL)
+  # ---------------------------------------------------------------------
+  # Background Worker: anchors settled-batch provenance hashes on-chain
+  # (Polygon Amoy, chainId 80002). Entry: lib/blockchain/worker.ts
+  # Dormant until env vars are set in the Render dashboard.
+  # ---------------------------------------------------------------------
+  - type: worker
     name: mavuno-provenance-worker
-    runtime: docker                   # switch to `node` if worker runs via npm start
-    # <CONFIRM 1> Docker context & file — point at wherever the worker lives:
-    dockerContext: ./services/provenance-worker
-    dockerfilePath: ./services/provenance-worker/Dockerfile
-    #   ^ Locate the real entry point with:
-    #     rg -l "PROVENANCE_SIGNER_PRIVATE_KEY|PROVENANCE_CONTRACT_ADDRESS" -g '!node_modules'
-    #     If it is a plain Node script (e.g. test/contracts/scripts/worker.js),
-    #     delete the two docker lines above and use instead:
-    #       runtime: node
-    #       buildCommand: npm ci
-    #       startCommand: node <confirmed-entry-file>.js
+    runtime: node
     plan: free
     autoDeploy: true
-    # healthCheckPath: /health        # uncomment ONLY if the worker exposes HTTP
+    buildCommand: npm ci --include=dev
+    startCommand: npx tsx lib/blockchain/worker.ts
     envVars:
+      - key: DATABASE_URL
+        sync: false
+      - key: DIRECT_URL
+        sync: false
       - key: BLOCKCHAIN_RPC_URL
-        sync: false                   # dashboard: Alchemy Amoy HTTPS endpoint
+        sync: false
       - key: PROVENANCE_SIGNER_PRIVATE_KEY
-        sync: false                   # dashboard: deployer key (0x-prefixed 64-hex)
+        sync: false
       - key: PROVENANCE_CONTRACT_ADDRESS
-        sync: false                   # dashboard: output of deploy.js (Blocker #3)
+        sync: false
       - key: EXPECTED_CHAIN_ID
-        value: "80002"                # Polygon Amoy testnet (static)
+        value: "80002"
       - key: NODE_ENV
         value: production
