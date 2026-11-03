@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { requireRoleAuth } from "@/lib/auth";
+import { StaffRole } from "@prisma/client";
 
 type RouteContext = {
   params: Promise<{
@@ -12,9 +14,12 @@ type RouteContext = {
  * List all members in a farmer group
  */
 export async function GET(
-  _request: NextRequest,
+  request: NextRequest,
   { params }: RouteContext
 ) {
+  const auth = await requireRoleAuth(request, [StaffRole.CEO, StaffRole.CTO, StaffRole.CFO, StaffRole.PM]);
+  if (auth) return auth;
+
   try {
     const { id } = await params;
 
@@ -75,6 +80,9 @@ export async function PATCH(
   request: NextRequest,
   { params }: RouteContext
 ) {
+  const auth = await requireRoleAuth(request, [StaffRole.CEO, StaffRole.CTO, StaffRole.CFO, StaffRole.PM]);
+  if (auth) return auth;
+
   try {
     const { id } = await params;
 
@@ -154,6 +162,9 @@ export async function DELETE(
   request: NextRequest,
   { params }: RouteContext
 ) {
+  const auth = await requireRoleAuth(request, [StaffRole.CEO, StaffRole.CTO, StaffRole.PM]);
+  if (auth) return auth;
+
   try {
     const { id } = await params;
 
