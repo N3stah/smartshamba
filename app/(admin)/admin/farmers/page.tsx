@@ -1,6 +1,5 @@
 import { prisma } from '@/lib/prisma';
-import { getAdminSession } from '@/lib/auth';
-import { redirect } from 'next/navigation';
+import { requireAdminPage } from '@/lib/admin-page-guard';
 import Link from 'next/link';
 import VerifyButton from '@/components/admin/VerifyButton';
 import CopyButton from '@/components/ui/CopyButton';
@@ -8,8 +7,7 @@ import CopyButton from '@/components/ui/CopyButton';
 export const dynamic = 'force-dynamic';
 
 export default async function FarmersPage() {
-  const session = await getAdminSession();
-  if (!session) redirect('/admin/login');
+  await requireAdminPage();
 
   const farmers = await prisma.farmer.findMany({
     orderBy: { createdAt: 'desc' }

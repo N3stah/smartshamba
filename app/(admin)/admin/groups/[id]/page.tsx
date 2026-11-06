@@ -5,6 +5,7 @@ import { notFound } from "next/navigation";
 import GroupApprovalControls from "./GroupApprovalControls";
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
+import { requireAdminPage } from '@/lib/admin-page-guard';
 
 type PageProps = {
   params: Promise<{
@@ -16,6 +17,7 @@ type PageProps = {
 export default async function AdminGroupDetailsPage({
   params,
 }: PageProps) {
+  await requireAdminPage();
   const { id } = await params;
 
   const group = await prisma.farmerGroup.findUnique({

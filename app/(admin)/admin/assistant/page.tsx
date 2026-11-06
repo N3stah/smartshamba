@@ -1,12 +1,10 @@
-import { getAdminSession } from '@/lib/auth';
-import { redirect } from 'next/navigation';
+import { requireAdminPage } from '@/lib/admin-page-guard';
 import FullPageAssistant from '@/components/ai/FullPageAssistant';
 
 export const dynamic = 'force-dynamic';
 
 export default async function AdminAssistantPage() {
-  const session = await getAdminSession();
-  if (!session) redirect('/admin/login');
+  await requireAdminPage();
 
   return <FullPageAssistant role="STAFF" />;
 }

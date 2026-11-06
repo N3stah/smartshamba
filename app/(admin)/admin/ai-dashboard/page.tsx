@@ -1,15 +1,13 @@
 export const dynamic = 'force-dynamic';
 
-import { getAdminSession } from '@/lib/auth';
-import { redirect } from 'next/navigation';
+import { requireAdminPage } from '@/lib/admin-page-guard';
 import Link from 'next/link';
 import { prisma } from '@/lib/prisma';
 import { ArrowLeft, Brain, TrendingUp, Activity } from 'lucide-react';
 
 
 export default async function AdminAIDashboardPage() {
-  const session = await getAdminSession();
-  if (!session) redirect('/admin/login');
+  await requireAdminPage();
 
   const predictions = await prisma.marketPrediction.findMany({
     orderBy: [

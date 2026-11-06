@@ -1,8 +1,7 @@
 export const dynamic = 'force-dynamic';
 
 // TODO: V2 - Re-enable type checking after this module schema is built
-import { getAdminSession } from '@/lib/auth';
-import { redirect } from 'next/navigation';
+import { requireAdminPage } from '@/lib/admin-page-guard';
 import Link from 'next/link';
 import { prisma } from '@/lib/prisma';
 import { ArrowLeft, Truck, MapPin, Package, CheckCircle, Clock, DollarSign } from 'lucide-react';
@@ -10,8 +9,7 @@ import { ArrowLeft, Truck, MapPin, Package, CheckCircle, Clock, DollarSign } fro
 
 
 export default async function AdminLogisticsPage() {
-  const session = await getAdminSession();
-  if (!session) redirect('/admin/login');
+  await requireAdminPage();
 
   const bookings = await prisma.transportBooking.findMany({
     include: {

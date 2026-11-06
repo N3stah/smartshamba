@@ -1,6 +1,5 @@
 import { cookies } from 'next/headers';
-import { getAdminSession } from '@/lib/auth';
-import { redirect } from 'next/navigation';
+import { requireAdminPage } from '@/lib/admin-page-guard';
 import RegistrationsChart from '@/components/admin/charts/RegistrationsChart';
 import CropDemandChart from '@/components/admin/charts/CropDemandChart';
 
@@ -17,8 +16,7 @@ async function getAnalytics(range: string) {
 }
 
 export default async function AdminAnalyticsPage({ searchParams }: { searchParams: Promise<{ range?: string }> }) {
-  const session = await getAdminSession();
-  if (!session) redirect('/admin/login');
+  await requireAdminPage();
 
   const params = await searchParams;
   const range = params.range || '30d';
