@@ -3,7 +3,7 @@ import { getAdminSession } from '@/lib/auth';
 
 export async function GET() {
   const admin = await getAdminSession();
-  if (!admin) {
+  if (!admin || admin.id === 'legacy') {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
   return NextResponse.json({

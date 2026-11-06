@@ -1,12 +1,14 @@
 #!/usr/bin/env bash
-# S1.6 — CI guard: every admin API route must call requireRoleAuth per exported handler.
+# S1.6 — heuristic CI check: count role-guard calls against exported handlers.
+# This does not prove guard placement or map calls to individual handlers;
+# manually review each handler and ensure guards run before database access.
 # Whitelist (auth endpoints + farmer-facing misplaced route):
 #   app/api/admin/auth/login/route.ts
 #   app/api/admin/auth/logout/route.ts
-#   app/api/admin/me/route.ts            (returns 401 via getAdminSession)
+#   app/api/admin/me/route.ts            (explicit session check rejects legacy sessions)
 #   app/api/admin/ratings/route.ts       (farmer-facing dispute POST, misplaced — S2 will relocate)
 #
-# Exit 0 = all guarded; exit 1 = at least one route is missing guards or has partial guards.
+# Exit 0 = guard-call counts meet the heuristic; exit 1 = a route has fewer calls than handlers.
 
 set -u
 
@@ -35,7 +37,7 @@ done < <(find app/api/admin -name route.ts | sort)
 echo "Checked $checked admin route file(s) (excludes whitelist)."
 
 if [ "$fail" -eq 0 ]; then
-  echo "OK: all admin routes guarded."
+  echo "OK: admin guard-call counts meet the heuristic (placement not verified)."
   exit 0
 else
   echo "ERROR: at least one admin route is missing or has partial auth."
