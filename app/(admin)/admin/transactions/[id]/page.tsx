@@ -1,7 +1,6 @@
 export const dynamic = 'force-dynamic';
 
-import { getAdminSession } from '@/lib/auth';
-import { redirect } from 'next/navigation';
+import { requireAdminPage } from '@/lib/admin-page-guard';
 import Link from 'next/link';
 import { prisma } from '@/lib/prisma';
 import ChatWindow from '@/components/chat/ChatWindow';
@@ -10,9 +9,8 @@ import TransactionActions from '@/components/TransactionActions';
 import { ArrowLeft, Truck, MapPin, Calendar, FileText } from 'lucide-react';
 
 export default async function AdminTransactionDetail({ params }: { params: Promise<{ id: string }> }) {
+  await requireAdminPage();
   const { id } = await params;
-  const session = await getAdminSession();
-  if (!session) redirect('/admin/login');
 
   const transaction = await prisma.transaction.findUnique({
     where: { id },

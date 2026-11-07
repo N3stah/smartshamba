@@ -64,8 +64,11 @@ export function proxy(req: NextRequest) {
   // Protect admin routes
   if (pathname.startsWith('/admin') && pathname !== '/admin/login') {
     const cookie = req.cookies.get(ADMIN_COOKIE);
-    // Allow if legacy API key OR if staff session cookie exists (CUID starts with 'c')
-    if (cookie?.value !== process.env.ADMIN_API_KEY && !cookie?.value?.startsWith('c')) {
+    const legacyKey = process.env.ADMIN_API_KEY;
+    const hasLegacyKey = !!legacyKey && cookie?.value === legacyKey;
+    // TODO(S2): replace this coarse CUID-prefix gate with signed-session verification.
+    // Server-rendered admin pages still require their own guard (S1.4).
+    if (!hasLegacyKey && !cookie?.value?.startsWith('c')) {
       const loginUrl = new URL('/admin/login', req.url);
       loginUrl.searchParams.set('from', pathname);
       return NextResponse.redirect(loginUrl);

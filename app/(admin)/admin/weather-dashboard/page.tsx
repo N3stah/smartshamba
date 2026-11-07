@@ -1,14 +1,12 @@
 export const dynamic = 'force-dynamic';
 
-import { getAdminSession } from '@/lib/auth';
-import { redirect } from 'next/navigation';
+import { requireAdminPage } from '@/lib/admin-page-guard';
 import Link from 'next/link';
 import { prisma } from '@/lib/prisma';
 import { ArrowLeft, CloudRain, AlertTriangle, MapPin } from 'lucide-react';
 
 export default async function AdminWeatherDashboard() {
-  const session = await getAdminSession();
-  if (!session) redirect('/admin/login');
+  await requireAdminPage();
 
   let weatherData: any[] = [];
   let activeAlerts: any[] = [];

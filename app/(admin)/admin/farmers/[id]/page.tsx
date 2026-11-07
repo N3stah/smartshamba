@@ -1,7 +1,6 @@
 export const dynamic = 'force-dynamic';
 
-import { getAdminSession } from '@/lib/auth';
-import { redirect } from 'next/navigation';
+import { requireAdminPage } from '@/lib/admin-page-guard';
 import Link from 'next/link';
 import { prisma } from '@/lib/prisma';
 import EditFarmerForm from '@/components/admin/EditFarmerForm';
@@ -14,8 +13,7 @@ interface PageProps {
 }
 
 export default async function AdminFarmerDetailPage({ params }: PageProps) {
-  const session = await getAdminSession();
-  if (!session) redirect('/admin/login');
+  await requireAdminPage();
 
   const { id } = await params;
 

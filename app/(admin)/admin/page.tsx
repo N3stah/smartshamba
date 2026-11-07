@@ -1,6 +1,5 @@
 import { cookies } from 'next/headers';
-import { getAdminSession } from '@/lib/auth';
-import { redirect } from 'next/navigation';
+import { requireAdminPage } from '@/lib/admin-page-guard';
 import { Users, Building2, ArrowLeftRight, ShieldCheck, TrendingUp } from 'lucide-react';
 import RevenueChart from '@/components/admin/charts/RevenueChart';
 
@@ -17,8 +16,7 @@ async function getStats() {
 }
 
 export default async function AdminDashboard() {
-  const session = await getAdminSession();
-  if (!session) redirect('/admin/login');
+  await requireAdminPage();
 
   let stats = null;
   let error = null;

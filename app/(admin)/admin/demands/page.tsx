@@ -1,15 +1,13 @@
 export const dynamic = 'force-dynamic';
 
-import { getAdminSession } from '@/lib/auth';
-import { redirect } from 'next/navigation';
+import { requireAdminPage } from '@/lib/admin-page-guard';
 import { prisma } from '@/lib/prisma';
 import DemandModerationButton from '@/components/admin/DemandModerationButton';
 import StatusBadge from '@/components/ui/StatusBadge';
 
 
 export default async function AdminDemandsPage() {
-  const session = await getAdminSession();
-  if (!session) redirect('/admin/login');
+  await requireAdminPage();
 
   const demands = await prisma.buyerDemand.findMany({
     include: { buyer: { select: { name: true, phone: true } } },

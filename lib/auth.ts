@@ -12,10 +12,11 @@ export async function getStaffSession(req: NextRequest) {
   const apiKey = req.headers.get('x-admin-key');
   
   // 1. Check legacy API key (backward compatibility)
-  if (apiKey === process.env.ADMIN_API_KEY) {
+  const legacyKey = process.env.ADMIN_API_KEY;
+  if (legacyKey && apiKey === legacyKey) {
     return { id: 'legacy-admin', role: 'ADMIN', name: 'Admin' };
   }
-  if (cookie?.value === process.env.ADMIN_API_KEY) {
+  if (legacyKey && cookie?.value === legacyKey) {
     return { id: 'legacy-admin', role: 'ADMIN', name: 'Admin' };
   }
   
@@ -109,7 +110,8 @@ export async function getAdminSession() {
   const value = cookieStore.get('smartshamba_admin')?.value;
   if (!value) return null;
   
-  if (value === process.env.ADMIN_API_KEY) return { role: 'admin' as const, id: 'legacy', name: 'Admin' };
+  const legacyKey = process.env.ADMIN_API_KEY;
+  if (legacyKey && value === legacyKey) return { role: 'admin' as const, id: 'legacy', name: 'Admin' };
   
   const staff = await prisma.staff.findUnique({ where: { id: value } });
   if (!staff || !staff.active) return null;
